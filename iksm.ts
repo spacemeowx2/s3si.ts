@@ -1,6 +1,6 @@
 import { CookieJar, wrapFetch } from "./deps.ts";
 import { LoginState } from "./state.ts";
-import { urlBase64Encode } from "./utils.ts";
+import { readline, urlBase64Encode } from "./utils.ts";
 
 const NSOAPP_VERSION = "2.3.1";
 
@@ -95,10 +95,11 @@ export async function loginManually(): Promise<LoginState> {
 
   console.log("Navigate to this URL in your browser:");
   console.log(res.url);
-
-  const login = prompt(
-    'Log in, right click the "Select this account" button, copy the link address, and paste it below:\n',
+  console.log(
+    'Log in, right click the "Select this account" button, copy the link address, and paste it below:',
   );
+
+  const login = await readline();
   if (!login) {
     throw new Error("No login URL provided");
   }

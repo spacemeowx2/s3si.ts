@@ -1,4 +1,6 @@
-import { base64 } from "./deps.ts";
+import { base64, io } from "./deps.ts";
+
+const stdinLines = io.readLines(Deno.stdin);
 
 export function urlBase64Encode(data: ArrayBuffer) {
   return base64.encode(data)
@@ -13,4 +15,12 @@ export function urlBase64Decode(data: string) {
       .replaceAll("_", "+")
       .replaceAll("-", "/"),
   );
+}
+
+export async function readline() {
+  for await (const line of stdinLines) {
+    if (line !== "") {
+      return line;
+    }
+  }
 }
