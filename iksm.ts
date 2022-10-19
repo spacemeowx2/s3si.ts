@@ -1,9 +1,6 @@
 import { CookieJar, wrapFetch } from "./deps.ts";
 import { readline, retry, urlBase64Encode } from "./utils.ts";
-import { S3SI_VERSION } from "./version.ts";
-
-const NSOAPP_VERSION = "2.3.1";
-const USERAGENT = `s3si.ts/${S3SI_VERSION}`;
+import { NSOAPP_VERSION, USERAGENT } from "./version.ts";
 
 export class APIError extends Error {
   response: Response;
@@ -32,19 +29,6 @@ export async function loginManually(): Promise<string> {
   );
   const authCodeChallenge = urlBase64Encode(authCvHash);
 
-  const headers = {
-    "Host": "accounts.nintendo.com",
-    "Connection": "keep-alive",
-    "Cache-Control": "max-age=0",
-    "Upgrade-Insecure-Requests": "1",
-    "User-Agent":
-      "Mozilla/5.0 (Linux; Android 11; Pixel 5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.61 Mobile Safari/537.36",
-    "Accept":
-      "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8n",
-    "DNT": "1",
-    "Accept-Encoding": "gzip,deflate,br",
-  };
-
   const body = {
     "state": state,
     "redirect_uri": "npf71b963c1b7b6d119://auth",
@@ -62,7 +46,18 @@ export async function loginManually(): Promise<string> {
     url,
     {
       method: "GET",
-      headers: headers,
+      headers: {
+        "Host": "accounts.nintendo.com",
+        "Connection": "keep-alive",
+        "Cache-Control": "max-age=0",
+        "Upgrade-Insecure-Requests": "1",
+        "User-Agent":
+          "Mozilla/5.0 (Linux; Android 11; Pixel 5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.61 Mobile Safari/537.36",
+        "Accept":
+          "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8n",
+        "DNT": "1",
+        "Accept-Encoding": "gzip,deflate,br",
+      },
     },
   );
 
@@ -151,15 +146,6 @@ export async function getGToken(
       step: 1,
       idToken,
     });
-    const parameter = {
-      "f": f,
-      "language": language,
-      "naBirthday": birthday,
-      "naCountry": country,
-      "naIdToken": idToken,
-      "requestId": requestId,
-      "timestamp": timestamp,
-    };
     const resp = await fetch(
       "https://api-lp1.znc.srv.nintendo.net/v3/Account/Login",
       {
@@ -173,7 +159,15 @@ export async function getGToken(
           "User-Agent": `com.nintendo.znca/${NSOAPP_VERSION}(Android/7.1.2)`,
         },
         body: JSON.stringify({
-          parameter,
+          parameter: {
+            "f": f,
+            "language": language,
+            "naBirthday": birthday,
+            "naCountry": country,
+            "naIdToken": idToken,
+            "requestId": requestId,
+            "timestamp": timestamp,
+          },
         }),
       },
     );
@@ -288,22 +282,21 @@ export async function getBulletToken(
   },
 ) {
   const webViewVer = await getWebViewVer();
-  const headers = {
-    "Content-Type": "application/json",
-    "Accept-Language": userLang,
-    "User-Agent": appUserAgent,
-    "X-Web-View-Ver": webViewVer,
-    "X-NACOUNTRY": userCountry,
-    "Accept": "*/*",
-    "Origin": "https://api.lp1.av5ja.srv.nintendo.net",
-    "X-Requested-With": "com.nintendo.znca",
-    "Cookie": `_gtoken=${webServiceToken}`,
-  };
   const resp = await fetch(
     "https://api.lp1.av5ja.srv.nintendo.net/api/bullet_tokens",
     {
       method: "POST",
-      headers,
+      headers: {
+        "Content-Type": "application/json",
+        "Accept-Language": userLang,
+        "User-Agent": appUserAgent,
+        "X-Web-View-Ver": webViewVer,
+        "X-NACOUNTRY": userCountry,
+        "Accept": "*/*",
+        "Origin": "https://api.lp1.av5ja.srv.nintendo.net",
+        "X-Requested-With": "com.nintendo.znca",
+        "Cookie": `_gtoken=${webServiceToken}`,
+      },
     },
   );
 
@@ -363,29 +356,26 @@ async function getSessionToken({
 }): Promise<string | undefined> {
   const fetch = wrapFetch({ cookieJar });
 
-  const headers = {
-    "User-Agent": `OnlineLounge/${NSOAPP_VERSION} NASDKAPI Android`,
-    "Accept-Language": "en-US",
-    "Accept": "application/json",
-    "Content-Type": "application/x-www-form-urlencoded",
-    "Host": "accounts.nintendo.com",
-    "Connection": "Keep-Alive",
-    "Accept-Encoding": "gzip",
-  };
-
-  const body = {
-    "client_id": "71b963c1b7b6d119",
-    "session_token_code": sessionTokenCode,
-    "session_token_code_verifier": authCodeVerifier,
-  };
-
-  const url = "https://accounts.nintendo.com/connect/1.0.0/api/session_token";
-
-  const res = await fetch(url, {
-    method: "POST",
-    headers: headers,
-    body: new URLSearchParams(body),
-  });
+  const res = await fetch(
+    "https://accounts.nintendo.com/connect/1.0.0/api/session_token",
+    {
+      method: "POST",
+      headers: {
+        "User-Agent": `OnlineLounge/${NSOAPP_VERSION} NASDKAPI Android`,
+        "Accept-Language": "en-US",
+        "Accept": "application/json",
+        "Content-Type": "application/x-www-form-urlencoded",
+        "Host": "accounts.nintendo.com",
+        "Connection": "Keep-Alive",
+        "Accept-Encoding": "gzip",
+      },
+      body: new URLSearchParams({
+        "client_id": "71b963c1b7b6d119",
+        "session_token_code": sessionTokenCode,
+        "session_token_code_verifier": authCodeVerifier,
+      }),
+    },
+  );
   const resBody = await res.json();
   return resBody["session_token"];
 }
@@ -398,18 +388,16 @@ type IminkResponse = {
 async function callImink(
   { fApi, step, idToken }: { fApi: string; step: number; idToken: string },
 ): Promise<IminkResponse> {
-  const headers = {
-    "User-Agent": USERAGENT,
-    "Content-Type": "application/json; charset=utf-8",
-  };
-  const body = {
-    "token": idToken,
-    "hashMethod": step,
-  };
   const resp = await fetch(fApi, {
     method: "POST",
-    headers,
-    body: JSON.stringify(body),
+    headers: {
+      "User-Agent": USERAGENT,
+      "Content-Type": "application/json; charset=utf-8",
+    },
+    body: JSON.stringify({
+      "token": idToken,
+      "hashMethod": step,
+    }),
   });
 
   return await resp.json();
