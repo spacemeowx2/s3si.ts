@@ -9,24 +9,33 @@ export enum Queries {
   CoopHistoryDetailQuery = "f3799a033f0a7ad4b1b396f9a3bafb1e",
 }
 export type VarsMap = {
-  [Queries.HomeQuery]: Record<never, never>;
-  [Queries.LatestBattleHistoriesQuery]: Record<never, never>;
-  [Queries.RegularBattleHistoriesQuery]: Record<never, never>;
-  [Queries.BankaraBattleHistoriesQuery]: Record<never, never>;
-  [Queries.PrivateBattleHistoriesQuery]: Record<never, never>;
-  [Queries.VsHistoryDetailQuery]: {
+  [Queries.HomeQuery]: [];
+  [Queries.LatestBattleHistoriesQuery]: [];
+  [Queries.RegularBattleHistoriesQuery]: [];
+  [Queries.BankaraBattleHistoriesQuery]: [];
+  [Queries.PrivateBattleHistoriesQuery]: [];
+  [Queries.VsHistoryDetailQuery]: [{
     vsResultId: string;
-  };
-  [Queries.CoopHistoryQuery]: Record<never, never>;
-  [Queries.CoopHistoryDetailQuery]: {
+  }];
+  [Queries.CoopHistoryQuery]: [];
+  [Queries.CoopHistoryDetailQuery]: [{
     coopHistoryDetailId: string;
-  };
+  }];
 };
 
 export type Image = {
   url: string;
   width?: number;
   height?: number;
+};
+export type HistoryGroups = {
+  nodes: {
+    historyDetails: {
+      nodes: {
+        id: string;
+      }[];
+    };
+  }[];
 };
 export type RespMap = {
   [Queries.HomeQuery]: {
@@ -48,56 +57,21 @@ export type RespMap = {
     footerMessages: unknown[];
   };
   [Queries.LatestBattleHistoriesQuery]: Record<never, never>;
-  [Queries.RegularBattleHistoriesQuery]: Record<never, never>;
-  [Queries.BankaraBattleHistoriesQuery]: {
-    bankaraBattleHistories: {
-      summary: {
-        assistAverage: number;
-        deathAverage: number;
-        killAverage: number;
-        lose: number;
-        perUnitTimeMinute: number;
-        specialAverage: number;
-        win: number;
-      };
-      historyGroups: {
-        nodes: {
-          bankaraMatchChallenge: null | {
-            winCount: number;
-            loseCount: number;
-            maxWinCount: number;
-            maxLoseCount: number;
-            state: "Failed";
-            isPromo: boolean;
-            isUdemaeUp: boolean;
-            udemaeAfter: string;
-            earnedUdemaePoint: number;
-          };
-          historyDetails: {
-            nodes: {
-              id: string;
-              vsMode: {
-                mode: "BANKARA";
-                id: string;
-              };
-              vsRule: {
-                name: string;
-                id: string;
-              };
-              vsStage: {
-                name: string;
-                id: string;
-                image: Image;
-              };
-              judgement: "LOSE";
-              player: unknown;
-            }[];
-          };
-        }[];
-      };
+  [Queries.RegularBattleHistoriesQuery]: {
+    regularBattleHistories: {
+      historyGroups: HistoryGroups;
     };
   };
-  [Queries.PrivateBattleHistoriesQuery]: Record<never, never>;
+  [Queries.BankaraBattleHistoriesQuery]: {
+    bankaraBattleHistories: {
+      historyGroups: HistoryGroups;
+    };
+  };
+  [Queries.PrivateBattleHistoriesQuery]: {
+    privateBattleHistories: {
+      historyGroups: HistoryGroups;
+    };
+  };
   [Queries.VsHistoryDetailQuery]: Record<never, never>;
   [Queries.CoopHistoryQuery]: Record<never, never>;
   [Queries.CoopHistoryDetailQuery]: Record<never, never>;
@@ -115,9 +89,3 @@ export enum BattleType {
   Bankara,
   Private,
 }
-
-export const BATTLE_QUERY_MAP: Record<BattleType, Queries> = {
-  [BattleType.Regular]: Queries.RegularBattleHistoriesQuery,
-  [BattleType.Bankara]: Queries.BankaraBattleHistoriesQuery,
-  [BattleType.Private]: Queries.PrivateBattleHistoriesQuery,
-};

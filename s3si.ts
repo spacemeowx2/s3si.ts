@@ -2,7 +2,7 @@ import { getBulletToken, getGToken, loginManually } from "./iksm.ts";
 import { APIError } from "./APIError.ts";
 import { flags } from "./deps.ts";
 import { DEFAULT_STATE, State } from "./state.ts";
-import { checkToken } from "./splatnet3.ts";
+import { checkToken, getBattleList } from "./splatnet3.ts";
 
 type Opts = {
   configPath: string;
@@ -65,9 +65,9 @@ Options:
       }
       const sessionToken = this.state.loginState.sessionToken!;
 
-      if (
-        !this.state.loginState?.gToken || !this.state.loginState.bulletToken
-      ) {
+      if (!await checkToken(this.state)) {
+        console.log("Token expired, refetch tokens.");
+
         const { webServiceToken, userCountry, userLang } = await getGToken({
           fApi: this.state.fGen,
           sessionToken,
@@ -94,7 +94,8 @@ Options:
         await this.writeState();
       }
 
-      await checkToken(this.state);
+      const battleList = await getBattleList(this.state);
+      console.log(battleList);
     } catch (e) {
       if (e instanceof APIError) {
         console.error(`APIError: ${e.message}`, e.response, e.json);

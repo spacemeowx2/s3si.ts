@@ -5,6 +5,7 @@ import { APIError } from "./APIError.ts";
 import {
   BattleType,
   GraphQLResponse,
+  HistoryGroups,
   Queries,
   RespMap,
   VarsMap,
@@ -13,8 +14,9 @@ import {
 async function request<Q extends Queries>(
   state: State,
   query: Q,
-  variables: VarsMap[Q],
+  ...rest: VarsMap[Q]
 ): Promise<RespMap[Q]> {
+  const variables = rest?.[0] ?? {};
   const body = {
     extensions: {
       persistedQuery: {
@@ -68,10 +70,60 @@ export async function checkToken(state: State) {
     return false;
   }
 
-  await request(state, Queries.HomeQuery, {});
-
-  return true;
+  try {
+    await request(state, Queries.HomeQuery);
+    return true;
+  } catch (_e) {
+    return false;
+  }
 }
 
-export async function getBattleList(params: BattleType) {
+function getIdsFromGroups({ historyGroups }: { historyGroups: HistoryGroups }) {
+  return historyGroups.nodes.flatMap((i) => i.historyDetails.nodes).map((i) =>
+    i.id
+  );
+}
+
+const BATTLE_LIST_TYPE_MAP: Record<
+  BattleType,
+  (state: State) => Promise<string[]>
+> = {
+  [BattleType.Regular]: (state: State) =>
+    request(state, Queries.RegularBattleHistoriesQuery)
+      .then((r) => getIdsFromGroups(r.regularBattleHistories)),
+  [BattleType.Bankara]: (state: State) =>
+    request(state, Queries.BankaraBattleHistoriesQuery)
+      .then((r) => getIdsFromGroups(r.bankaraBattleHistories)),
+  [BattleType.Private]: (state: State) =>
+    request(state, Queries.PrivateBattleHistoriesQuery)
+      .then((r) => getIdsFromGroups(r.privateBattleHistories)),
+};
+
+export async function getBattleList(
+  state: State,
+  types: BattleType[] = [
+    BattleType.Regular,
+    BattleType.Bankara,
+    BattleType.Private,
+  ],
+) {
+  const out = [];
+  for (const battleType of types) {
+    const ids = await BATTLE_LIST_TYPE_MAP[battleType](state);
+    out.push(...ids);
+  }
+  return out;
+}
+
+export function getBattleDetail(
+  state: State,
+  id: string,
+) {
+  return request(
+    state,
+    Queries.VsHistoryDetailQuery,
+    {
+      vsResultId: id,
+    },
+  );
 }
