@@ -56,7 +56,11 @@ export type RespMap = {
     };
     footerMessages: unknown[];
   };
-  [Queries.LatestBattleHistoriesQuery]: Record<never, never>;
+  [Queries.LatestBattleHistoriesQuery]: {
+    latestBattleHistories: {
+      historyGroups: HistoryGroups;
+    };
+  };
   [Queries.RegularBattleHistoriesQuery]: {
     regularBattleHistories: {
       historyGroups: HistoryGroups;
@@ -84,7 +88,8 @@ export type GraphQLResponse<T> = {
   }[];
 };
 
-export enum BattleType {
+export enum BattleListType {
+  Latest,
   Regular,
   Bankara,
   Private,

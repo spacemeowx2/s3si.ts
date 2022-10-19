@@ -3,7 +3,7 @@ import { State } from "./state.ts";
 import { DEFAULT_APP_USER_AGENT, SPLATNET3_ENDPOINT } from "./constant.ts";
 import { APIError } from "./APIError.ts";
 import {
-  BattleType,
+  BattleListType,
   GraphQLResponse,
   HistoryGroups,
   Queries,
@@ -85,34 +85,28 @@ function getIdsFromGroups({ historyGroups }: { historyGroups: HistoryGroups }) {
 }
 
 const BATTLE_LIST_TYPE_MAP: Record<
-  BattleType,
+  BattleListType,
   (state: State) => Promise<string[]>
 > = {
-  [BattleType.Regular]: (state: State) =>
+  [BattleListType.Latest]: (state: State) =>
+    request(state, Queries.LatestBattleHistoriesQuery)
+      .then((r) => getIdsFromGroups(r.latestBattleHistories)),
+  [BattleListType.Regular]: (state: State) =>
     request(state, Queries.RegularBattleHistoriesQuery)
       .then((r) => getIdsFromGroups(r.regularBattleHistories)),
-  [BattleType.Bankara]: (state: State) =>
+  [BattleListType.Bankara]: (state: State) =>
     request(state, Queries.BankaraBattleHistoriesQuery)
       .then((r) => getIdsFromGroups(r.bankaraBattleHistories)),
-  [BattleType.Private]: (state: State) =>
+  [BattleListType.Private]: (state: State) =>
     request(state, Queries.PrivateBattleHistoriesQuery)
       .then((r) => getIdsFromGroups(r.privateBattleHistories)),
 };
 
 export async function getBattleList(
   state: State,
-  types: BattleType[] = [
-    BattleType.Regular,
-    BattleType.Bankara,
-    BattleType.Private,
-  ],
+  battleListType: BattleListType = BattleListType.Latest,
 ) {
-  const out = [];
-  for (const battleType of types) {
-    const ids = await BATTLE_LIST_TYPE_MAP[battleType](state);
-    out.push(...ids);
-  }
-  return out;
+  return await BATTLE_LIST_TYPE_MAP[battleListType](state);
 }
 
 export function getBattleDetail(

@@ -8,3 +8,4 @@ export const DEFAULT_APP_USER_AGENT =
 export const SPLATNET3_URL = "https://api.lp1.av5ja.srv.nintendo.net";
 export const SPLATNET3_ENDPOINT =
   "https://api.lp1.av5ja.srv.nintendo.net/api/graphql";
+export const S3SI_NAMESPACE = "63941e1c-e32e-4b56-9a1d-f6fbe19ef6e1";
