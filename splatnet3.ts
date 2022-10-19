@@ -2,69 +2,13 @@ import { getWebViewVer } from "./iksm.ts";
 import { State } from "./state.ts";
 import { DEFAULT_APP_USER_AGENT, SPLATNET3_ENDPOINT } from "./constant.ts";
 import { APIError } from "./APIError.ts";
-
-enum Queries {
-  HomeQuery = "dba47124d5ec3090c97ba17db5d2f4b3",
-  LatestBattleHistoriesQuery = "7d8b560e31617e981cf7c8aa1ca13a00",
-  RegularBattleHistoriesQuery = "f6e7e0277e03ff14edfef3b41f70cd33",
-  BankaraBattleHistoriesQuery = "c1553ac75de0a3ea497cdbafaa93e95b",
-  PrivateBattleHistoriesQuery = "38e0529de8bc77189504d26c7a14e0b8",
-  VsHistoryDetailQuery = "2b085984f729cd51938fc069ceef784a",
-  CoopHistoryQuery = "817618ce39bcf5570f52a97d73301b30",
-  CoopHistoryDetailQuery = "f3799a033f0a7ad4b1b396f9a3bafb1e",
-}
-type VarsMap = {
-  [Queries.HomeQuery]: Record<never, never>;
-  [Queries.LatestBattleHistoriesQuery]: Record<never, never>;
-  [Queries.RegularBattleHistoriesQuery]: Record<never, never>;
-  [Queries.BankaraBattleHistoriesQuery]: Record<never, never>;
-  [Queries.PrivateBattleHistoriesQuery]: Record<never, never>;
-  [Queries.VsHistoryDetailQuery]: {
-    vsResultId: string;
-  };
-  [Queries.CoopHistoryQuery]: Record<never, never>;
-  [Queries.CoopHistoryDetailQuery]: {
-    coopHistoryDetailId: string;
-  };
-};
-
-type Image = {
-  url: string;
-  width?: number;
-  height?: number;
-};
-type RespMap = {
-  [Queries.HomeQuery]: {
-    currentPlayer: {
-      weapon: {
-        image: Image;
-        id: string;
-      };
-    };
-    banners: { image: Image; message: string; jumpTo: string }[];
-    friends: {
-      nodes: {
-        id: number;
-        nickname: string;
-        userIcon: Image;
-      }[];
-      totalCount: number;
-    };
-    footerMessages: unknown[];
-  };
-  [Queries.LatestBattleHistoriesQuery]: Record<never, never>;
-  [Queries.RegularBattleHistoriesQuery]: Record<never, never>;
-  [Queries.BankaraBattleHistoriesQuery]: Record<never, never>;
-  [Queries.PrivateBattleHistoriesQuery]: Record<never, never>;
-  [Queries.VsHistoryDetailQuery]: Record<never, never>;
-  [Queries.CoopHistoryQuery]: Record<never, never>;
-  [Queries.CoopHistoryDetailQuery]: Record<never, never>;
-};
-type GraphQLResponse<T> = {
-  data: T;
-} | {
-  errors: unknown[];
-};
+import {
+  BattleType,
+  GraphQLResponse,
+  Queries,
+  RespMap,
+  VarsMap,
+} from "./types.ts";
 
 async function request<Q extends Queries>(
   state: State,
@@ -110,7 +54,7 @@ async function request<Q extends Queries>(
     throw new APIError({
       response: resp,
       json,
-      message: "Splatnet3 request failed",
+      message: `Splatnet3 request failed(${json.errors?.[0].message})`,
     });
   }
   return json.data;
@@ -127,4 +71,7 @@ export async function checkToken(state: State) {
   await request(state, Queries.HomeQuery, {});
 
   return true;
+}
+
+export async function getBattleList(params: BattleType) {
 }

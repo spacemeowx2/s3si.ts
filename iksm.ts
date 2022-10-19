@@ -1,7 +1,11 @@
 import { CookieJar, wrapFetch } from "./deps.ts";
 import { cache, readline, retry, urlBase64Encode } from "./utils.ts";
-import { NSOAPP_VERSION, USERAGENT } from "./version.ts";
-import { DEFAULT_APP_USER_AGENT, SPLATNET3_URL } from "./constant.ts";
+import {
+  DEFAULT_APP_USER_AGENT,
+  NSOAPP_VERSION,
+  SPLATNET3_URL,
+  USERAGENT,
+} from "./constant.ts";
 import { APIError } from "./APIError.ts";
 
 export async function loginManually(): Promise<string> {
