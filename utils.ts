@@ -24,3 +24,19 @@ export async function readline() {
     }
   }
 }
+
+type PromiseReturnType<T> = T extends () => Promise<infer R> ? R : never;
+export async function retry<F extends () => Promise<unknown>>(
+  f: F,
+  times = 2,
+): Promise<PromiseReturnType<F>> {
+  let lastError;
+  for (let i = 0; i < times; i++) {
+    try {
+      return await f() as PromiseReturnType<F>;
+    } catch (e) {
+      lastError = e;
+    }
+  }
+  throw lastError;
+}

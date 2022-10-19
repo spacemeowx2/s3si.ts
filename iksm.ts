@@ -1,53 +1,26 @@
 import { CookieJar, wrapFetch } from "./deps.ts";
-import { LoginState } from "./state.ts";
-import { readline, urlBase64Encode } from "./utils.ts";
+import { readline, retry, urlBase64Encode } from "./utils.ts";
+import { S3SI_VERSION } from "./version.ts";
 
 const NSOAPP_VERSION = "2.3.1";
+const USERAGENT = `s3si.ts/${S3SI_VERSION}`;
 
-function random(size: number): ArrayBuffer {
-  return crypto.getRandomValues(new Uint8Array(size)).buffer;
+export class APIError extends Error {
+  response: Response;
+  json: unknown;
+  constructor(
+    { response, message }: {
+      response: Response;
+      json?: unknown;
+      message?: string;
+    },
+  ) {
+    super(message);
+    this.response = response;
+  }
 }
 
-async function getSessionToken({
-  cookieJar,
-  sessionTokenCode,
-  authCodeVerifier,
-}: {
-  cookieJar: CookieJar;
-  sessionTokenCode: string;
-  authCodeVerifier: string;
-}): Promise<string | undefined> {
-  const fetch = wrapFetch({ cookieJar });
-
-  const headers = {
-    "User-Agent": `OnlineLounge/${NSOAPP_VERSION} NASDKAPI Android`,
-    "Accept-Language": "en-US",
-    "Accept": "application/json",
-    "Content-Type": "application/x-www-form-urlencoded",
-    "Content-Length": "540",
-    "Host": "accounts.nintendo.com",
-    "Connection": "Keep-Alive",
-    "Accept-Encoding": "gzip",
-  };
-
-  const body = {
-    "client_id": "71b963c1b7b6d119",
-    "session_token_code": sessionTokenCode,
-    "session_token_code_verifier": authCodeVerifier,
-  };
-
-  const url = "https://accounts.nintendo.com/connect/1.0.0/api/session_token";
-
-  const res = await fetch(url, {
-    method: "POST",
-    headers: headers,
-    body: new URLSearchParams(body),
-  });
-  const resBody = await res.json();
-  return resBody["session_token"];
-}
-
-export async function loginManually(): Promise<LoginState> {
+export async function loginManually(): Promise<string> {
   const cookieJar = new CookieJar();
   const fetch = wrapFetch({ cookieJar });
 
@@ -119,7 +92,325 @@ export async function loginManually(): Promise<LoginState> {
     throw new Error("No session token found");
   }
 
-  return {
-    sessionToken,
+  return sessionToken;
+}
+
+export async function getGToken(
+  { fApi, sessionToken }: { fApi: string; sessionToken: string },
+) {
+  const idResp = await fetch(
+    "https://accounts.nintendo.com/connect/1.0.0/api/token",
+    {
+      method: "POST",
+      headers: {
+        "Host": "accounts.nintendo.com",
+        "Accept-Encoding": "gzip",
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "Connection": "Keep-Alive",
+        "User-Agent": "Dalvik/2.1.0 (Linux; U; Android 7.1.2)",
+      },
+      body: JSON.stringify({
+        "client_id": "71b963c1b7b6d119",
+        "session_token": sessionToken,
+        "grant_type":
+          "urn:ietf:params:oauth:grant-type:jwt-bearer-session-token",
+      }),
+    },
+  );
+  const idRespJson = await idResp.json();
+  const { access_token: accessToken, id_token: idToken } = idRespJson;
+  if (!accessToken || !idToken) {
+    throw new APIError({
+      response: idResp,
+      json: idRespJson,
+      message: "No access_token or id_token found",
+    });
+  }
+
+  const uiResp = await fetch(
+    "https://api.accounts.nintendo.com/2.0.0/users/me",
+    {
+      headers: {
+        "User-Agent": "NASDKAPI; Android",
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "Authorization": `Bearer ${accessToken}`,
+        "Host": "api.accounts.nintendo.com",
+        "Connection": "Keep-Alive",
+        "Accept-Encoding": "gzip",
+      },
+    },
+  );
+  const uiRespJson = await uiResp.json();
+  const { nickname, birthday, language, country } = uiRespJson;
+
+  const getIdToken2 = async (idToken: string) => {
+    const { f, request_id: requestId, timestamp } = await callImink({
+      fApi,
+      step: 1,
+      idToken,
+    });
+    const parameter = {
+      "f": f,
+      "language": language,
+      "naBirthday": birthday,
+      "naCountry": country,
+      "naIdToken": idToken,
+      "requestId": requestId,
+      "timestamp": timestamp,
+    };
+    const resp = await fetch(
+      "https://api-lp1.znc.srv.nintendo.net/v3/Account/Login",
+      {
+        method: "POST",
+        headers: {
+          "X-Platform": "Android",
+          "X-ProductVersion": NSOAPP_VERSION,
+          "Content-Type": "application/json; charset=utf-8",
+          "Connection": "Keep-Alive",
+          "Accept-Encoding": "gzip",
+          "User-Agent": `com.nintendo.znca/${NSOAPP_VERSION}(Android/7.1.2)`,
+        },
+        body: JSON.stringify({
+          parameter,
+        }),
+      },
+    );
+    const respJson = await resp.json();
+
+    const idToken2 = respJson?.result?.webApiServerCredential?.accessToken;
+
+    if (!idToken2) {
+      throw new APIError({
+        response: resp,
+        json: respJson,
+        message: "No idToken2 found",
+      });
+    }
+
+    return idToken2 as string;
   };
+  const getGToken = async (idToken: string) => {
+    const { f, request_id: requestId, timestamp } = await callImink({
+      step: 2,
+      idToken,
+      fApi,
+    });
+    const resp = await fetch(
+      "https://api-lp1.znc.srv.nintendo.net/v2/Game/GetWebServiceToken",
+      {
+        method: "POST",
+        headers: {
+          "X-Platform": "Android",
+          "X-ProductVersion": NSOAPP_VERSION,
+          "Authorization": `Bearer ${idToken}`,
+          "Content-Type": "application/json; charset=utf-8",
+          "Accept-Encoding": "gzip",
+          "User-Agent": `com.nintendo.znca/${NSOAPP_VERSION}(Android/7.1.2)`,
+        },
+        body: JSON.stringify({
+          parameter: {
+            "f": f,
+            "id": 4834290508791808,
+            "registrationToken": idToken,
+            "requestId": requestId,
+            "timestamp": timestamp,
+          },
+        }),
+      },
+    );
+    const respJson = await resp.json();
+
+    const webServiceToken = respJson?.result?.accessToken;
+
+    if (!webServiceToken) {
+      throw new APIError({
+        response: resp,
+        json: respJson,
+        message: "No webServiceToken found",
+      });
+    }
+
+    return webServiceToken as string;
+  };
+
+  const idToken2 = await retry(() => getIdToken2(idToken));
+  const webServiceToken = await retry(() => getGToken(idToken2));
+
+  return {
+    webServiceToken,
+    nickname,
+    userCountry: country,
+    userLang: language,
+  };
+}
+
+const SPLATNET3_URL = "https://api.lp1.av5ja.srv.nintendo.net";
+
+async function getWebViewVer(): Promise<string> {
+  const splatnet3Home = await (await fetch(SPLATNET3_URL)).text();
+
+  const mainJS = /src="(\/.*?\.js)"/.exec(splatnet3Home)?.[1];
+
+  if (!mainJS) {
+    throw new Error("No main.js found");
+  }
+
+  const mainJSBody = await (await fetch(SPLATNET3_URL + mainJS)).text();
+
+  const revision = /"([0-9a-f]{40})"/.exec(mainJSBody)?.[1];
+  const version = /revision_info_not_set.*?="(\d+\.\d+\.\d+)/.exec(mainJSBody)
+    ?.[1];
+
+  if (!version || !revision) {
+    throw new Error("No version and revision found");
+  }
+
+  return `${version}-${revision.substring(0, 8)}`;
+}
+
+const DEFAULT_APP_USER_AGENT = "Mozilla/5.0 (Linux; Android 11; Pixel 5) " +
+  "AppleWebKit/537.36 (KHTML, like Gecko) " +
+  "Chrome/94.0.4606.61 Mobile Safari/537.36";
+
+export async function getBulletToken(
+  {
+    webServiceToken,
+    appUserAgent = DEFAULT_APP_USER_AGENT,
+    userLang,
+    userCountry,
+  }: {
+    webServiceToken: string;
+    appUserAgent?: string;
+    userLang: string;
+    userCountry: string;
+  },
+) {
+  const webViewVer = await getWebViewVer();
+  const headers = {
+    "Content-Type": "application/json",
+    "Accept-Language": userLang,
+    "User-Agent": appUserAgent,
+    "X-Web-View-Ver": webViewVer,
+    "X-NACOUNTRY": userCountry,
+    "Accept": "*/*",
+    "Origin": "https://api.lp1.av5ja.srv.nintendo.net",
+    "X-Requested-With": "com.nintendo.znca",
+    "Cookie": `_gtoken=${webServiceToken}`,
+  };
+  const resp = await fetch(
+    "https://api.lp1.av5ja.srv.nintendo.net/api/bullet_tokens",
+    {
+      method: "POST",
+      headers,
+    },
+  );
+
+  if (resp.status == 401) {
+    throw new APIError({
+      response: resp,
+      message:
+        "Unauthorized error (ERROR_INVALID_GAME_WEB_TOKEN). Cannot fetch tokens at this time.",
+    });
+  }
+  if (resp.status == 403) {
+    throw new APIError({
+      response: resp,
+      message:
+        "Forbidden error (ERROR_OBSOLETE_VERSION). Cannot fetch tokens at this time.",
+    });
+  }
+  if (resp.status == 204) {
+    throw new APIError({
+      response: resp,
+      message: "Cannot access SplatNet 3 without having played online.",
+    });
+  }
+  if (resp.status !== 201) {
+    throw new APIError({
+      response: resp,
+      message: "Not 201",
+    });
+  }
+
+  const respJson = await resp.json();
+  const { bulletToken } = respJson;
+
+  if (typeof bulletToken !== "string") {
+    throw new APIError({
+      response: resp,
+      json: respJson,
+      message: "No bulletToken found",
+    });
+  }
+
+  return bulletToken;
+}
+
+function random(size: number): ArrayBuffer {
+  return crypto.getRandomValues(new Uint8Array(size)).buffer;
+}
+
+async function getSessionToken({
+  cookieJar,
+  sessionTokenCode,
+  authCodeVerifier,
+}: {
+  cookieJar: CookieJar;
+  sessionTokenCode: string;
+  authCodeVerifier: string;
+}): Promise<string | undefined> {
+  const fetch = wrapFetch({ cookieJar });
+
+  const headers = {
+    "User-Agent": `OnlineLounge/${NSOAPP_VERSION} NASDKAPI Android`,
+    "Accept-Language": "en-US",
+    "Accept": "application/json",
+    "Content-Type": "application/x-www-form-urlencoded",
+    "Host": "accounts.nintendo.com",
+    "Connection": "Keep-Alive",
+    "Accept-Encoding": "gzip",
+  };
+
+  const body = {
+    "client_id": "71b963c1b7b6d119",
+    "session_token_code": sessionTokenCode,
+    "session_token_code_verifier": authCodeVerifier,
+  };
+
+  const url = "https://accounts.nintendo.com/connect/1.0.0/api/session_token";
+
+  const res = await fetch(url, {
+    method: "POST",
+    headers: headers,
+    body: new URLSearchParams(body),
+  });
+  const resBody = await res.json();
+  return resBody["session_token"];
+}
+
+type IminkResponse = {
+  f: string;
+  request_id: string;
+  timestamp: number;
+};
+async function callImink(
+  { fApi, step, idToken }: { fApi: string; step: number; idToken: string },
+): Promise<IminkResponse> {
+  const headers = {
+    "User-Agent": USERAGENT,
+    "Content-Type": "application/json; charset=utf-8",
+  };
+  const body = {
+    "token": idToken,
+    "hashMethod": step,
+  };
+  const resp = await fetch(fApi, {
+    method: "POST",
+    headers,
+    body: JSON.stringify(body),
+  });
+
+  return await resp.json();
 }

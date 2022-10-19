@@ -1,4 +1,4 @@
-import { loginManually } from "./iksm.ts";
+import { APIError, getBulletToken, getGToken, loginManually } from "./iksm.ts";
 import { flags } from "./deps.ts";
 import { DEFAULT_STATE, State } from "./state.ts";
 
@@ -29,15 +29,19 @@ Options:
   async writeState() {
     const encoder = new TextEncoder();
     const data = encoder.encode(JSON.stringify(this.state, undefined, 2));
-    await Deno.writeFile(this.opts.configPath + ".swap", data);
-    await Deno.rename(this.opts.configPath + ".swap", this.opts.configPath);
+    const swapPath = `${this.opts.configPath}.swap`;
+    await Deno.writeFile(swapPath, data);
+    await Deno.rename(swapPath, this.opts.configPath);
   }
   async readState() {
     const decoder = new TextDecoder();
     try {
       const data = await Deno.readFile(this.opts.configPath);
       const json = JSON.parse(decoder.decode(data));
-      this.state = json;
+      this.state = {
+        ...DEFAULT_STATE,
+        ...json,
+      };
     } catch (e) {
       console.warn(
         `Failed to read config file, create new config file. (${e})`,
@@ -47,13 +51,45 @@ Options:
   }
   async run() {
     await this.readState();
-    if (!this.state.loginState?.sessionToken) {
-      const { sessionToken } = await loginManually();
-      this.state.loginState = {
-        ...this.state.loginState,
-        sessionToken,
-      };
-      await this.writeState();
+
+    try {
+      if (!this.state.loginState?.sessionToken) {
+        const sessionToken = await loginManually();
+        this.state.loginState = {
+          ...this.state.loginState,
+          sessionToken,
+        };
+        await this.writeState();
+      }
+      const sessionToken = this.state.loginState.sessionToken!;
+
+      if (!this.state.loginState?.gToken) {
+        const { webServiceToken, userCountry, userLang } = await getGToken({
+          fApi: this.state.fGen,
+          sessionToken,
+        });
+
+        const bulletToken = await getBulletToken({
+          webServiceToken,
+          userLang,
+          userCountry,
+          appUserAgent: this.state.appUserAgent,
+        });
+
+        this.state.loginState = {
+          ...this.state.loginState,
+          gToken: webServiceToken,
+          bulletToken,
+        };
+
+        await this.writeState();
+      }
+    } catch (e) {
+      if (e instanceof APIError) {
+        console.error(`APIError: ${e.message}`, e.response, e.json);
+      } else {
+        console.error(e);
+      }
     }
   }
 }
