@@ -1,21 +1,8 @@
 import { CookieJar, wrapFetch } from "./deps.ts";
-import { readline, retry, urlBase64Encode } from "./utils.ts";
+import { cache, readline, retry, urlBase64Encode } from "./utils.ts";
 import { NSOAPP_VERSION, USERAGENT } from "./version.ts";
-
-export class APIError extends Error {
-  response: Response;
-  json: unknown;
-  constructor(
-    { response, message }: {
-      response: Response;
-      json?: unknown;
-      message?: string;
-    },
-  ) {
-    super(message);
-    this.response = response;
-  }
-}
+import { DEFAULT_APP_USER_AGENT, SPLATNET3_URL } from "./constant.ts";
+import { APIError } from "./APIError.ts";
 
 export async function loginManually(): Promise<string> {
   const cookieJar = new CookieJar();
@@ -240,9 +227,7 @@ export async function getGToken(
   };
 }
 
-const SPLATNET3_URL = "https://api.lp1.av5ja.srv.nintendo.net";
-
-async function getWebViewVer(): Promise<string> {
+async function _getWebViewVer(): Promise<string> {
   const splatnet3Home = await (await fetch(SPLATNET3_URL)).text();
 
   const mainJS = /src="(\/.*?\.js)"/.exec(splatnet3Home)?.[1];
@@ -261,12 +246,11 @@ async function getWebViewVer(): Promise<string> {
     throw new Error("No version and revision found");
   }
 
-  return `${version}-${revision.substring(0, 8)}`;
-}
+  const ver = `${version}-${revision.substring(0, 8)}`;
 
-const DEFAULT_APP_USER_AGENT = "Mozilla/5.0 (Linux; Android 11; Pixel 5) " +
-  "AppleWebKit/537.36 (KHTML, like Gecko) " +
-  "Chrome/94.0.4606.61 Mobile Safari/537.36";
+  return ver;
+}
+export const getWebViewVer = cache(_getWebViewVer);
 
 export async function getBulletToken(
   {

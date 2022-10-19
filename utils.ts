@@ -40,3 +40,22 @@ export async function retry<F extends () => Promise<unknown>>(
   }
   throw lastError;
 }
+
+const GLOBAL_CACHE: Record<string, { ts: number; value: unknown }> = {};
+export function cache<F extends () => Promise<unknown>>(
+  f: F,
+  { key = f.name, expireIn = 3600 }: { key?: string; expireIn?: number } = {},
+): () => Promise<PromiseReturnType<F>> {
+  return async () => {
+    const cached = GLOBAL_CACHE[key];
+    if (cached && cached.ts + expireIn * 1000 > Date.now()) {
+      return cached.value as PromiseReturnType<F>;
+    }
+    const value = await f();
+    GLOBAL_CACHE[key] = {
+      ts: Date.now(),
+      value,
+    };
+    return value as PromiseReturnType<F>;
+  };
+}
