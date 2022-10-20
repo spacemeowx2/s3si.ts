@@ -38,17 +38,20 @@ export class FileExporter implements BattleExporter<VsHistoryDetail> {
 
     await Deno.writeTextFile(filepath, JSON.stringify(body));
   }
-  async getLatestBattleTime() {
-    await Deno.mkdir(this.exportPath, { recursive: true });
+  async notExported(list: string[]): Promise<string[]> {
+    const out: string[] = [];
 
-    const dirs: Deno.DirEntry[] = [];
-    for await (const i of Deno.readDir(this.exportPath)) dirs.push(i);
+    for (const id of list) {
+      const filename = `${id}.json`;
+      const filepath = path.join(this.exportPath, filename);
+      const isFile = await Deno.stat(filepath).then((f) => f.isFile).catch(() =>
+        false
+      );
+      if (isFile) {
+        out.push(id);
+      }
+    }
 
-    const files = dirs.filter((i) => i.isFile).map((i) => i.name);
-    const timestamps = files.map((i) => i.replace(/\.json$/, "")).map((i) =>
-      datetime.parse(i, FILENAME_FORMAT)
-    );
-
-    return timestamps.reduce((a, b) => (a > b ? a : b), new Date(0));
+    return out;
   }
 }

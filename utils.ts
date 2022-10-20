@@ -1,3 +1,4 @@
+import { APIError } from "./APIError.ts";
 import { base64, io } from "./deps.ts";
 
 const stdinLines = io.readLines(Deno.stdin);
@@ -59,4 +60,23 @@ export function cache<F extends () => Promise<unknown>>(
     };
     return value as PromiseReturnType<F>;
   };
+}
+
+export async function showError(p: Promise<void>) {
+  try {
+    await p;
+  } catch (e) {
+    if (e instanceof APIError) {
+      console.error(
+        `\n\nAPIError: ${e.message}`,
+        "\nResponse: ",
+        e.response,
+        "\nBody: ",
+        e.json,
+      );
+    } else {
+      console.error(e);
+    }
+    throw e;
+  }
 }

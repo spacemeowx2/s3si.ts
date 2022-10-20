@@ -1,12 +1,11 @@
 import { getBulletToken, getGToken, loginManually } from "./iksm.ts";
-import { APIError } from "./APIError.ts";
 import { flags, MultiProgressBar, Mutex } from "./deps.ts";
 import { DEFAULT_STATE, State } from "./state.ts";
 import { checkToken, getBattleDetail, getBattleList } from "./splatnet3.ts";
 import { BattleExporter, VsHistoryDetail } from "./types.ts";
 import { Cache, FileCache, MemoryCache } from "./cache.ts";
 import { StatInkExporter } from "./exporter/stat.ink.ts";
-import { readline } from "./utils.ts";
+import { readline, showError } from "./utils.ts";
 import { FileExporter } from "./exporter/file.ts";
 
 type Opts = {
@@ -149,79 +148,72 @@ Options:
       : undefined;
     const exporters = await this.getExporters();
 
-    try {
-      if (!this.state.loginState?.sessionToken) {
-        const sessionToken = await loginManually();
+    if (!this.state.loginState?.sessionToken) {
+      const sessionToken = await loginManually();
 
-        await this.writeState({
-          ...this.state,
-          loginState: {
-            ...this.state.loginState,
-            sessionToken,
-          },
-        });
-      }
-      const sessionToken = this.state.loginState!.sessionToken!;
-
-      console.log("Checking token...");
-      if (!await checkToken(this.state)) {
-        console.log("Token expired, refetch tokens.");
-
-        const { webServiceToken, userCountry, userLang } = await getGToken({
-          fApi: this.state.fGen,
+      await this.writeState({
+        ...this.state,
+        loginState: {
+          ...this.state.loginState,
           sessionToken,
-        });
-
-        const bulletToken = await getBulletToken({
-          webServiceToken,
-          userLang,
-          userCountry,
-          appUserAgent: this.state.appUserAgent,
-        });
-
-        await this.writeState({
-          ...this.state,
-          loginState: {
-            ...this.state.loginState,
-            gToken: webServiceToken,
-            bulletToken,
-          },
-          userLang: this.state.userLang ?? userLang,
-          userCountry: this.state.userCountry ?? userCountry,
-        });
-      }
-
-      const fetcher = new BattleFetcher({
-        cache: new FileCache(this.state.cacheDir),
-        state: this.state,
+        },
       });
-      console.log("Fetching battle list...");
-      const battleList = await getBattleList(this.state);
+    }
+    const sessionToken = this.state.loginState!.sessionToken!;
 
-      await this.prepareBattles({
-        bar,
-        battleList,
-        fetcher,
-        exporters,
+    console.log("Checking token...");
+    if (!await checkToken(this.state)) {
+      console.log("Token expired, refetch tokens.");
+
+      const { webServiceToken, userCountry, userLang } = await getGToken({
+        fApi: this.state.fGen,
+        sessionToken,
       });
 
-      const allProgress: Record<string, Progress> = {};
-      const redraw = (name: string, progress: Progress) => {
-        allProgress[name] = progress;
-        bar?.render(
-          Object.entries(allProgress).map(([name, progress]) => ({
-            completed: progress.current,
-            total: progress.total,
-            text: name,
-          })),
-        );
-      };
-      const stats: Record<string, number> = Object.fromEntries(
-        exporters.map((e) => [e.name, 0]),
+      const bulletToken = await getBulletToken({
+        webServiceToken,
+        userLang,
+        userCountry,
+        appUserAgent: this.state.appUserAgent,
+      });
+
+      await this.writeState({
+        ...this.state,
+        loginState: {
+          ...this.state.loginState,
+          gToken: webServiceToken,
+          bulletToken,
+        },
+        userLang: this.state.userLang ?? userLang,
+        userCountry: this.state.userCountry ?? userCountry,
+      });
+    }
+
+    const fetcher = new BattleFetcher({
+      cache: new FileCache(this.state.cacheDir),
+      state: this.state,
+    });
+    console.log("Fetching battle list...");
+    const battleList = await getBattleList(this.state);
+
+    const allProgress: Record<string, Progress> = {};
+    const redraw = (name: string, progress: Progress) => {
+      allProgress[name] = progress;
+      bar?.render(
+        Object.entries(allProgress).map(([name, progress]) => ({
+          completed: progress.current,
+          total: progress.total,
+          text: name,
+        })),
       );
+    };
+    const stats: Record<string, number> = Object.fromEntries(
+      exporters.map((e) => [e.name, 0]),
+    );
 
-      await Promise.all(
-        exporters.map((e) =>
+    await Promise.all(
+      exporters.map((e) =>
+        showError(
           this.exportBattleList({
             fetcher,
             exporter: e,
@@ -230,64 +222,15 @@ Options:
           })
             .then((count) => {
               stats[e.name] = count;
-            })
-            .catch((err) => {
-              console.error(`\nFailed to export ${e.name}:`, err);
-            })
-        ),
-      );
-
-      console.log("\nDone.", stats);
-    } catch (e) {
-      if (e instanceof APIError) {
-        console.error(`APIError: ${e.message}`, e.response, e.json);
-      } else {
-        console.error(e);
-      }
-    }
-  }
-  async prepareBattles({
-    bar,
-    exporters,
-    battleList,
-    fetcher,
-  }: {
-    bar?: MultiProgressBar;
-    exporters: BattleExporter<VsHistoryDetail>[];
-    battleList: string[];
-    fetcher: BattleFetcher;
-  }) {
-    let prepared = 0;
-    bar?.render([{
-      text: "preparing",
-      completed: prepared,
-      total: battleList.length,
-    }]);
-
-    const latestBattleTimes = await Promise.all(
-      exporters.map((e) => e.getLatestBattleTime()),
-    );
-    const latestBattleTime = latestBattleTimes.reduce(
-      (a, b) => a > b ? b : a,
-      new Date(0),
+            }),
+        )
+          .catch((err) => {
+            console.error(`\nFailed to export to ${e.name}:`, err);
+          })
+      ),
     );
 
-    for (const battleId of battleList) {
-      const battle = await fetcher.fetchBattle(battleId);
-      const playedTime = new Date(battle.playedTime);
-
-      prepared += 1;
-      bar?.render([{
-        text: "preparing",
-        completed: prepared,
-        total: battleList.length,
-      }]);
-
-      // if battle is older than latest battle, break
-      if (playedTime <= latestBattleTime) {
-        break;
-      }
-    }
+    console.log("\nDone.", stats);
   }
   /**
    * Export battle list.
@@ -310,27 +253,14 @@ Options:
       onStep?: (progress: Progress) => void;
     },
   ): Promise<number> {
-    const latestBattleTime = await exporter.getLatestBattleTime();
-    let toUpload = 0;
     let exported = 0;
 
-    for (const battleId of battleList) {
-      const battle = await fetcher.fetchBattle(battleId);
-      const playedTime = new Date(battle.playedTime);
+    onStep?.({
+      current: 0,
+      total: 1,
+    });
 
-      // if battle is older than latest battle, break
-      if (playedTime <= latestBattleTime) {
-        break;
-      }
-
-      toUpload += 1;
-    }
-
-    const workQueue = battleList.slice(0, toUpload).reverse();
-
-    if (workQueue.length === 0) {
-      return 0;
-    }
+    const workQueue = [...await exporter.notExported(battleList)].reverse();
 
     const step = async (battle: string) => {
       const detail = await fetcher.fetchBattle(battle);
@@ -375,4 +305,4 @@ const app = new App({
   ...DEFAULT_OPTS,
   ...parseArgs(Deno.args),
 });
-await app.run();
+await showError(app.run());
