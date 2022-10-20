@@ -58,7 +58,7 @@ export async function loginManually(): Promise<string> {
     'Log in, right click the "Select this account" button, copy the link address, and paste it below:',
   );
 
-  const login = await readline();
+  const login = (await readline()).trim();
   if (!login) {
     throw new Error("No login URL provided");
   }

@@ -9,8 +9,16 @@ export type State = {
   appUserAgent?: string;
   userLang?: string;
   userCountry?: string;
+
+  cacheDir: string;
+
+  // Exporter config
+  statInkApiKey?: string;
+  fileExportPath: string;
 };
 
 export const DEFAULT_STATE: State = {
+  cacheDir: "./cache",
   fGen: "https://api.imink.app/f",
+  fileExportPath: "./export",
 };

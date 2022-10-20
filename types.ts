@@ -37,6 +37,31 @@ export type HistoryGroups = {
     };
   }[];
 };
+export type VsHistoryDetail = {
+  id: string;
+  vsRule: {
+    name: string;
+    id: string;
+    rule: "TURF_WAR" | "AREA" | "LOFT" | "GOAL" | "CLAM" | "TRI_COLOR";
+  };
+  vsMode: {
+    id: string;
+    mode: "REGULAR" | "BANKARA" | "PRIVATE" | "FEST";
+  };
+  vsStage: {
+    id: string;
+    name: string;
+    image: Image;
+  };
+  playedTime: string; // 2021-01-01T00:00:00Z
+};
+
+export type BattleExporter<D> = {
+  name: string;
+  getLatestBattleTime: () => Promise<Date>;
+  exportBattle: (detail: D) => Promise<void>;
+};
+
 export type RespMap = {
   [Queries.HomeQuery]: {
     currentPlayer: {
@@ -76,7 +101,9 @@ export type RespMap = {
       historyGroups: HistoryGroups;
     };
   };
-  [Queries.VsHistoryDetailQuery]: Record<never, never>;
+  [Queries.VsHistoryDetailQuery]: {
+    vsHistoryDetail: VsHistoryDetail;
+  };
   [Queries.CoopHistoryQuery]: Record<never, never>;
   [Queries.CoopHistoryDetailQuery]: Record<never, never>;
 };

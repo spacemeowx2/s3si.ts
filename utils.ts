@@ -23,6 +23,7 @@ export async function readline() {
       return line;
     }
   }
+  throw new Error("EOF");
 }
 
 type PromiseReturnType<T> = T extends () => Promise<infer R> ? R : never;
