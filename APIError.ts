@@ -2,7 +2,7 @@ export class APIError extends Error {
   response: Response;
   json: unknown;
   constructor(
-    { response, message }: {
+    { response, json, message }: {
       response: Response;
       json?: unknown;
       message?: string;
@@ -10,5 +10,6 @@ export class APIError extends Error {
   ) {
     super(message);
     this.response = response;
+    this.json = json;
   }
 }
