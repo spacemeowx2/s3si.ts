@@ -12,14 +12,14 @@ import { FileExporter } from "./exporter/file.ts";
 type Opts = {
   profilePath: string;
   exporter: string;
-  progress: boolean;
+  noProgress: boolean;
   help?: boolean;
 };
 
 const DEFAULT_OPTS: Opts = {
   profilePath: "./profile.json",
   exporter: "stat.ink",
-  progress: true,
+  noProgress: false,
   help: false,
 };
 
@@ -79,7 +79,9 @@ class App {
 
 Options:
     --profile-path <path>, -p    Path to config file (default: ./profile.json)
-    --exporter <exporter>, -e    Exporter to use (default: stat.ink), available: stat.ink,file
+    --exporter <exporter>, -e    Exporter list to use (default: stat.ink)
+                                 Multiple exporters can be separated by commas
+                                 (e.g. "stat.ink,file")
     --no-progress, -n            Disable progress bar
     --help                       Show this help message and exit`,
       );
@@ -139,7 +141,7 @@ Options:
   async run() {
     await this.readState();
 
-    const bar = this.opts.progress
+    const bar = !this.opts.noProgress
       ? new MultiProgressBar({
         title: "Export battles",
       })
@@ -213,12 +215,12 @@ Options:
       };
       await Promise.all(
         exporters.map((e) =>
-          this.exportBattleList(
+          this.exportBattleList({
             fetcher,
-            e,
+            exporter: e,
             battleList,
-            (progress) => redraw(e.name, progress),
-          )
+            onStep: (progress) => redraw(e.name, progress),
+          })
         ),
       );
     } catch (e) {
@@ -238,10 +240,17 @@ Options:
    * @param onStep Callback function called when a battle is exported
    */
   async exportBattleList(
-    fetcher: BattleFetcher,
-    exporter: BattleExporter<VsHistoryDetail>,
-    battleList: string[],
-    onStep?: (progress: Progress) => void,
+    {
+      fetcher,
+      exporter,
+      battleList,
+      onStep
+    }: {
+      fetcher: BattleFetcher,
+      exporter: BattleExporter<VsHistoryDetail>,
+      battleList: string[],
+      onStep?: (progress: Progress) => void,
+    }
   ) {
     const workQueue = battleList;
     let done = 0;
@@ -269,13 +278,12 @@ Options:
 const parseArgs = (args: string[]) => {
   const parsed = flags.parse(args, {
     string: ["profilePath", "exporter"],
-    boolean: ["help", "progress"],
-    negatable: ["progress"],
+    boolean: ["help", "noProgress"],
     alias: {
       "help": "h",
       "profilePath": ["p", "profile-path"],
       "exporter": ["e"],
-      "progress": ["n"],
+      "noProgress": ["n", "no-progress"],
     },
     default: {
       progress: true,
