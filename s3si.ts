@@ -144,6 +144,7 @@ Options:
     const bar = !this.opts.noProgress
       ? new MultiProgressBar({
         title: "Export battles",
+        display: "[:bar] :text :percent :time eta: :eta :completed/:total",
       })
       : undefined;
     const exporters = await this.getExporters();
@@ -197,12 +198,14 @@ Options:
       console.log("Fetching battle list...");
       const battleList = await getBattleList(this.state);
 
-      const allProgress: Record<string, Progress> = Object.fromEntries(
-        exporters.map((i) => [i.name, {
-          current: 0,
-          total: 1,
-        }]),
-      );
+      await this.prepareBattles({
+        bar,
+        battleList,
+        fetcher,
+        exporters,
+      });
+
+      const allProgress: Record<string, Progress> = {};
       const redraw = (name: string, progress: Progress) => {
         allProgress[name] = progress;
         bar?.render(
@@ -213,6 +216,10 @@ Options:
           })),
         );
       };
+      const stats: Record<string, number> = Object.fromEntries(
+        exporters.map((e) => [e.name, 0]),
+      );
+
       await Promise.all(
         exporters.map((e) =>
           this.exportBattleList({
@@ -221,13 +228,64 @@ Options:
             battleList,
             onStep: (progress) => redraw(e.name, progress),
           })
+            .then((count) => {
+              stats[e.name] = count;
+            })
+            .catch((err) => {
+              console.error(`\nFailed to export ${e.name}:`, err);
+            })
         ),
       );
+
+      console.log("\nDone.", stats);
     } catch (e) {
       if (e instanceof APIError) {
         console.error(`APIError: ${e.message}`, e.response, e.json);
       } else {
         console.error(e);
+      }
+    }
+  }
+  async prepareBattles({
+    bar,
+    exporters,
+    battleList,
+    fetcher,
+  }: {
+    bar?: MultiProgressBar;
+    exporters: BattleExporter<VsHistoryDetail>[];
+    battleList: string[];
+    fetcher: BattleFetcher;
+  }) {
+    let prepared = 0;
+    bar?.render([{
+      text: "preparing",
+      completed: prepared,
+      total: battleList.length,
+    }]);
+
+    const latestBattleTimes = await Promise.all(
+      exporters.map((e) => e.getLatestBattleTime()),
+    );
+    const latestBattleTime = latestBattleTimes.reduce(
+      (a, b) => a > b ? b : a,
+      new Date(0),
+    );
+
+    for (const battleId of battleList) {
+      const battle = await fetcher.fetchBattle(battleId);
+      const playedTime = new Date(battle.playedTime);
+
+      prepared += 1;
+      bar?.render([{
+        text: "preparing",
+        completed: prepared,
+        total: battleList.length,
+      }]);
+
+      // if battle is older than latest battle, break
+      if (playedTime <= latestBattleTime) {
+        break;
       }
     }
   }
@@ -244,34 +302,55 @@ Options:
       fetcher,
       exporter,
       battleList,
-      onStep
+      onStep,
     }: {
-      fetcher: BattleFetcher,
-      exporter: BattleExporter<VsHistoryDetail>,
-      battleList: string[],
-      onStep?: (progress: Progress) => void,
+      fetcher: BattleFetcher;
+      exporter: BattleExporter<VsHistoryDetail>;
+      battleList: string[];
+      onStep?: (progress: Progress) => void;
+    },
+  ): Promise<number> {
+    const latestBattleTime = await exporter.getLatestBattleTime();
+    let toUpload = 0;
+    let exported = 0;
+
+    for (const battleId of battleList) {
+      const battle = await fetcher.fetchBattle(battleId);
+      const playedTime = new Date(battle.playedTime);
+
+      // if battle is older than latest battle, break
+      if (playedTime <= latestBattleTime) {
+        break;
+      }
+
+      toUpload += 1;
     }
-  ) {
-    const workQueue = battleList;
-    let done = 0;
+
+    const workQueue = battleList.slice(0, toUpload).reverse();
+
+    if (workQueue.length === 0) {
+      return 0;
+    }
 
     const step = async (battle: string) => {
       const detail = await fetcher.fetchBattle(battle);
       await exporter.exportBattle(detail);
-      done += 1;
+      exported += 1;
       onStep?.({
-        current: done,
+        current: exported,
         total: workQueue.length,
       });
     };
 
     onStep?.({
-      current: done,
+      current: exported,
       total: workQueue.length,
     });
     for (const battle of workQueue) {
       await step(battle);
     }
+
+    return exported;
   }
 }
 

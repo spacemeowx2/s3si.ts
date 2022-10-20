@@ -1,7 +1,6 @@
 import { BattleExporter, VsHistoryDetail } from "../types.ts";
 import { datetime, path } from "../deps.ts";
 import { NSOAPP_VERSION, S3SI_VERSION } from "../constant.ts";
-
 const FILENAME_FORMAT = "yyyyMMddHHmmss";
 
 type FileExporterType = {
@@ -40,6 +39,8 @@ export class FileExporter implements BattleExporter<VsHistoryDetail> {
     await Deno.writeTextFile(filepath, JSON.stringify(body));
   }
   async getLatestBattleTime() {
+    await Deno.mkdir(this.exportPath, { recursive: true });
+
     const dirs: Deno.DirEntry[] = [];
     for await (const i of Deno.readDir(this.exportPath)) dirs.push(i);
 

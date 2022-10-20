@@ -2,3 +2,4 @@
 .vscode/
 export/
 cache/
+.DS_Store
