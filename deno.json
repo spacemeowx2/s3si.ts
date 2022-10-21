@@ -1,0 +1,19 @@
+{
+  "tasks": {
+    "check": "deno check s3si.ts",
+    "fmt": "deno fmt",
+    "fmt:check": "deno fmt --check",
+    "lint": "deno lint",
+    "run": "deno run -A"
+  },
+  "fmt": {
+    "files": {
+      "exclude": [
+        "export/",
+        "cache/",
+        ".vscode/",
+        "profile.json"
+      ]
+    }
+  }
+}

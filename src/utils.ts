@@ -1,6 +1,6 @@
 import { APIError } from "./APIError.ts";
 import { S3SI_NAMESPACE } from "./constant.ts";
-import { base64, io, uuid } from "./deps.ts";
+import { base64, io, uuid } from "../deps.ts";
 
 const stdinLines = io.readLines(Deno.stdin);
 
