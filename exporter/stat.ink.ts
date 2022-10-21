@@ -169,7 +169,6 @@ export class StatInkExporter implements BattleExporter<VsBattle> {
   ): Promise<StatInkPostBody> {
     const {
       knockout,
-      vsMode: { mode },
       vsRule: { rule },
       myTeam,
       otherTeams,
@@ -218,10 +217,7 @@ export class StatInkExporter implements BattleExporter<VsBattle> {
       result.special = self.result.special;
     }
 
-    if (mode === "FEST") {
-      if (!festMatch) {
-        throw new TypeError("festMatch is null");
-      }
+    if (festMatch) {
       result.fest_dragon =
         SPLATNET3_STATINK_MAP.DRAGON[festMatch.dragonMatchType];
       result.clout_change = festMatch.contribution;
