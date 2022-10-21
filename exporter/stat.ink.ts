@@ -164,8 +164,7 @@ export class StatInkExporter implements BattleExporter<VsBattle> {
     return result;
   }
   async mapBattle(
-    { lastInChallenge, bankaraMatchChallenge, listNode, detail: vsDetail }:
-      VsBattle,
+    { bankaraMatchChallenge, listNode, detail: vsDetail }: VsBattle,
   ): Promise<StatInkPostBody> {
     const {
       knockout,
@@ -257,12 +256,10 @@ export class StatInkExporter implements BattleExporter<VsBattle> {
         result.rank_after = result.rank_before;
         result.rank_after_s_plus = result.rank_before_s_plus;
       }
-      if (lastInChallenge) {
-        result.challenge_win = bankaraMatchChallenge.winCount;
-        result.challenge_lose = bankaraMatchChallenge.loseCount;
-        result.rank_exp_change = bankaraMatchChallenge.earnedUdemaePoint ??
-          undefined;
-      }
+      result.challenge_win = bankaraMatchChallenge.winCount;
+      result.challenge_lose = bankaraMatchChallenge.loseCount;
+      result.rank_exp_change = bankaraMatchChallenge.earnedUdemaePoint ??
+        undefined;
     }
 
     return result;

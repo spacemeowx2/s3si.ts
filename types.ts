@@ -93,7 +93,6 @@ export type VsRule =
 export type VsBattle = {
   listNode: null | BattleListNode;
   bankaraMatchChallenge: null | BankaraMatchChallenge;
-  lastInChallenge: null | boolean;
   detail: VsHistoryDetail;
 };
 export type VsHistoryDetail = {

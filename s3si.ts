@@ -86,20 +86,16 @@ class BattleFetcher {
       return {
         bankaraMatchChallenge: null,
         listNode: null,
-        lastInChallenge: null,
       };
     }
 
     const { bankaraMatchChallenge } = group;
     const listNode = group.historyDetails.nodes.find((i) => i._bid === bid) ??
       null;
-    const idx = group.historyDetails.nodes.indexOf(listNode!);
 
     return {
       bankaraMatchChallenge,
       listNode,
-      lastInChallenge: (bankaraMatchChallenge?.state !== "INPROGRESS") &&
-        (idx === 0),
     };
   }
   async getBattleDetail(id: string): Promise<VsHistoryDetail> {
@@ -143,7 +139,7 @@ class App {
   constructor(public opts: Opts) {
     if (this.opts.help) {
       console.log(
-        `Usage: deno run --allow-net --allow-read --allow-write ${Deno.mainModule} [options]
+        `Usage: deno run -A ${Deno.mainModule} [options]
 
 Options:
     --profile-path <path>, -p    Path to config file (default: ./profile.json)
