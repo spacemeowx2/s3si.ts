@@ -254,6 +254,9 @@ export class StatInkExporter implements BattleExporter<VsBattle> {
         [result.rank_after, result.rank_after_s_plus] = parseUdemae(
           bankaraMatchChallenge.udemaeAfter,
         );
+      } else {
+        result.rank_after = result.rank_before;
+        result.rank_after_s_plus = result.rank_before_s_plus;
       }
       if (lastInChallenge) {
         result.challenge_win = bankaraMatchChallenge.winCount;
