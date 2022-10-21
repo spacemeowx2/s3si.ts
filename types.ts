@@ -37,6 +37,34 @@ export type HistoryGroups = {
     };
   }[];
 };
+export type VsPlayer = {
+  id: string;
+  nameId: string | null;
+  name: string;
+  isMyself: boolean;
+  byname: string;
+  weapon: {
+    id: string;
+    subWeapon: {
+      id: string;
+    };
+  };
+  species: "INKLING" | "OCTOLING";
+  result: {
+    kill: number;
+    death: number;
+    assist: number;
+    special: number;
+  } | null;
+  paint: number;
+};
+export type VsTeam = {
+  players: VsPlayer[];
+  result: {
+    paintRatio: null | number;
+    score: null | number;
+  };
+};
 export type VsHistoryDetail = {
   id: string;
   vsRule: {
@@ -54,6 +82,23 @@ export type VsHistoryDetail = {
     image: Image;
   };
   playedTime: string; // 2021-01-01T00:00:00Z
+
+  bankaraMatch: {
+    earnedUdemaePoint: number;
+    mode: "OPEN" | "CHALLENGE";
+  } | null;
+  festMatch: {
+    dragonMatchType: "NORMAL" | "DECUPLE" | "DRAGON" | "DOUBLE_DRAGON";
+    contribution: number;
+    myFestPower: number | null;
+  } | null;
+
+  myTeam: VsTeam;
+  otherTeams: VsTeam[];
+  judgement: "LOSE" | "WIN" | "DEEMED_LOSE" | "EXEMPTED_LOSE";
+  knockout: null | undefined | "NEITHER" | "WIN" | "LOSE";
+  awards: { name: string; rank: string }[];
+  duration: number;
 };
 
 export type BattleExporter<D> = {
@@ -126,17 +171,29 @@ export type StatInkPlayer = {
   me: "yes" | "no";
   rank_in_team: number;
   name: string;
-  number: string;
+  number: string | undefined;
   splashtag_title: string;
   weapon: string;
   inked: number;
-  kill: number;
-  assist: number;
-  kill_or_assist: number;
-  death: number;
-  special: number;
+  kill?: number;
+  assist?: number;
+  kill_or_assist?: number;
+  death?: number;
+  special?: number;
   disconnected: "yes" | "no";
 };
+
+export type StatInkStage = {
+  key: string;
+  aliases: string[];
+  name: Record<string, string>;
+  short_name: Record<string, string>;
+  area: number;
+  release_at: {
+    time: number;
+    iso8601: string;
+  };
+}[];
 
 export type StatInkPostBody = {
   test: "yes" | "no";
@@ -152,34 +209,34 @@ export type StatInkPostBody = {
   stage: string;
   weapon: string;
   result: "win" | "lose" | "draw" | "exempted_lose";
-  knockout: "yes" | "no" | null; // for TW, set null or not sending
-  rank_in_team: 1 | 2 | 3 | 4; // position in scoreboard
-  kill: number;
-  assist: number;
-  kill_or_assist: number; // equals to kill + assist if you know them
-  death: number;
-  special: number; // use count
+  knockout?: "yes" | "no"; // for TW, set null or not sending
+  rank_in_team: number; // position in scoreboard
+  kill?: number;
+  assist?: number;
+  kill_or_assist?: number; // equals to kill + assist if you know them
+  death?: number;
+  special?: number; // use count
   inked: number; // not including bonus
   medals: string[]; // 0-3 elements
-  our_team_inked: number; // TW, not including bonus
-  their_team_inked: number; // TW, not including bonus
-  our_team_percent: number; // TW
-  their_team_percent: number; // TW
-  our_team_count: number; // Anarchy
-  their_team_count: number; // Anarchy
-  level_before: number;
-  level_after: number;
-  rank_before: string; // one of c- ... s+, lowercase only /^[abcs][+-]?$/ except s-
-  rank_before_s_plus: number;
-  rank_before_exp: number;
-  rank_after: string;
-  rank_after_s_plus: number;
-  rank_after_exp: number;
-  rank_exp_change: number; // Set rank_after_exp - rank_before_exp. It can be negative. Set only this value if you don't know their exact values.
-  rank_up_battle: "yes" | "no"; // Set "yes" if now "Rank-up Battle" mode.
-  challenge_win: number; // Win count for Anarchy (Series) If rank_up_battle is truthy("yes"), the value range is limited to [0, 3].
-  challenge_lose: number;
-  fest_power: number; // Splatfest Power (Pro)
+  our_team_inked?: number; // TW, not including bonus
+  their_team_inked?: number; // TW, not including bonus
+  our_team_percent?: number; // TW
+  their_team_percent?: number; // TW
+  our_team_count?: number; // Anarchy
+  their_team_count?: number; // Anarchy
+  level_before?: number;
+  level_after?: number;
+  rank_before?: string; // one of c- ... s+, lowercase only /^[abcs][+-]?$/ except s-
+  rank_before_s_plus?: number;
+  rank_before_exp?: number;
+  rank_after?: string;
+  rank_after_s_plus?: number;
+  rank_after_exp?: number;
+  rank_exp_change?: number; // Set rank_after_exp - rank_before_exp. It can be negative. Set only this value if you don't know their exact values.
+  rank_up_battle?: "yes" | "no"; // Set "yes" if now "Rank-up Battle" mode.
+  challenge_win?: number; // Win count for Anarchy (Series) If rank_up_battle is truthy("yes"), the value range is limited to [0, 3].
+  challenge_lose?: number;
+  fest_power?: number; // Splatfest Power (Pro)
   fest_dragon?:
     | "10x"
     | "decuple"
@@ -187,9 +244,9 @@ export type StatInkPostBody = {
     | "dragon"
     | "333x"
     | "double_dragon";
-  clout_before: number; // Splatfest Clout, before the battle
-  clout_after: number; // Splatfest Clout, after the battle
-  clout_change: number; // Splatfest Clout, equals to clout_after - clout_before if you know them
+  clout_before?: number; // Splatfest Clout, before the battle
+  clout_after?: number; // Splatfest Clout, after the battle
+  clout_change?: number; // Splatfest Clout, equals to clout_after - clout_before if you know them
   cash_before?: number;
   cash_after?: number;
   our_team_players: StatInkPlayer[];
