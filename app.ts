@@ -25,7 +25,7 @@ type Opts = {
   help?: boolean;
 };
 
-const DEFAULT_OPTS: Opts = {
+export const DEFAULT_OPTS: Opts = {
   profilePath: "./profile.json",
   exporter: "stat.ink",
   noProgress: false,
@@ -133,7 +133,7 @@ type Progress = {
   total: number;
 };
 
-class App {
+export class App {
   state: State = DEFAULT_STATE;
 
   constructor(public opts: Opts) {
@@ -351,7 +351,7 @@ Options:
   }
 }
 
-const parseArgs = (args: string[]) => {
+export const parseArgs = (args: string[]) => {
   const parsed = flags.parse(args, {
     string: ["profilePath", "exporter"],
     boolean: ["help", "noProgress"],
@@ -367,9 +367,3 @@ const parseArgs = (args: string[]) => {
   });
   return parsed;
 };
-
-const app = new App({
-  ...DEFAULT_OPTS,
-  ...parseArgs(Deno.args),
-});
-await showError(app.run());
