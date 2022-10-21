@@ -47,7 +47,7 @@ export class FileExporter implements BattleExporter<VsBattle> {
       const isFile = await Deno.stat(filepath).then((f) => f.isFile).catch(() =>
         false
       );
-      if (isFile) {
+      if (!isFile) {
         out.push(id);
       }
     }
