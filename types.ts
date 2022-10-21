@@ -35,9 +35,9 @@ export type BankaraMatchChallenge = {
   maxLoseCount: number;
   state: "FAILED" | "SUCCEEDED" | "INPROGRESS";
   isPromo: boolean;
-  isUdemaeUp: boolean;
+  isUdemaeUp: boolean | null;
   udemaeAfter: string | null;
-  earnedUdemaePoint: number;
+  earnedUdemaePoint: number | null;
 };
 export type BattleListNode = {
   // battle id added after fetch
@@ -76,7 +76,7 @@ export type VsPlayer = {
 };
 export type VsTeam = {
   players: VsPlayer[];
-  result: {
+  result: null | {
     paintRatio: null | number;
     score: null | number;
   };

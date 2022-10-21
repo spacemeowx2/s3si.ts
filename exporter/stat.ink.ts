@@ -224,8 +224,8 @@ export class StatInkExporter implements BattleExporter<VsBattle> {
       result.fest_power = festMatch.myFestPower ?? undefined;
     }
     if (rule === "TURF_WAR") {
-      result.our_team_percent = (myTeam.result.paintRatio ?? 0) * 100;
-      result.their_team_percent = (otherTeams?.[0].result.paintRatio ?? 0) *
+      result.our_team_percent = (myTeam?.result?.paintRatio ?? 0) * 100;
+      result.their_team_percent = (otherTeams?.[0]?.result?.paintRatio ?? 0) *
         100;
       result.our_team_inked = myTeam.players.reduce(
         (acc, i) => acc + i.paint,
@@ -236,13 +236,12 @@ export class StatInkExporter implements BattleExporter<VsBattle> {
         0,
       );
     }
-    if (bankaraMatch) {
-      result.our_team_count = myTeam.result.score ?? undefined;
-      result.their_team_count = otherTeams?.[0].result.score ?? undefined;
-
-      result.knockout = (!knockout || knockout === "NEITHER") ? "no" : "yes";
-      result.rank_exp_change = bankaraMatch.earnedUdemaePoint;
+    if (knockout) {
+      result.knockout = knockout === "NEITHER" ? "no" : "yes";
     }
+    result.our_team_count = myTeam?.result?.score ?? undefined;
+    result.their_team_count = otherTeams?.[0]?.result?.score ?? undefined;
+    result.rank_exp_change = bankaraMatch?.earnedUdemaePoint;
     if (listNode) {
       [result.rank_before, result.rank_before_s_plus] = parseUdemae(
         listNode.udemae,
@@ -261,7 +260,8 @@ export class StatInkExporter implements BattleExporter<VsBattle> {
       if (lastInChallenge) {
         result.challenge_win = bankaraMatchChallenge.winCount;
         result.challenge_lose = bankaraMatchChallenge.loseCount;
-        result.rank_exp_change = bankaraMatchChallenge.earnedUdemaePoint;
+        result.rank_exp_change = bankaraMatchChallenge.earnedUdemaePoint ??
+          undefined;
       }
     }
 
