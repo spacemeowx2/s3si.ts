@@ -196,7 +196,7 @@ export type StatInkStage = {
 }[];
 
 export type StatInkPostBody = {
-  test: "yes" | "no";
+  test?: "yes" | "no";
   uuid: string;
   lobby:
     | "regular"
@@ -254,7 +254,7 @@ export type StatInkPostBody = {
 
   agent: string;
   agent_version: string;
-  agent_variables: Record<string, string>;
+  agent_variables?: Record<string, string>;
   automated: "yes";
   start_at: number; // the battle starts at e.g. 1599577200
   end_at: number;

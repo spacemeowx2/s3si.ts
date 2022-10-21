@@ -70,7 +70,7 @@ export class StatInkExporter implements BattleExporter<VsHistoryDetail> {
     };
   }
   async exportBattle(detail: VsHistoryDetail) {
-    const body = this.mapBattle(detail);
+    const body = await this.mapBattle(detail);
 
     const resp = await fetch("https://stat.ink/api/v3/battle", {
       method: "POST",
@@ -81,16 +81,17 @@ export class StatInkExporter implements BattleExporter<VsHistoryDetail> {
       body: msgpack.encode(body),
     });
 
+    const json: {
+      error?: unknown;
+    } = await resp.json().catch(() => ({}));
+
     if (resp.status !== 200 && resp.status !== 201) {
       throw new APIError({
         response: resp,
         message: "Failed to export battle",
+        json,
       });
     }
-
-    const json: {
-      error?: unknown;
-    } = await resp.json();
 
     if (json.error) {
       throw new APIError({
@@ -198,7 +199,6 @@ export class StatInkExporter implements BattleExporter<VsHistoryDetail> {
     const startedAt = Math.floor(new Date(playedTime).getTime() / 1000);
 
     const result: StatInkPostBody = {
-      test: "yes",
       uuid: await battleId(vsDetail.id),
       lobby: this.mapLobby(vsDetail),
       rule: SPLATNET3_STATINK_MAP.RULE[vsDetail.vsRule.rule],
@@ -218,7 +218,7 @@ export class StatInkExporter implements BattleExporter<VsHistoryDetail> {
 
       agent: AGENT_NAME,
       agent_version: S3SI_VERSION,
-      agent_variables: {},
+      agent_variables: undefined,
       automated: "yes",
       start_at: startedAt,
       end_at: startedAt + vsDetail.duration,
@@ -231,6 +231,8 @@ export class StatInkExporter implements BattleExporter<VsHistoryDetail> {
       result.kill_or_assist = self.result.kill;
       result.assist = self.result.assist;
       result.kill = result.kill_or_assist - result.assist;
+      result.death = self.result.death;
+      result.special = self.result.special;
     }
 
     if (mode === "FEST") {

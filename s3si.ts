@@ -272,12 +272,14 @@ Options:
       });
     };
 
-    onStep?.({
-      current: exported,
-      total: workQueue.length,
-    });
-    for (const battle of workQueue) {
-      await step(battle);
+    if (workQueue.length > 0) {
+      onStep?.({
+        current: exported,
+        total: workQueue.length,
+      });
+      for (const battle of workQueue) {
+        await step(battle);
+      }
     }
 
     return exported;
