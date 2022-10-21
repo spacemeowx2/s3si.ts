@@ -211,9 +211,6 @@ export class StatInkExporter implements BattleExporter<VsBattle> {
     };
 
     if (self.result) {
-      if (!bankaraMatch) {
-        throw new TypeError("bankaraMatch is null");
-      }
       result.kill_or_assist = self.result.kill;
       result.assist = self.result.assist;
       result.kill = result.kill_or_assist - result.assist;
