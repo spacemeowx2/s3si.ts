@@ -9,6 +9,5 @@ export * as io from "https://deno.land/std@0.160.0/io/mod.ts";
 export * as uuid from "https://deno.land/std@0.160.0/uuid/mod.ts";
 export * as msgpack from "https://deno.land/x/msgpack@v1.4/mod.ts";
 export * as path from "https://deno.land/std@0.160.0/path/mod.ts";
-export * as datetime from "https://deno.land/std@0.160.0/datetime/mod.ts";
 export { MultiProgressBar } from "https://deno.land/x/progress@v1.2.8/mod.ts";
 export { Mutex } from "https://deno.land/x/semaphore@v1.1.1/mod.ts";

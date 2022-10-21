@@ -1,7 +1,6 @@
 import { BattleExporter, VsBattle } from "../types.ts";
-import { datetime, path } from "../deps.ts";
+import { base64, path } from "../deps.ts";
 import { NSOAPP_VERSION, S3SI_VERSION } from "../constant.ts";
-const FILENAME_FORMAT = "yyyyMMddHHmmss";
 
 type FileExporterType = {
   type: "VS" | "COOP";
@@ -15,17 +14,24 @@ type FileExporterType = {
  * Exporter to file.
  *
  * This is useful for debugging. It will write each battle detail to a file.
- * Timestamp is used as filename. Example: 2021-01-01T00:00:00.000Z.json
+ * Timestamp is used as filename. Example: 20210101T000000Z.json
  */
 export class FileExporter implements BattleExporter<VsBattle> {
   name = "file";
   constructor(private exportPath: string) {
   }
+  getFilenameById(id: string) {
+    const fullId = base64.decode(id);
+    const ts = new TextDecoder().decode(
+      fullId.slice(fullId.length - 52, fullId.length - 37),
+    );
+
+    return `${ts}Z.json`;
+  }
   async exportBattle(battle: VsBattle) {
     await Deno.mkdir(this.exportPath, { recursive: true });
 
-    const playedTime = new Date(battle.detail.playedTime);
-    const filename = `${datetime.format(playedTime, FILENAME_FORMAT)}.json`;
+    const filename = this.getFilenameById(battle.detail.id);
     const filepath = path.join(this.exportPath, filename);
 
     const body: FileExporterType = {
@@ -42,7 +48,7 @@ export class FileExporter implements BattleExporter<VsBattle> {
     const out: string[] = [];
 
     for (const id of list) {
-      const filename = `${id}.json`;
+      const filename = this.getFilenameById(id);
       const filepath = path.join(this.exportPath, filename);
       const isFile = await Deno.stat(filepath).then((f) => f.isFile).catch(() =>
         false
