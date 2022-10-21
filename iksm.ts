@@ -1,10 +1,10 @@
 import { CookieJar, wrapFetch } from "./deps.ts";
-import { cache, readline, retry, urlBase64Encode } from "./utils.ts";
+import { readline, retry, urlBase64Encode } from "./utils.ts";
 import {
   DEFAULT_APP_USER_AGENT,
   NSOAPP_VERSION,
-  SPLATNET3_URL,
   USERAGENT,
+  WEB_VIEW_VERSION,
 } from "./constant.ts";
 import { APIError } from "./APIError.ts";
 
@@ -231,31 +231,6 @@ export async function getGToken(
   };
 }
 
-async function _getWebViewVer(): Promise<string> {
-  const splatnet3Home = await (await fetch(SPLATNET3_URL)).text();
-
-  const mainJS = /src="(\/.*?\.js)"/.exec(splatnet3Home)?.[1];
-
-  if (!mainJS) {
-    throw new Error("No main.js found");
-  }
-
-  const mainJSBody = await (await fetch(SPLATNET3_URL + mainJS)).text();
-
-  const revision = /"([0-9a-f]{40})"/.exec(mainJSBody)?.[1];
-  const version = /revision_info_not_set.*?="(\d+\.\d+\.\d+)/.exec(mainJSBody)
-    ?.[1];
-
-  if (!version || !revision) {
-    throw new Error("No version and revision found");
-  }
-
-  const ver = `${version}-${revision.substring(0, 8)}`;
-
-  return ver;
-}
-export const getWebViewVer = cache(_getWebViewVer);
-
 export async function getBulletToken(
   {
     webServiceToken,
@@ -269,7 +244,6 @@ export async function getBulletToken(
     userCountry: string;
   },
 ) {
-  const webViewVer = await getWebViewVer();
   const resp = await fetch(
     "https://api.lp1.av5ja.srv.nintendo.net/api/bullet_tokens",
     {
@@ -278,7 +252,7 @@ export async function getBulletToken(
         "Content-Type": "application/json",
         "Accept-Language": userLang,
         "User-Agent": appUserAgent,
-        "X-Web-View-Ver": webViewVer,
+        "X-Web-View-Ver": WEB_VIEW_VERSION,
         "X-NACOUNTRY": userCountry,
         "Accept": "*/*",
         "Origin": "https://api.lp1.av5ja.srv.nintendo.net",

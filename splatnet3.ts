@@ -1,6 +1,9 @@
-import { getWebViewVer } from "./iksm.ts";
 import { State } from "./state.ts";
-import { DEFAULT_APP_USER_AGENT, SPLATNET3_ENDPOINT } from "./constant.ts";
+import {
+  DEFAULT_APP_USER_AGENT,
+  SPLATNET3_ENDPOINT,
+  WEB_VIEW_VERSION,
+} from "./constant.ts";
 import { APIError } from "./APIError.ts";
 import {
   BattleListType,
@@ -33,7 +36,7 @@ async function request<Q extends Queries>(
       "Authorization": `Bearer ${state.loginState?.bulletToken}`,
       "Accept-Language": state.userLang ?? "en-US",
       "User-Agent": state.appUserAgent ?? DEFAULT_APP_USER_AGENT,
-      "X-Web-View-Ver": await getWebViewVer(),
+      "X-Web-View-Ver": WEB_VIEW_VERSION,
       "Content-Type": "application/json",
       "Accept": "*/*",
       "Origin": "https://api.lp1.av5ja.srv.nintendo.net",
