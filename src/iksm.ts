@@ -1,4 +1,4 @@
-import { CookieJar, wrapFetch } from "./deps.ts";
+import { CookieJar, wrapFetch } from "../deps.ts";
 import { readline, retry, urlBase64Encode } from "./utils.ts";
 import {
   DEFAULT_APP_USER_AGENT,

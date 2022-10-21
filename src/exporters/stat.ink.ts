@@ -13,7 +13,7 @@ import {
   VsHistoryDetail,
   VsPlayer,
 } from "../types.ts";
-import { base64, msgpack } from "../deps.ts";
+import { base64, msgpack } from "../../deps.ts";
 import { APIError } from "../APIError.ts";
 import { battleId, cache } from "../utils.ts";
 

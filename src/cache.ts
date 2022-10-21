@@ -1,5 +1,5 @@
 // deno-lint-ignore-file require-await
-import { path } from "./deps.ts";
+import { path } from "../deps.ts";
 
 export type Cache = {
   read: <T>(key: string) => Promise<T | undefined>;

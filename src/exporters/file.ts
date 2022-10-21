@@ -1,5 +1,5 @@
 import { BattleExporter, VsBattle } from "../types.ts";
-import { base64, path } from "../deps.ts";
+import { base64, path } from "../../deps.ts";
 import { NSOAPP_VERSION, S3SI_VERSION } from "../constant.ts";
 
 type FileExporterType = {
