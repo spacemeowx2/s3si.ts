@@ -1,4 +1,4 @@
-*.json
+profile.json
 .vscode/
 export/
 cache/

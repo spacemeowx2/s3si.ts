@@ -2,7 +2,7 @@ import { BattleExporter, VsBattle } from "../types.ts";
 import { base64, path } from "../../deps.ts";
 import { NSOAPP_VERSION, S3SI_VERSION } from "../constant.ts";
 
-type FileExporterType = {
+export type FileExporterType = {
   type: "VS" | "COOP";
   nsoVersion: string;
   s3siVersion: string;
