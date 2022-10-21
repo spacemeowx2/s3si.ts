@@ -11,6 +11,15 @@ type FileExporterType = {
 };
 
 /**
+ * Don't save url in exported file
+ */
+function replacer(key: string, value: unknown): unknown {
+  return ["url", "maskImageUrl", "overlayImageUrl"].includes(key)
+    ? undefined
+    : value;
+}
+
+/**
  * Exporter to file.
  *
  * This is useful for debugging. It will write each battle detail to a file.
@@ -25,6 +34,10 @@ export class FileExporter implements BattleExporter<VsBattle> {
     const ts = new TextDecoder().decode(
       fullId.slice(fullId.length - 52, fullId.length - 37),
     );
+
+    if (!/\d{8}T\d{6}/.test(ts)) {
+      throw new Error("Invalid battle ID");
+    }
 
     return `${ts}Z.json`;
   }
@@ -42,7 +55,10 @@ export class FileExporter implements BattleExporter<VsBattle> {
       data: battle,
     };
 
-    await Deno.writeTextFile(filepath, JSON.stringify(body));
+    await Deno.writeTextFile(
+      filepath,
+      JSON.stringify(body, replacer),
+    );
   }
   async notExported(list: string[]): Promise<string[]> {
     const out: string[] = [];
