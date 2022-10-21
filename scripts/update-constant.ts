@@ -7,7 +7,7 @@ const ROOT_DIR = path.resolve(
   path.dirname(path.fromFileUrl(import.meta.url)),
   "..",
 );
-const CONSTANT_PATH = path.join(ROOT_DIR, "constant.ts");
+const CONSTANT_PATH = path.join(ROOT_DIR, "./src/constant.ts");
 const STORE_URL =
   "https://apps.apple.com/us/app/nintendo-switch-online/id1234806557";
 const SPLATNET3_URL = "https://api.lp1.av5ja.srv.nintendo.net";
