@@ -1,4 +1,4 @@
-import { BattleExporter, VsHistoryDetail } from "../types.ts";
+import { BattleExporter, VsBattle } from "../types.ts";
 import { datetime, path } from "../deps.ts";
 import { NSOAPP_VERSION, S3SI_VERSION } from "../constant.ts";
 const FILENAME_FORMAT = "yyyyMMddHHmmss";
@@ -8,7 +8,7 @@ type FileExporterType = {
   nsoVersion: string;
   s3siVersion: string;
   exportTime: string;
-  data: VsHistoryDetail;
+  data: VsBattle;
 };
 
 /**
@@ -17,14 +17,14 @@ type FileExporterType = {
  * This is useful for debugging. It will write each battle detail to a file.
  * Timestamp is used as filename. Example: 2021-01-01T00:00:00.000Z.json
  */
-export class FileExporter implements BattleExporter<VsHistoryDetail> {
+export class FileExporter implements BattleExporter<VsBattle> {
   name = "file";
   constructor(private exportPath: string) {
   }
-  async exportBattle(detail: VsHistoryDetail) {
+  async exportBattle(battle: VsBattle) {
     await Deno.mkdir(this.exportPath, { recursive: true });
 
-    const playedTime = new Date(detail.playedTime);
+    const playedTime = new Date(battle.detail.playedTime);
     const filename = `${datetime.format(playedTime, FILENAME_FORMAT)}.json`;
     const filepath = path.join(this.exportPath, filename);
 
@@ -33,7 +33,7 @@ export class FileExporter implements BattleExporter<VsHistoryDetail> {
       nsoVersion: NSOAPP_VERSION,
       s3siVersion: S3SI_VERSION,
       exportTime: new Date().toISOString(),
-      data: detail,
+      data: battle,
     };
 
     await Deno.writeTextFile(filepath, JSON.stringify(body));

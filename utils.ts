@@ -1,5 +1,6 @@
 import { APIError } from "./APIError.ts";
-import { base64, io } from "./deps.ts";
+import { S3SI_NAMESPACE } from "./constant.ts";
+import { base64, io, uuid } from "./deps.ts";
 
 const stdinLines = io.readLines(Deno.stdin);
 
@@ -79,4 +80,13 @@ export async function showError(p: Promise<void>) {
     }
     throw e;
   }
+}
+
+export function battleId(
+  id: string,
+  namespace = S3SI_NAMESPACE,
+): Promise<string> {
+  const fullId = base64.decode(id);
+  const tsUuid = fullId.slice(fullId.length - 52, fullId.length);
+  return uuid.v5.generate(namespace, tsUuid);
 }

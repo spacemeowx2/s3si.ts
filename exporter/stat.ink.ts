@@ -1,6 +1,5 @@
 import {
   AGENT_NAME,
-  S3SI_NAMESPACE,
   S3SI_VERSION,
   SPLATNET3_STATINK_MAP,
   USERAGENT,
@@ -10,30 +9,15 @@ import {
   StatInkPlayer,
   StatInkPostBody,
   StatInkStage,
+  VsBattle,
   VsHistoryDetail,
   VsPlayer,
 } from "../types.ts";
-import { base64, msgpack, uuid } from "../deps.ts";
+import { base64, msgpack } from "../deps.ts";
 import { APIError } from "../APIError.ts";
-import { cache } from "../utils.ts";
+import { battleId, cache } from "../utils.ts";
 
 const S3S_NAMESPACE = "b3a2dbf5-2c09-4792-b78c-00b548b70aeb";
-
-/**
- * generate s3s uuid
- *
- * @param id ID from SplatNet3
- * @returns id generated from s3s
- */
-function s3sUuid(id: string): Promise<string> {
-  const fullId = base64.decode(id);
-  const tsUuid = fullId.slice(fullId.length - 52, fullId.length);
-  return uuid.v5.generate(S3S_NAMESPACE, tsUuid);
-}
-
-function battleId(id: string): Promise<string> {
-  return uuid.v5.generate(S3SI_NAMESPACE, new TextEncoder().encode(id));
-}
 
 /**
  * Decode ID and get number after '-'
@@ -56,7 +40,7 @@ const getStage = cache(_getStage);
  *
  * This is the default exporter. It will upload each battle detail to stat.ink.
  */
-export class StatInkExporter implements BattleExporter<VsHistoryDetail> {
+export class StatInkExporter implements BattleExporter<VsBattle> {
   name = "stat.ink";
   constructor(private statInkApiKey: string) {
     if (statInkApiKey.length !== 43) {
@@ -69,8 +53,8 @@ export class StatInkExporter implements BattleExporter<VsHistoryDetail> {
       "Authorization": `Bearer ${this.statInkApiKey}`,
     };
   }
-  async exportBattle(detail: VsHistoryDetail) {
-    const body = await this.mapBattle(detail);
+  async exportBattle(battle: VsBattle) {
+    const body = await this.mapBattle(battle);
 
     const resp = await fetch("https://stat.ink/api/v3/battle", {
       method: "POST",
@@ -100,8 +84,6 @@ export class StatInkExporter implements BattleExporter<VsHistoryDetail> {
         json,
       });
     }
-
-    throw new Error("abort");
   }
   async notExported(list: string[]): Promise<string[]> {
     const uuid = await (await fetch("https://stat.ink/api/v3/s3s/uuid-list", {
@@ -111,7 +93,7 @@ export class StatInkExporter implements BattleExporter<VsHistoryDetail> {
     const out: string[] = [];
 
     for (const id of list) {
-      const s3sId = await s3sUuid(id);
+      const s3sId = await battleId(id, S3S_NAMESPACE);
       const s3siId = await battleId(id);
 
       if (!uuid.includes(s3sId) && !uuid.includes(s3siId)) {
@@ -181,10 +163,14 @@ export class StatInkExporter implements BattleExporter<VsHistoryDetail> {
     }
     return result;
   }
-  async mapBattle(vsDetail: VsHistoryDetail): Promise<StatInkPostBody> {
+  async mapBattle(
+    { lastInChallenge, bankaraMatchChallenge, listNode, detail: vsDetail }:
+      VsBattle,
+  ): Promise<StatInkPostBody> {
     const {
       knockout,
       vsMode: { mode },
+      vsRule: { rule },
       myTeam,
       otherTeams,
       bankaraMatch,
@@ -244,7 +230,7 @@ export class StatInkExporter implements BattleExporter<VsHistoryDetail> {
       result.clout_change = festMatch.contribution;
       result.fest_power = festMatch.myFestPower ?? undefined;
     }
-    if (mode === "FEST" || mode === "REGULAR") {
+    if (rule === "TURF_WAR") {
       result.our_team_percent = (myTeam.result.paintRatio ?? 0) * 100;
       result.their_team_percent = (otherTeams?.[0].result.paintRatio ?? 0) *
         100;
@@ -257,17 +243,40 @@ export class StatInkExporter implements BattleExporter<VsHistoryDetail> {
         0,
       );
     }
-    if (mode === "BANKARA") {
-      if (!bankaraMatch) {
-        throw new TypeError("bankaraMatch is null");
-      }
+    if (bankaraMatch) {
       result.our_team_count = myTeam.result.score ?? undefined;
       result.their_team_count = otherTeams?.[0].result.score ?? undefined;
 
       result.knockout = (!knockout || knockout === "NEITHER") ? "no" : "yes";
       result.rank_exp_change = bankaraMatch.earnedUdemaePoint;
     }
+    if (listNode) {
+      [result.rank_before, result.rank_before_s_plus] = parseUdemae(
+        listNode.udemae,
+      );
+    }
+    if (bankaraMatchChallenge) {
+      result.rank_up_battle = bankaraMatchChallenge.isPromo ? "yes" : "no";
+      if (bankaraMatchChallenge.udemaeAfter) {
+        [result.rank_after, result.rank_after_s_plus] = parseUdemae(
+          bankaraMatchChallenge.udemaeAfter,
+        );
+      }
+      if (lastInChallenge) {
+        result.challenge_win = bankaraMatchChallenge.winCount;
+        result.challenge_lose = bankaraMatchChallenge.loseCount;
+        result.rank_exp_change = bankaraMatchChallenge.earnedUdemaePoint;
+      }
+    }
 
     return result;
   }
+}
+
+function parseUdemae(udemae: string): [string, number | undefined] {
+  const [rank, rankNum] = udemae.split(/([0-9]+)/);
+  return [
+    rank.toLowerCase(),
+    rankNum === undefined ? undefined : parseInt(rankNum),
+  ];
 }

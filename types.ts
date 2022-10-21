@@ -28,12 +28,28 @@ export type Image = {
   width?: number;
   height?: number;
 };
+export type BankaraMatchChallenge = {
+  winCount: number;
+  loseCount: number;
+  maxWinCount: number;
+  maxLoseCount: number;
+  state: "FAILED" | "SUCCEEDED" | "INPROGRESS";
+  isPromo: boolean;
+  isUdemaeUp: boolean;
+  udemaeAfter: string | null;
+  earnedUdemaePoint: number;
+};
+export type BattleListNode = {
+  // battle id added after fetch
+  _bid: string;
+  id: string;
+  udemae: string;
+};
 export type HistoryGroups = {
   nodes: {
+    bankaraMatchChallenge: null | BankaraMatchChallenge;
     historyDetails: {
-      nodes: {
-        id: string;
-      }[];
+      nodes: BattleListNode[];
     };
   }[];
 };
@@ -65,12 +81,27 @@ export type VsTeam = {
     score: null | number;
   };
 };
+export type VsRule =
+  | "TURF_WAR"
+  | "AREA"
+  | "LOFT"
+  | "GOAL"
+  | "CLAM"
+  | "TRI_COLOR";
+
+// With challenge info
+export type VsBattle = {
+  listNode: null | BattleListNode;
+  bankaraMatchChallenge: null | BankaraMatchChallenge;
+  lastInChallenge: null | boolean;
+  detail: VsHistoryDetail;
+};
 export type VsHistoryDetail = {
   id: string;
   vsRule: {
     name: string;
     id: string;
-    rule: "TURF_WAR" | "AREA" | "LOFT" | "GOAL" | "CLAM" | "TRI_COLOR";
+    rule: VsRule;
   };
   vsMode: {
     id: string;

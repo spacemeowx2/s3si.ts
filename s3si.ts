@@ -1,11 +1,21 @@
 import { getBulletToken, getGToken, loginManually } from "./iksm.ts";
 import { flags, MultiProgressBar, Mutex } from "./deps.ts";
 import { DEFAULT_STATE, State } from "./state.ts";
-import { checkToken, getBattleDetail, getBattleList } from "./splatnet3.ts";
-import { BattleExporter, VsHistoryDetail } from "./types.ts";
+import {
+  checkToken,
+  getBankaraBattleHistories,
+  getBattleDetail,
+  getBattleList,
+} from "./splatnet3.ts";
+import {
+  BattleExporter,
+  HistoryGroups,
+  VsBattle,
+  VsHistoryDetail,
+} from "./types.ts";
 import { Cache, FileCache, MemoryCache } from "./cache.ts";
 import { StatInkExporter } from "./exporter/stat.ink.ts";
-import { readline, showError } from "./utils.ts";
+import { battleId, readline, showError } from "./utils.ts";
 import { FileExporter } from "./exporter/file.ts";
 
 type Opts = {
@@ -29,6 +39,8 @@ class BattleFetcher {
   state: State;
   cache: Cache;
   lock: Record<string, Mutex | undefined> = {};
+  bankaraLock = new Mutex();
+  bankaraHistory?: HistoryGroups["nodes"];
 
   constructor(
     { cache = new MemoryCache(), state }: { state: State; cache?: Cache },
@@ -36,16 +48,62 @@ class BattleFetcher {
     this.state = state;
     this.cache = cache;
   }
-  getLock(id: string): Mutex {
-    let cur = this.lock[id];
+  private async getLock(id: string): Promise<Mutex> {
+    const bid = await battleId(id);
+
+    let cur = this.lock[bid];
     if (!cur) {
       cur = new Mutex();
-      this.lock[id] = cur;
+      this.lock[bid] = cur;
     }
+
     return cur;
   }
-  fetchBattle(id: string): Promise<VsHistoryDetail> {
-    const lock = this.getLock(id);
+  getBankaraHistory() {
+    return this.bankaraLock.use(async () => {
+      if (this.bankaraHistory) {
+        return this.bankaraHistory;
+      }
+
+      const { bankaraBattleHistories: { historyGroups } } =
+        await getBankaraBattleHistories(
+          this.state,
+        );
+
+      this.bankaraHistory = historyGroups.nodes;
+
+      return this.bankaraHistory;
+    });
+  }
+  async getBattleMetaById(id: string): Promise<Omit<VsBattle, "detail">> {
+    const bid = await battleId(id);
+    const bankaraHistory = await this.getBankaraHistory();
+    const group = bankaraHistory.find((i) =>
+      i.historyDetails.nodes.some((i) => i._bid === bid)
+    );
+
+    if (!group) {
+      return {
+        bankaraMatchChallenge: null,
+        listNode: null,
+        lastInChallenge: null,
+      };
+    }
+
+    const { bankaraMatchChallenge } = group;
+    const listNode = group.historyDetails.nodes.find((i) => i._bid === bid) ??
+      null;
+    const idx = group.historyDetails.nodes.indexOf(listNode!);
+
+    return {
+      bankaraMatchChallenge,
+      listNode,
+      lastInChallenge: (bankaraMatchChallenge?.state !== "INPROGRESS") &&
+        (idx === 0),
+    };
+  }
+  async getBattleDetail(id: string): Promise<VsHistoryDetail> {
+    const lock = await this.getLock(id);
 
     return lock.use(async () => {
       const cached = await this.cache.read<VsHistoryDetail>(id);
@@ -60,6 +118,17 @@ class BattleFetcher {
 
       return detail;
     });
+  }
+  async fetchBattle(id: string): Promise<VsBattle> {
+    const detail = await this.getBattleDetail(id);
+    const metadata = await this.getBattleMetaById(id);
+
+    const battle: VsBattle = {
+      ...metadata,
+      detail,
+    };
+
+    return battle;
   }
 }
 
@@ -111,9 +180,9 @@ Options:
       await this.writeState(DEFAULT_STATE);
     }
   }
-  async getExporters(): Promise<BattleExporter<VsHistoryDetail>[]> {
+  async getExporters(): Promise<BattleExporter<VsBattle>[]> {
     const exporters = this.opts.exporter.split(",");
-    const out: BattleExporter<VsHistoryDetail>[] = [];
+    const out: BattleExporter<VsBattle>[] = [];
 
     if (exporters.includes("stat.ink")) {
       if (!this.state.statInkApiKey) {
@@ -248,7 +317,7 @@ Options:
       onStep,
     }: {
       fetcher: BattleFetcher;
-      exporter: BattleExporter<VsHistoryDetail>;
+      exporter: BattleExporter<VsBattle>;
       battleList: string[];
       onStep?: (progress: Progress) => void;
     },

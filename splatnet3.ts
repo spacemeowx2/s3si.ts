@@ -10,6 +10,7 @@ import {
   RespMap,
   VarsMap,
 } from "./types.ts";
+import { battleId } from "./utils.ts";
 
 async function request<Q extends Queries>(
   state: State,
@@ -120,4 +121,14 @@ export function getBattleDetail(
       vsResultId: id,
     },
   );
+}
+
+export async function getBankaraBattleHistories(state: State) {
+  const resp = await request(state, Queries.BankaraBattleHistoriesQuery);
+  for (const i of resp.bankaraBattleHistories.historyGroups.nodes) {
+    for (const j of i.historyDetails.nodes) {
+      j._bid = await battleId(j.id);
+    }
+  }
+  return resp;
 }
