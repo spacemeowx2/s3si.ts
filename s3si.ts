@@ -12,9 +12,6 @@ const parseArgs = (args: string[]) => {
       "exporter": ["e"],
       "noProgress": ["n", "no-progress"],
     },
-    default: {
-      progress: true,
-    },
   });
   return parsed;
 };
