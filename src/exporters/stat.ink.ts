@@ -247,20 +247,20 @@ export class StatInkExporter implements BattleExporter<VsBattle> {
         listNode.udemae,
       );
     }
-    if (bankaraMatchChallenge) {
+    if (bankaraMatchChallenge && challengeProgress) {
       result.rank_up_battle = bankaraMatchChallenge.isPromo ? "yes" : "no";
-      if (bankaraMatchChallenge.udemaeAfter) {
+
+      if (challengeProgress.index === 0 && bankaraMatchChallenge.udemaeAfter) {
         [result.rank_after, result.rank_after_s_plus] = parseUdemae(
           bankaraMatchChallenge.udemaeAfter,
         );
+        result.rank_exp_change = bankaraMatchChallenge.earnedUdemaePoint ??
+          undefined;
       } else {
         result.rank_after = result.rank_before;
         result.rank_after_s_plus = result.rank_before_s_plus;
       }
-      result.rank_exp_change = bankaraMatchChallenge.earnedUdemaePoint ??
-        undefined;
-    }
-    if (challengeProgress) {
+
       result.challenge_win = challengeProgress.winCount;
       result.challenge_lose = challengeProgress.loseCount;
     }

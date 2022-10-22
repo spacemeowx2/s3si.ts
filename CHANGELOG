@@ -1,3 +1,7 @@
+0.1.5
+
+fix: rank_up sent on last battle of challenge
+
 0.1.4
 
 fix: wrong win/lose count in challenge
