@@ -1,6 +1,7 @@
 import { BattleExporter, VsBattle } from "../types.ts";
-import { base64, path } from "../../deps.ts";
+import { path } from "../../deps.ts";
 import { NSOAPP_VERSION, S3SI_VERSION } from "../constant.ts";
+import { parseVsHistoryDetailId } from "../utils.ts";
 
 export type FileExporterType = {
   type: "VS" | "COOP";
@@ -30,16 +31,9 @@ export class FileExporter implements BattleExporter<VsBattle> {
   constructor(private exportPath: string) {
   }
   getFilenameById(id: string) {
-    const fullId = base64.decode(id);
-    const ts = new TextDecoder().decode(
-      fullId.slice(fullId.length - 52, fullId.length - 37),
-    );
+    const { uid, timestamp } = parseVsHistoryDetailId(id);
 
-    if (!/\d{8}T\d{6}/.test(ts)) {
-      throw new Error("Invalid battle ID");
-    }
-
-    return `${ts}Z.json`;
+    return `${uid}_${timestamp}Z.json`;
   }
   async exportBattle(battle: VsBattle) {
     await Deno.mkdir(this.exportPath, { recursive: true });

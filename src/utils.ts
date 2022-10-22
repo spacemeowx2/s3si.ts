@@ -82,6 +82,11 @@ export async function showError(p: Promise<void>) {
   }
 }
 
+/**
+ * @param id id of VeVsHistoryDetail
+ * @param namespace uuid namespace
+ * @returns
+ */
 export function battleId(
   id: string,
   namespace = S3SI_NAMESPACE,
@@ -89,4 +94,22 @@ export function battleId(
   const fullId = base64.decode(id);
   const tsUuid = fullId.slice(fullId.length - 52, fullId.length);
   return uuid.v5.generate(namespace, tsUuid);
+}
+
+export function parseVsHistoryDetailId(id: string) {
+  const plainText = new TextDecoder().decode(base64.decode(id));
+
+  const re = /VsHistoryDetail-([a-z0-9-]+):(\w+):(\d{8}T\d{6})_([0-9a-f-]{36})/;
+  if (!re.test(plainText)) {
+    throw new Error(`Invalid battle ID: ${plainText}`);
+  }
+
+  const [, uid, listType, timestamp, uuid] = plainText.match(re)!;
+
+  return {
+    uid,
+    listType,
+    timestamp,
+    uuid,
+  };
 }
