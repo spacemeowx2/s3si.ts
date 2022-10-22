@@ -44,6 +44,7 @@ export type BattleListNode = {
   _bid: string;
   id: string;
   udemae: string;
+  judgement: "LOSE" | "WIN" | "DEEMED_LOSE" | "EXEMPTED_LOSE";
 };
 export type HistoryGroups = {
   nodes: {
@@ -89,10 +90,16 @@ export type VsRule =
   | "CLAM"
   | "TRI_COLOR";
 
+export type ChallengeProgress = {
+  index: number;
+  winCount: number;
+  loseCount: number;
+};
 // With challenge info
 export type VsBattle = {
   listNode: null | BattleListNode;
   bankaraMatchChallenge: null | BankaraMatchChallenge;
+  challengeProgress: null | ChallengeProgress;
   detail: VsHistoryDetail;
 };
 export type VsHistoryDetail = {

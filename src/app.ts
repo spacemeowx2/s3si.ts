@@ -9,6 +9,7 @@ import {
 } from "./splatnet3.ts";
 import {
   BattleExporter,
+  ChallengeProgress,
   HistoryGroups,
   VsBattle,
   VsHistoryDetail,
@@ -84,6 +85,7 @@ class BattleFetcher {
 
     if (!group) {
       return {
+        challengeProgress: null,
         bankaraMatchChallenge: null,
         listNode: null,
       };
@@ -92,10 +94,27 @@ class BattleFetcher {
     const { bankaraMatchChallenge } = group;
     const listNode = group.historyDetails.nodes.find((i) => i._bid === bid) ??
       null;
+    const index = group.historyDetails.nodes.indexOf(listNode!);
+
+    let challengeProgress: null | ChallengeProgress = null;
+    if (bankaraMatchChallenge) {
+      const pastBattles = group.historyDetails.nodes.slice(0, index);
+      const { winCount, loseCount } = bankaraMatchChallenge;
+      challengeProgress = {
+        index,
+        winCount: winCount -
+          pastBattles.filter((i) => i.judgement == "WIN").length,
+        loseCount: loseCount -
+          pastBattles.filter((i) =>
+            ["LOSE", "DEEMED_LOSE"].includes(i.judgement)
+          ).length,
+      };
+    }
 
     return {
       bankaraMatchChallenge,
       listNode,
+      challengeProgress,
     };
   }
   async getBattleDetail(id: string): Promise<VsHistoryDetail> {
