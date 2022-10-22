@@ -23,14 +23,14 @@ export type Opts = {
   profilePath: string;
   exporter: string;
   noProgress: boolean;
-  help?: boolean;
+  monitor: boolean;
 };
 
 export const DEFAULT_OPTS: Opts = {
   profilePath: "./profile.json",
   exporter: "stat.ink",
   noProgress: false,
-  help: false,
+  monitor: false,
 };
 
 /**
@@ -158,20 +158,6 @@ export class App {
   state: State = DEFAULT_STATE;
 
   constructor(public opts: Opts) {
-    if (this.opts.help) {
-      console.log(
-        `Usage: deno run -A ${Deno.mainModule} [options]
-
-Options:
-    --profile-path <path>, -p    Path to config file (default: ./profile.json)
-    --exporter <exporter>, -e    Exporter list to use (default: stat.ink)
-                                 Multiple exporters can be separated by commas
-                                 (e.g. "stat.ink,file")
-    --no-progress, -n            Disable progress bar
-    --help                       Show this help message and exit`,
-      );
-      Deno.exit(0);
-    }
   }
   async writeState(newState: State) {
     this.state = newState;
