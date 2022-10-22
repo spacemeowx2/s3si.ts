@@ -1,4 +1,4 @@
-import { USERAGENT } from "../constant.ts";
+import { USERAGENT } from "../src/constant.ts";
 
 const [key, ...uuids] = Deno.args;
 if (!key || uuids.length === 0) {
