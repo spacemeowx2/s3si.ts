@@ -97,6 +97,7 @@ export type ChallengeProgress = {
 };
 // With challenge info
 export type VsBattle = {
+  type: "VsBattle";
   listNode: null | BattleListNode;
   bankaraMatchChallenge: null | BankaraMatchChallenge;
   challengeProgress: null | ChallengeProgress;
@@ -138,7 +139,12 @@ export type VsHistoryDetail = {
   duration: number;
 };
 
-export type BattleExporter<D> = {
+export type BattleExporter<
+  D extends {
+    // type is seful when you implement more than one BattleExporter on the same class
+    type: string;
+  },
+> = {
   name: string;
   notExported: (list: string[]) => Promise<string[]>;
   exportBattle: (detail: D) => Promise<void>;

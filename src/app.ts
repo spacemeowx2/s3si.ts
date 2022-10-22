@@ -85,6 +85,7 @@ class BattleFetcher {
 
     if (!group) {
       return {
+        type: "VsBattle",
         challengeProgress: null,
         bankaraMatchChallenge: null,
         listNode: null,
@@ -112,6 +113,7 @@ class BattleFetcher {
     }
 
     return {
+      type: "VsBattle",
       bankaraMatchChallenge,
       listNode,
       challengeProgress,
