@@ -17,7 +17,7 @@ import {
 import { Cache, FileCache, MemoryCache } from "./cache.ts";
 import { StatInkExporter } from "./exporters/stat.ink.ts";
 import { FileExporter } from "./exporters/file.ts";
-import { battleId, readline, showError } from "./utils.ts";
+import { battleId, delay, readline, showError } from "./utils.ts";
 
 export type Opts = {
   profilePath: string;
@@ -200,7 +200,12 @@ export class App {
           statInkApiKey: key,
         });
       }
-      out.push(new StatInkExporter(this.state.statInkApiKey!));
+      out.push(
+        new StatInkExporter(
+          this.state.statInkApiKey!,
+          this.opts.monitor ? "Monitoring" : "Manual",
+        ),
+      );
     }
 
     if (exporters.includes("file")) {
@@ -209,57 +214,15 @@ export class App {
 
     return out;
   }
-  async run() {
-    await this.readState();
-
+  async exportOnce() {
     const bar = !this.opts.noProgress
       ? new MultiProgressBar({
         title: "Export battles",
         display: "[:bar] :text :percent :time eta: :eta :completed/:total",
       })
       : undefined;
+
     const exporters = await this.getExporters();
-
-    if (!this.state.loginState?.sessionToken) {
-      const sessionToken = await loginManually();
-
-      await this.writeState({
-        ...this.state,
-        loginState: {
-          ...this.state.loginState,
-          sessionToken,
-        },
-      });
-    }
-    const sessionToken = this.state.loginState!.sessionToken!;
-
-    console.log("Checking token...");
-    if (!await checkToken(this.state)) {
-      console.log("Token expired, refetch tokens.");
-
-      const { webServiceToken, userCountry, userLang } = await getGToken({
-        fApi: this.state.fGen,
-        sessionToken,
-      });
-
-      const bulletToken = await getBulletToken({
-        webServiceToken,
-        userLang,
-        userCountry,
-        appUserAgent: this.state.appUserAgent,
-      });
-
-      await this.writeState({
-        ...this.state,
-        loginState: {
-          ...this.state.loginState,
-          gToken: webServiceToken,
-          bulletToken,
-        },
-        userLang: this.state.userLang ?? userLang,
-        userCountry: this.state.userCountry ?? userCountry,
-      });
-    }
 
     const fetcher = new BattleFetcher({
       cache: new FileCache(this.state.cacheDir),
@@ -302,7 +265,87 @@ export class App {
       ),
     );
 
-    console.log("\nDone.", stats);
+    bar?.end();
+
+    console.log(
+      `Exported ${
+        Object.entries(stats)
+          .map(([name, count]) => `${name}: ${count}`)
+          .join(", ")
+      }`,
+    );
+  }
+  async monitor() {
+    while (true) {
+      await this.exportOnce();
+      await this.countDown(this.state.monitorInterval);
+    }
+  }
+  async countDown(sec: number) {
+    const bar = !this.opts.noProgress
+      ? new MultiProgressBar({
+        title: "Killing time...",
+        display: "[:bar] :completed/:total",
+      })
+      : undefined;
+    for (const i of Array(sec).keys()) {
+      bar?.render([{
+        completed: i,
+        total: sec,
+      }]);
+      await delay(1000);
+    }
+    bar?.end();
+  }
+  async run() {
+    await this.readState();
+
+    if (!this.state.loginState?.sessionToken) {
+      const sessionToken = await loginManually();
+
+      await this.writeState({
+        ...this.state,
+        loginState: {
+          ...this.state.loginState,
+          sessionToken,
+        },
+      });
+    }
+    const sessionToken = this.state.loginState!.sessionToken!;
+
+    console.log("Checking token...");
+    if (!await checkToken(this.state)) {
+      console.log("Token expired, refetch tokens.");
+
+      const { webServiceToken, userCountry, userLang } = await getGToken({
+        fApi: this.state.fGen,
+        sessionToken,
+      });
+
+      const bulletToken = await getBulletToken({
+        webServiceToken,
+        userLang,
+        userCountry,
+        appUserAgent: this.state.appUserAgent,
+      });
+
+      await this.writeState({
+        ...this.state,
+        loginState: {
+          ...this.state.loginState,
+          gToken: webServiceToken,
+          bulletToken,
+        },
+        userLang: this.state.userLang ?? userLang,
+        userCountry: this.state.userCountry ?? userCountry,
+      });
+    }
+
+    if (this.opts.monitor) {
+      await this.monitor();
+    } else {
+      await this.exportOnce();
+    }
   }
   /**
    * Export battle list.

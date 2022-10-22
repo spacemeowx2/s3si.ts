@@ -42,7 +42,8 @@ const getStage = cache(_getStage);
  */
 export class StatInkExporter implements BattleExporter<VsBattle> {
   name = "stat.ink";
-  constructor(private statInkApiKey: string) {
+
+  constructor(private statInkApiKey: string, private uploadMode: string) {
     if (statInkApiKey.length !== 43) {
       throw new Error("Invalid stat.ink API key");
     }
@@ -203,7 +204,9 @@ export class StatInkExporter implements BattleExporter<VsBattle> {
 
       agent: AGENT_NAME,
       agent_version: S3SI_VERSION,
-      agent_variables: undefined,
+      agent_variables: {
+        "Upload Mode": this.uploadMode,
+      },
       automated: "yes",
       start_at: startedAt,
       end_at: startedAt + vsDetail.duration,

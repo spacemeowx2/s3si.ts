@@ -15,10 +15,12 @@ export type State = {
   // Exporter config
   statInkApiKey?: string;
   fileExportPath: string;
+  monitorInterval: number;
 };
 
 export const DEFAULT_STATE: State = {
   cacheDir: "./cache",
   fGen: "https://api.imink.app/f",
   fileExportPath: "./export",
+  monitorInterval: 500,
 };

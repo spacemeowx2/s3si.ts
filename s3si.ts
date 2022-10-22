@@ -5,12 +5,13 @@ import { flags } from "./deps.ts";
 const parseArgs = (args: string[]) => {
   const parsed = flags.parse(args, {
     string: ["profilePath", "exporter"],
-    boolean: ["help", "noProgress"],
+    boolean: ["help", "noProgress", "monitor"],
     alias: {
       "help": "h",
       "profilePath": ["p", "profile-path"],
       "exporter": ["e"],
       "noProgress": ["n", "no-progress"],
+      "monitor": ["m"],
     },
   });
   return parsed;

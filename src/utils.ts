@@ -113,3 +113,6 @@ export function parseVsHistoryDetailId(id: string) {
     uuid,
   };
 }
+
+export const delay = (ms: number) =>
+  new Promise<void>((resolve) => setTimeout(resolve, ms));
