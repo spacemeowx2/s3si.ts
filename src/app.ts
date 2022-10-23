@@ -24,6 +24,7 @@ export type Opts = {
   exporter: string;
   noProgress: boolean;
   monitor: boolean;
+  cache?: Cache;
 };
 
 export const DEFAULT_OPTS: Opts = {
@@ -225,7 +226,7 @@ export class App {
     const exporters = await this.getExporters();
 
     const fetcher = new BattleFetcher({
-      cache: new FileCache(this.state.cacheDir),
+      cache: this.opts.cache ?? new FileCache(this.state.cacheDir),
       state: this.state,
     });
     console.log("Fetching battle list...");
