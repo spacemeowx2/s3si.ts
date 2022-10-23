@@ -24,3 +24,27 @@ export const DEFAULT_STATE: State = {
   fileExportPath: "./export",
   monitorInterval: 500,
 };
+
+export type StateBackend = {
+  read: () => Promise<State>;
+  write: (newState: State) => Promise<void>;
+};
+
+export class FileStateBackend implements StateBackend {
+  constructor(private path: string) {}
+
+  async read(): Promise<State> {
+    const decoder = new TextDecoder();
+    const data = await Deno.readFile(this.path);
+    const json = JSON.parse(decoder.decode(data));
+    return json;
+  }
+
+  async write(newState: State): Promise<void> {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(JSON.stringify(newState, undefined, 2));
+    const swapPath = `${this.path}.swap`;
+    await Deno.writeFile(swapPath, data);
+    await Deno.rename(swapPath, this.path);
+  }
+}

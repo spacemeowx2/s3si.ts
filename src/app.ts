@@ -1,6 +1,6 @@
 import { getBulletToken, getGToken, loginManually } from "./iksm.ts";
 import { MultiProgressBar, Mutex } from "../deps.ts";
-import { DEFAULT_STATE, State } from "./state.ts";
+import { DEFAULT_STATE, FileStateBackend, State, StateBackend } from "./state.ts";
 import {
   checkToken,
   getBankaraBattleHistories,
@@ -25,6 +25,7 @@ export type Opts = {
   noProgress: boolean;
   monitor: boolean;
   cache?: Cache;
+  stateBackend?: StateBackend;
 };
 
 export const DEFAULT_OPTS: Opts = {
@@ -157,22 +158,18 @@ type Progress = {
 
 export class App {
   state: State = DEFAULT_STATE;
+  stateBackend: StateBackend;
 
   constructor(public opts: Opts) {
+    this.stateBackend = opts.stateBackend ?? new FileStateBackend(opts.profilePath);
   }
   async writeState(newState: State) {
     this.state = newState;
-    const encoder = new TextEncoder();
-    const data = encoder.encode(JSON.stringify(this.state, undefined, 2));
-    const swapPath = `${this.opts.profilePath}.swap`;
-    await Deno.writeFile(swapPath, data);
-    await Deno.rename(swapPath, this.opts.profilePath);
+    await this.stateBackend.write(newState);
   }
   async readState() {
-    const decoder = new TextDecoder();
     try {
-      const data = await Deno.readFile(this.opts.profilePath);
-      const json = JSON.parse(decoder.decode(data));
+      const json = await this.stateBackend.read();
       this.state = {
         ...DEFAULT_STATE,
         ...json,
