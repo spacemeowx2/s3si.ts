@@ -10,21 +10,27 @@ import {
   getBankaraBattleHistories,
   getBattleDetail,
   getBattleList,
+  getCoopDetail,
+  getCoopHistories,
   isTokenExpired,
 } from "./splatnet3.ts";
 import {
-  BattleExporter,
+  BattleListNode,
+  BattleListType,
   ChallengeProgress,
+  CoopInfo,
+  CoopListNode,
+  Game,
+  GameExporter,
   HistoryGroups,
-  VsBattle,
-  VsHistoryDetail,
+  VsInfo,
 } from "./types.ts";
 import { Cache, FileCache, MemoryCache } from "./cache.ts";
 import { StatInkExporter } from "./exporters/stat.ink.ts";
 import { FileExporter } from "./exporters/file.ts";
 import {
-  battleId,
   delay,
+  gameId,
   readline,
   RecoverableError,
   retryRecoverableError,
@@ -36,6 +42,7 @@ export type Opts = {
   exporter: string;
   noProgress: boolean;
   monitor: boolean;
+  skipMode?: string;
   cache?: Cache;
   stateBackend?: StateBackend;
 };
@@ -48,14 +55,16 @@ export const DEFAULT_OPTS: Opts = {
 };
 
 /**
- * Fetch battle and cache it.
+ * Fetch game and cache it.
  */
-class BattleFetcher {
+class GameFetcher {
   state: State;
   cache: Cache;
   lock: Record<string, Mutex | undefined> = {};
   bankaraLock = new Mutex();
-  bankaraHistory?: HistoryGroups["nodes"];
+  bankaraHistory?: HistoryGroups<BattleListNode>["nodes"];
+  coopLock = new Mutex();
+  coopHistory?: HistoryGroups<CoopListNode>["nodes"];
 
   constructor(
     { cache = new MemoryCache(), state }: { state: State; cache?: Cache },
@@ -64,7 +73,7 @@ class BattleFetcher {
     this.cache = cache;
   }
   private async getLock(id: string): Promise<Mutex> {
-    const bid = await battleId(id);
+    const bid = await gameId(id);
 
     let cur = this.lock[bid];
     if (!cur) {
@@ -74,6 +83,7 @@ class BattleFetcher {
 
     return cur;
   }
+
   getBankaraHistory() {
     return this.bankaraLock.use(async () => {
       if (this.bankaraHistory) {
@@ -90,8 +100,44 @@ class BattleFetcher {
       return this.bankaraHistory;
     });
   }
-  async getBattleMetaById(id: string): Promise<Omit<VsBattle, "detail">> {
-    const bid = await battleId(id);
+  getCoopHistory() {
+    return this.coopLock.use(async () => {
+      if (this.coopHistory) {
+        return this.coopHistory;
+      }
+
+      const { coopResult: { historyGroups } } = await getCoopHistories(
+        this.state,
+      );
+
+      this.coopHistory = historyGroups.nodes;
+
+      return this.coopHistory;
+    });
+  }
+  async getCoopMetaById(id: string): Promise<Omit<CoopInfo, "detail">> {
+    const coopHistory = await this.getCoopHistory();
+    const group = coopHistory.find((i) =>
+      i.historyDetails.nodes.some((i) => i.id === id)
+    );
+
+    if (!group) {
+      return {
+        type: "CoopInfo",
+        listNode: null,
+      };
+    }
+
+    const listNode = group.historyDetails.nodes.find((i) => i.id === id) ??
+      null;
+
+    return {
+      type: "CoopInfo",
+      listNode,
+    };
+  }
+  async getBattleMetaById(id: string): Promise<Omit<VsInfo, "detail">> {
+    const bid = await gameId(id);
     const bankaraHistory = await this.getBankaraHistory();
     const group = bankaraHistory.find((i) =>
       i.historyDetails.nodes.some((i) => i._bid === bid)
@@ -99,7 +145,7 @@ class BattleFetcher {
 
     if (!group) {
       return {
-        type: "VsBattle",
+        type: "VsInfo",
         challengeProgress: null,
         bankaraMatchChallenge: null,
         listNode: null,
@@ -127,39 +173,68 @@ class BattleFetcher {
     }
 
     return {
-      type: "VsBattle",
+      type: "VsInfo",
       bankaraMatchChallenge,
       listNode,
       challengeProgress,
     };
   }
-  async getBattleDetail(id: string): Promise<VsHistoryDetail> {
+  async cacheDetail<T>(
+    id: string,
+    getter: () => Promise<T>,
+  ): Promise<T> {
     const lock = await this.getLock(id);
 
     return lock.use(async () => {
-      const cached = await this.cache.read<VsHistoryDetail>(id);
+      const cached = await this.cache.read<T>(id);
       if (cached) {
         return cached;
       }
 
-      const detail = (await getBattleDetail(this.state, id))
-        .vsHistoryDetail;
+      const detail = await getter();
 
       await this.cache.write(id, detail);
 
       return detail;
     });
   }
-  async fetchBattle(id: string): Promise<VsBattle> {
-    const detail = await this.getBattleDetail(id);
+  fetch(type: Game["type"], id: string): Promise<Game> {
+    switch (type) {
+      case "VsInfo":
+        return this.fetchBattle(id);
+      case "CoopInfo":
+        return this.fetchCoop(id);
+      default:
+        throw new Error(`Unknown game type: ${type}`);
+    }
+  }
+  async fetchBattle(id: string): Promise<VsInfo> {
+    const detail = await this.cacheDetail(
+      id,
+      () => getBattleDetail(this.state, id).then((r) => r.vsHistoryDetail),
+    );
     const metadata = await this.getBattleMetaById(id);
 
-    const battle: VsBattle = {
+    const game: VsInfo = {
       ...metadata,
       detail,
     };
 
-    return battle;
+    return game;
+  }
+  async fetchCoop(id: string): Promise<CoopInfo> {
+    const detail = await this.cacheDetail(
+      id,
+      () => getCoopDetail(this.state, id).then((r) => r.coopHistoryDetail),
+    );
+    const metadata = await this.getCoopMetaById(id);
+
+    const game: CoopInfo = {
+      ...metadata,
+      detail,
+    };
+
+    return game;
   }
 }
 
@@ -203,9 +278,18 @@ export class App {
       await this.writeState(DEFAULT_STATE);
     }
   }
-  async getExporters(): Promise<BattleExporter<VsBattle>[]> {
+  getSkipMode(): ("vs" | "coop")[] {
+    const mode = this.opts.skipMode;
+    if (mode === "vs") {
+      return ["vs"];
+    } else if (mode === "coop") {
+      return ["coop"];
+    }
+    return [];
+  }
+  async getExporters(): Promise<GameExporter[]> {
     const exporters = this.opts.exporter.split(",");
-    const out: BattleExporter<VsBattle>[] = [];
+    const out: GameExporter[] = [];
 
     if (exporters.includes("stat.ink")) {
       if (!this.state.statInkApiKey) {
@@ -237,46 +321,58 @@ export class App {
   exportOnce() {
     return retryRecoverableError(() => this._exportOnce(), this.recoveryToken);
   }
-  async _exportOnce() {
+  exporterProgress(title: string) {
     const bar = !this.opts.noProgress
       ? new MultiProgressBar({
-        title: "Export battles",
+        title,
         display: "[:bar] :text :percent :time eta: :eta :completed/:total",
       })
       : undefined;
 
-    try {
-      const exporters = await this.getExporters();
+    const allProgress: Record<string, Progress> = {};
+    const redraw = (name: string, progress: Progress) => {
+      allProgress[name] = progress;
+      bar?.render(
+        Object.entries(allProgress).map(([name, progress]) => ({
+          completed: progress.current,
+          total: progress.total,
+          text: name,
+        })),
+      );
+    };
+    const endBar = () => {
+      bar?.end();
+    };
 
-      const fetcher = new BattleFetcher({
+    return { redraw, endBar };
+  }
+  async _exportOnce() {
+    const exporters = await this.getExporters();
+    const skipMode = this.getSkipMode();
+    const stats: Record<string, number> = Object.fromEntries(
+      exporters.map((e) => [e.name, 0]),
+    );
+
+    if (skipMode.includes("vs")) {
+      console.log("Skip exporting VS games.");
+    } else {
+      console.log("Fetching battle list...");
+      const gameList = await getBattleList(this.state);
+
+      const { redraw, endBar } = this.exporterProgress("Export games");
+      const fetcher = new GameFetcher({
         cache: this.opts.cache ?? new FileCache(this.state.cacheDir),
         state: this.state,
       });
-      console.log("Fetching battle list...");
-      const battleList = await getBattleList(this.state);
-
-      const allProgress: Record<string, Progress> = {};
-      const redraw = (name: string, progress: Progress) => {
-        allProgress[name] = progress;
-        bar?.render(
-          Object.entries(allProgress).map(([name, progress]) => ({
-            completed: progress.current,
-            total: progress.total,
-            text: name,
-          })),
-        );
-      };
-      const stats: Record<string, number> = Object.fromEntries(
-        exporters.map((e) => [e.name, 0]),
-      );
 
       await Promise.all(
         exporters.map((e) =>
           showError(
-            this.exportBattleList({
+            this.exportGameList({
+              type: "VsInfo",
               fetcher,
               exporter: e,
-              battleList,
+              gameList,
               onStep: (progress) => redraw(e.name, progress),
             })
               .then((count) => {
@@ -289,18 +385,55 @@ export class App {
         ),
       );
 
-      bar?.end();
-
-      console.log(
-        `Exported ${
-          Object.entries(stats)
-            .map(([name, count]) => `${name}: ${count}`)
-            .join(", ")
-        }`,
-      );
-    } finally {
-      bar?.end();
+      endBar();
     }
+
+    if (skipMode.includes("coop")) {
+      console.log("Skip exporting Coop games.");
+    } else {
+      console.log("Fetching coop battle list...");
+      const coopBattleList = await getBattleList(
+        this.state,
+        BattleListType.Coop,
+      );
+
+      const { redraw, endBar } = this.exporterProgress("Export games");
+      const fetcher = new GameFetcher({
+        cache: this.opts.cache ?? new FileCache(this.state.cacheDir),
+        state: this.state,
+      });
+
+      await Promise.all(
+        // TODO: remove this filter when stat.ink support coop export
+        exporters.filter((e) => e.name !== "stat.ink").map((e) =>
+          showError(
+            this.exportGameList({
+              type: "CoopInfo",
+              fetcher,
+              exporter: e,
+              gameList: coopBattleList,
+              onStep: (progress) => redraw(e.name, progress),
+            })
+              .then((count) => {
+                stats[e.name] = count;
+              }),
+          )
+            .catch((err) => {
+              console.error(`\nFailed to export to ${e.name}:`, err);
+            })
+        ),
+      );
+
+      endBar();
+    }
+
+    console.log(
+      `Exported ${
+        Object.entries(stats)
+          .map(([name, count]) => `${name}: ${count}`)
+          .join(", ")
+      }`,
+    );
   }
   async monitor() {
     while (true) {
@@ -376,26 +509,26 @@ export class App {
     }
   }
   /**
-   * Export battle list.
+   * Export game list.
    *
    * @param fetcher BattleFetcher
    * @param exporter BattleExporter
-   * @param battleList ID list of battles, sorted by date, newest first
-   * @param onStep Callback function called when a battle is exported
+   * @param gameList ID list of games, sorted by date, newest first
+   * @param onStep Callback function called when a game is exported
    */
-  async exportBattleList(
-    {
-      fetcher,
-      exporter,
-      battleList,
-      onStep,
-    }: {
-      fetcher: BattleFetcher;
-      exporter: BattleExporter<VsBattle>;
-      battleList: string[];
-      onStep?: (progress: Progress) => void;
-    },
-  ): Promise<number> {
+  async exportGameList({
+    type,
+    fetcher,
+    exporter,
+    gameList,
+    onStep,
+  }: {
+    type: Game["type"];
+    exporter: GameExporter;
+    fetcher: GameFetcher;
+    gameList: string[];
+    onStep: (progress: Progress) => void;
+  }) {
     let exported = 0;
 
     onStep?.({
@@ -403,11 +536,17 @@ export class App {
       total: 1,
     });
 
-    const workQueue = [...await exporter.notExported(battleList)].reverse();
+    const workQueue = [
+      ...await exporter.notExported({
+        type,
+        list: gameList,
+      }),
+    ]
+      .reverse();
 
-    const step = async (battle: string) => {
-      const detail = await fetcher.fetchBattle(battle);
-      await exporter.exportBattle(detail);
+    const step = async (id: string) => {
+      const detail = await fetcher.fetch(type, id);
+      await exporter.exportGame(detail);
       exported += 1;
       onStep?.({
         current: exported,

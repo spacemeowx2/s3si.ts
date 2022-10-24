@@ -13,7 +13,7 @@ import {
   RespMap,
   VarsMap,
 } from "./types.ts";
-import { battleId } from "./utils.ts";
+import { gameId } from "./utils.ts";
 
 async function request<Q extends Queries>(
   state: State,
@@ -90,7 +90,9 @@ export async function checkToken(state: State) {
   }
 }
 
-function getIdsFromGroups({ historyGroups }: { historyGroups: HistoryGroups }) {
+function getIdsFromGroups<T extends { id: string }>(
+  { historyGroups }: { historyGroups: HistoryGroups<T> },
+) {
   return historyGroups.nodes.flatMap((i) => i.historyDetails.nodes).map((i) =>
     i.id
   );
@@ -112,6 +114,9 @@ const BATTLE_LIST_TYPE_MAP: Record<
   [BattleListType.Private]: (state: State) =>
     request(state, Queries.PrivateBattleHistoriesQuery)
       .then((r) => getIdsFromGroups(r.privateBattleHistories)),
+  [BattleListType.Coop]: (state: State) =>
+    request(state, Queries.CoopHistoryQuery)
+      .then((r) => getIdsFromGroups(r.coopResult)),
 };
 
 export async function getBattleList(
@@ -134,12 +139,31 @@ export function getBattleDetail(
   );
 }
 
+export function getCoopDetail(
+  state: State,
+  id: string,
+) {
+  return request(
+    state,
+    Queries.CoopHistoryDetailQuery,
+    {
+      coopHistoryDetailId: id,
+    },
+  );
+}
+
 export async function getBankaraBattleHistories(state: State) {
   const resp = await request(state, Queries.BankaraBattleHistoriesQuery);
   for (const i of resp.bankaraBattleHistories.historyGroups.nodes) {
     for (const j of i.historyDetails.nodes) {
-      j._bid = await battleId(j.id);
+      j._bid = await gameId(j.id);
     }
   }
+  return resp;
+}
+
+export async function getCoopHistories(state: State) {
+  const resp = await request(state, Queries.CoopHistoryQuery);
+
   return resp;
 }

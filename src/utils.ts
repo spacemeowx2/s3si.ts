@@ -83,11 +83,11 @@ export async function showError<T>(p: Promise<T>): Promise<T> {
 }
 
 /**
- * @param id id of VeVsHistoryDetail
+ * @param id id of VsHistoryDetail or CoopHistoryDetail
  * @param namespace uuid namespace
  * @returns
  */
-export function battleId(
+export function gameId(
   id: string,
   namespace = S3SI_NAMESPACE,
 ): Promise<string> {
@@ -96,22 +96,38 @@ export function battleId(
   return uuid.v5.generate(namespace, tsUuid);
 }
 
-export function parseVsHistoryDetailId(id: string) {
+/**
+ * @param id VsHistoryDetail id or CoopHistoryDetail id
+ */
+//CoopHistoryDetail-u-quoeuj7rhknjq3jkanmm:20221022T065633_25287bf9-d9a8-42b0-b070-e938da103547
+export function parseHistoryDetailId(id: string) {
   const plainText = new TextDecoder().decode(base64.decode(id));
 
-  const re = /VsHistoryDetail-([a-z0-9-]+):(\w+):(\d{8}T\d{6})_([0-9a-f-]{36})/;
-  if (!re.test(plainText)) {
-    throw new Error(`Invalid battle ID: ${plainText}`);
+  const vsRE =
+    /VsHistoryDetail-([a-z0-9-]+):(\w+):(\d{8}T\d{6})_([0-9a-f-]{36})/;
+  const coopRE = /CoopHistoryDetail-([a-z0-9-]+):(\d{8}T\d{6})_([0-9a-f-]{36})/;
+  if (vsRE.test(plainText)) {
+    const [, uid, listType, timestamp, uuid] = plainText.match(vsRE)!;
+
+    return {
+      type: "VsHistoryDetail",
+      uid,
+      listType,
+      timestamp,
+      uuid,
+    };
+  } else if (coopRE.test(plainText)) {
+    const [, uid, timestamp, uuid] = plainText.match(coopRE)!;
+
+    return {
+      type: "CoopHistoryDetail",
+      uid,
+      timestamp,
+      uuid,
+    };
+  } else {
+    throw new Error(`Invalid ID: ${plainText}`);
   }
-
-  const [, uid, listType, timestamp, uuid] = plainText.match(re)!;
-
-  return {
-    uid,
-    listType,
-    timestamp,
-    uuid,
-  };
 }
 
 export const delay = (ms: number) =>

@@ -5,17 +5,18 @@ import {
   USERAGENT,
 } from "../constant.ts";
 import {
-  BattleExporter,
+  CoopInfo,
+  GameExporter,
   StatInkPlayer,
   StatInkPostBody,
   StatInkStage,
-  VsBattle,
   VsHistoryDetail,
+  VsInfo,
   VsPlayer,
 } from "../types.ts";
 import { base64, msgpack } from "../../deps.ts";
 import { APIError } from "../APIError.ts";
-import { battleId, cache } from "../utils.ts";
+import { cache, gameId } from "../utils.ts";
 
 const S3S_NAMESPACE = "b3a2dbf5-2c09-4792-b78c-00b548b70aeb";
 
@@ -40,7 +41,7 @@ const getStage = cache(_getStage);
  *
  * This is the default exporter. It will upload each battle detail to stat.ink.
  */
-export class StatInkExporter implements BattleExporter<VsBattle> {
+export class StatInkExporter implements GameExporter {
   name = "stat.ink";
 
   constructor(private statInkApiKey: string, private uploadMode: string) {
@@ -54,8 +55,12 @@ export class StatInkExporter implements BattleExporter<VsBattle> {
       "Authorization": `Bearer ${this.statInkApiKey}`,
     };
   }
-  async exportBattle(battle: VsBattle) {
-    const body = await this.mapBattle(battle);
+  async exportGame(game: VsInfo | CoopInfo) {
+    if (game.type === "CoopInfo") {
+      // TODO: support coop
+      return;
+    }
+    const body = await this.mapBattle(game);
 
     const resp = await fetch("https://stat.ink/api/v3/battle", {
       method: "POST",
@@ -86,7 +91,7 @@ export class StatInkExporter implements BattleExporter<VsBattle> {
       });
     }
   }
-  async notExported(list: string[]): Promise<string[]> {
+  async notExported({ list }: { list: string[] }): Promise<string[]> {
     const uuid = await (await fetch("https://stat.ink/api/v3/s3s/uuid-list", {
       headers: this.requestHeaders(),
     })).json();
@@ -94,8 +99,8 @@ export class StatInkExporter implements BattleExporter<VsBattle> {
     const out: string[] = [];
 
     for (const id of list) {
-      const s3sId = await battleId(id, S3S_NAMESPACE);
-      const s3siId = await battleId(id);
+      const s3sId = await gameId(id, S3S_NAMESPACE);
+      const s3siId = await gameId(id);
 
       if (!uuid.includes(s3sId) && !uuid.includes(s3siId)) {
         out.push(id);
@@ -166,7 +171,7 @@ export class StatInkExporter implements BattleExporter<VsBattle> {
   }
   async mapBattle(
     { challengeProgress, bankaraMatchChallenge, listNode, detail: vsDetail }:
-      VsBattle,
+      VsInfo,
   ): Promise<StatInkPostBody> {
     const {
       knockout,
@@ -185,7 +190,7 @@ export class StatInkExporter implements BattleExporter<VsBattle> {
     const startedAt = Math.floor(new Date(playedTime).getTime() / 1000);
 
     const result: StatInkPostBody = {
-      uuid: await battleId(vsDetail.id),
+      uuid: await gameId(vsDetail.id),
       lobby: this.mapLobby(vsDetail),
       rule: SPLATNET3_STATINK_MAP.RULE[vsDetail.vsRule.rule],
       stage: await this.mapStage(vsDetail),

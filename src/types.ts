@@ -46,11 +46,15 @@ export type BattleListNode = {
   udemae: string;
   judgement: "LOSE" | "WIN" | "DEEMED_LOSE" | "EXEMPTED_LOSE";
 };
-export type HistoryGroups = {
+export type CoopListNode = {
+  id: string;
+};
+export type HistoryGroups<T> = {
   nodes: {
     bankaraMatchChallenge: null | BankaraMatchChallenge;
+
     historyDetails: {
-      nodes: BattleListNode[];
+      nodes: T[];
     };
   }[];
 };
@@ -96,13 +100,20 @@ export type ChallengeProgress = {
   loseCount: number;
 };
 // With challenge info
-export type VsBattle = {
-  type: "VsBattle";
+export type VsInfo = {
+  type: "VsInfo";
   listNode: null | BattleListNode;
   bankaraMatchChallenge: null | BankaraMatchChallenge;
   challengeProgress: null | ChallengeProgress;
   detail: VsHistoryDetail;
 };
+// Salmon run
+export type CoopInfo = {
+  type: "CoopInfo";
+  listNode: null | CoopListNode;
+  detail: CoopHistoryDetail;
+};
+export type Game = VsInfo | CoopInfo;
 export type VsHistoryDetail = {
   id: string;
   vsRule: {
@@ -138,16 +149,21 @@ export type VsHistoryDetail = {
   awards: { name: string; rank: string }[];
   duration: number;
 };
+export type CoopHistoryDetail = {
+  id: string;
+};
 
-export type BattleExporter<
-  D extends {
-    // type is seful when you implement more than one BattleExporter on the same class
+export type GameExporter<
+  T extends {
+    // type is seful when you implement more than one GameExporter on the same class
     type: string;
-  },
+  } = Game,
 > = {
   name: string;
-  notExported: (list: string[]) => Promise<string[]>;
-  exportBattle: (detail: D) => Promise<void>;
+  notExported: (
+    { type, list }: { type: T["type"]; list: string[] },
+  ) => Promise<string[]>;
+  exportGame: (game: T) => Promise<void>;
 };
 
 export type RespMap = {
@@ -171,29 +187,35 @@ export type RespMap = {
   };
   [Queries.LatestBattleHistoriesQuery]: {
     latestBattleHistories: {
-      historyGroups: HistoryGroups;
+      historyGroups: HistoryGroups<BattleListNode>;
     };
   };
   [Queries.RegularBattleHistoriesQuery]: {
     regularBattleHistories: {
-      historyGroups: HistoryGroups;
+      historyGroups: HistoryGroups<BattleListNode>;
     };
   };
   [Queries.BankaraBattleHistoriesQuery]: {
     bankaraBattleHistories: {
-      historyGroups: HistoryGroups;
+      historyGroups: HistoryGroups<BattleListNode>;
     };
   };
   [Queries.PrivateBattleHistoriesQuery]: {
     privateBattleHistories: {
-      historyGroups: HistoryGroups;
+      historyGroups: HistoryGroups<BattleListNode>;
     };
   };
   [Queries.VsHistoryDetailQuery]: {
     vsHistoryDetail: VsHistoryDetail;
   };
-  [Queries.CoopHistoryQuery]: Record<never, never>;
-  [Queries.CoopHistoryDetailQuery]: Record<never, never>;
+  [Queries.CoopHistoryQuery]: {
+    coopResult: {
+      historyGroups: HistoryGroups<CoopListNode>;
+    };
+  };
+  [Queries.CoopHistoryDetailQuery]: {
+    coopHistoryDetail: CoopHistoryDetail;
+  };
 };
 export type GraphQLResponse<T> = {
   data: T;
@@ -208,6 +230,7 @@ export enum BattleListType {
   Regular,
   Bankara,
   Private,
+  Coop,
 }
 
 export type StatInkPlayer = {

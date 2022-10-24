@@ -4,7 +4,7 @@ import { flags } from "./deps.ts";
 
 const parseArgs = (args: string[]) => {
   const parsed = flags.parse(args, {
-    string: ["profilePath", "exporter"],
+    string: ["profilePath", "exporter", "skipMode"],
     boolean: ["help", "noProgress", "monitor"],
     alias: {
       "help": "h",
@@ -12,6 +12,7 @@ const parseArgs = (args: string[]) => {
       "exporter": ["e"],
       "noProgress": ["n", "no-progress"],
       "monitor": ["m"],
+      "skipMode": ["s", "skip-mode"],
     },
   });
   return parsed;
@@ -28,6 +29,9 @@ Options:
                                  Multiple exporters can be separated by commas
                                  (e.g. "stat.ink,file")
     --no-progress, -n            Disable progress bar
+    --monitor, -m                Monitor mode
+    --skip-mode <mode>, -s       Skip mode (default: null)
+                                 ("vs", "coop")
     --help                       Show this help message and exit`,
   );
   Deno.exit(0);
