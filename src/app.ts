@@ -1,11 +1,16 @@
 import { getBulletToken, getGToken, loginManually } from "./iksm.ts";
 import { MultiProgressBar, Mutex } from "../deps.ts";
-import { DEFAULT_STATE, FileStateBackend, State, StateBackend } from "./state.ts";
 import {
-  checkToken,
+  DEFAULT_STATE,
+  FileStateBackend,
+  State,
+  StateBackend,
+} from "./state.ts";
+import {
   getBankaraBattleHistories,
   getBattleDetail,
   getBattleList,
+  isTokenExpired,
 } from "./splatnet3.ts";
 import {
   BattleExporter,
@@ -17,7 +22,14 @@ import {
 import { Cache, FileCache, MemoryCache } from "./cache.ts";
 import { StatInkExporter } from "./exporters/stat.ink.ts";
 import { FileExporter } from "./exporters/file.ts";
-import { battleId, delay, readline, showError } from "./utils.ts";
+import {
+  battleId,
+  delay,
+  readline,
+  RecoverableError,
+  retryRecoverableError,
+  showError,
+} from "./utils.ts";
 
 export type Opts = {
   profilePath: string;
@@ -159,9 +171,19 @@ type Progress = {
 export class App {
   state: State = DEFAULT_STATE;
   stateBackend: StateBackend;
+  recoveryToken: RecoverableError = {
+    name: "Refetch Token",
+    is: isTokenExpired,
+    recovery: async () => {
+      console.log("Token expired, refetch tokens.");
+
+      await this.fetchToken();
+    },
+  };
 
   constructor(public opts: Opts) {
-    this.stateBackend = opts.stateBackend ?? new FileStateBackend(opts.profilePath);
+    this.stateBackend = opts.stateBackend ??
+      new FileStateBackend(opts.profilePath);
   }
   async writeState(newState: State) {
     this.state = newState;
@@ -212,7 +234,10 @@ export class App {
 
     return out;
   }
-  async exportOnce() {
+  exportOnce() {
+    return retryRecoverableError(() => this._exportOnce(), this.recoveryToken);
+  }
+  async _exportOnce() {
     const bar = !this.opts.noProgress
       ? new MultiProgressBar({
         title: "Export battles",
@@ -220,58 +245,62 @@ export class App {
       })
       : undefined;
 
-    const exporters = await this.getExporters();
+    try {
+      const exporters = await this.getExporters();
 
-    const fetcher = new BattleFetcher({
-      cache: this.opts.cache ?? new FileCache(this.state.cacheDir),
-      state: this.state,
-    });
-    console.log("Fetching battle list...");
-    const battleList = await getBattleList(this.state);
+      const fetcher = new BattleFetcher({
+        cache: this.opts.cache ?? new FileCache(this.state.cacheDir),
+        state: this.state,
+      });
+      console.log("Fetching battle list...");
+      const battleList = await getBattleList(this.state);
 
-    const allProgress: Record<string, Progress> = {};
-    const redraw = (name: string, progress: Progress) => {
-      allProgress[name] = progress;
-      bar?.render(
-        Object.entries(allProgress).map(([name, progress]) => ({
-          completed: progress.current,
-          total: progress.total,
-          text: name,
-        })),
+      const allProgress: Record<string, Progress> = {};
+      const redraw = (name: string, progress: Progress) => {
+        allProgress[name] = progress;
+        bar?.render(
+          Object.entries(allProgress).map(([name, progress]) => ({
+            completed: progress.current,
+            total: progress.total,
+            text: name,
+          })),
+        );
+      };
+      const stats: Record<string, number> = Object.fromEntries(
+        exporters.map((e) => [e.name, 0]),
       );
-    };
-    const stats: Record<string, number> = Object.fromEntries(
-      exporters.map((e) => [e.name, 0]),
-    );
 
-    await Promise.all(
-      exporters.map((e) =>
-        showError(
-          this.exportBattleList({
-            fetcher,
-            exporter: e,
-            battleList,
-            onStep: (progress) => redraw(e.name, progress),
-          })
-            .then((count) => {
-              stats[e.name] = count;
-            }),
-        )
-          .catch((err) => {
-            console.error(`\nFailed to export to ${e.name}:`, err);
-          })
-      ),
-    );
+      await Promise.all(
+        exporters.map((e) =>
+          showError(
+            this.exportBattleList({
+              fetcher,
+              exporter: e,
+              battleList,
+              onStep: (progress) => redraw(e.name, progress),
+            })
+              .then((count) => {
+                stats[e.name] = count;
+              }),
+          )
+            .catch((err) => {
+              console.error(`\nFailed to export to ${e.name}:`, err);
+            })
+        ),
+      );
 
-    bar?.end();
+      bar?.end();
 
-    console.log(
-      `Exported ${
-        Object.entries(stats)
-          .map(([name, count]) => `${name}: ${count}`)
-          .join(", ")
-      }`,
-    );
+      console.log(
+        `Exported ${
+          Object.entries(stats)
+            .map(([name, count]) => `${name}: ${count}`)
+            .join(", ")
+        }`,
+      );
+    } finally {
+      bar?.end();
+    }
   }
   async monitor() {
     while (true) {
@@ -295,6 +324,36 @@ export class App {
     }
     bar?.end();
   }
+  async fetchToken() {
+    const sessionToken = this.state.loginState?.sessionToken;
+
+    if (!sessionToken) {
+      throw new Error("Session token is not set.");
+    }
+
+    const { webServiceToken, userCountry, userLang } = await getGToken({
+      fApi: this.state.fGen,
+      sessionToken,
+    });
+
+    const bulletToken = await getBulletToken({
+      webServiceToken,
+      userLang,
+      userCountry,
+      appUserAgent: this.state.appUserAgent,
+    });
+
+    await this.writeState({
+      ...this.state,
+      loginState: {
+        ...this.state.loginState,
+        gToken: webServiceToken,
+        bulletToken,
+      },
+      userLang: this.state.userLang ?? userLang,
+      userCountry: this.state.userCountry ?? userCountry,
+    });
+  }
   async run() {
     await this.readState();
 
@@ -307,35 +366,6 @@ export class App {
           ...this.state.loginState,
           sessionToken,
         },
-      });
-    }
-    const sessionToken = this.state.loginState!.sessionToken!;
-
-    console.log("Checking token...");
-    if (!await checkToken(this.state)) {
-      console.log("Token expired, refetch tokens.");
-
-      const { webServiceToken, userCountry, userLang } = await getGToken({
-        fApi: this.state.fGen,
-        sessionToken,
-      });
-
-      const bulletToken = await getBulletToken({
-        webServiceToken,
-        userLang,
-        userCountry,
-        appUserAgent: this.state.appUserAgent,
-      });
-
-      await this.writeState({
-        ...this.state,
-        loginState: {
-          ...this.state.loginState,
-          gToken: webServiceToken,
-          bulletToken,
-        },
-        userLang: this.state.userLang ?? userLang,
-        userCountry: this.state.userCountry ?? userCountry,
       });
     }
 

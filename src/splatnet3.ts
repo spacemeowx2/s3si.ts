@@ -66,6 +66,14 @@ async function request<Q extends Queries>(
   return json.data;
 }
 
+export const isTokenExpired = (e: unknown) => {
+  if (e instanceof APIError) {
+    return e.response.status === 401;
+  } else {
+    return false;
+  }
+};
+
 export async function checkToken(state: State) {
   if (
     !state.loginState?.sessionToken || !state.loginState?.bulletToken ||

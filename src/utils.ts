@@ -63,9 +63,9 @@ export function cache<F extends () => Promise<unknown>>(
   };
 }
 
-export async function showError(p: Promise<void>) {
+export async function showError<T>(p: Promise<T>): Promise<T> {
   try {
-    await p;
+    return await p;
   } catch (e) {
     if (e instanceof APIError) {
       console.error(
@@ -116,3 +116,35 @@ export function parseVsHistoryDetailId(id: string) {
 
 export const delay = (ms: number) =>
   new Promise<void>((resolve) => setTimeout(resolve, ms));
+
+export type RecoverableError = {
+  name: string;
+  is: (err: unknown) => boolean;
+  recovery: () => Promise<void>;
+  retryTimes?: number;
+  delayTime?: number;
+};
+export async function retryRecoverableError<F extends () => Promise<unknown>>(
+  f: F,
+  ...errors: RecoverableError[]
+): Promise<PromiseReturnType<F>> {
+  const retryTimes: Record<string, number> = Object.fromEntries(
+    errors.map(({ name, retryTimes }) => [name, retryTimes ?? 1]),
+  );
+  while (true) {
+    try {
+      return await f() as PromiseReturnType<F>;
+    } catch (e) {
+      const error = errors.find((error) => error.is(e));
+      if (error) {
+        if (retryTimes[error.name] > 0) {
+          retryTimes[error.name]--;
+          await error.recovery();
+          await delay(error.delayTime ?? 1000);
+          continue;
+        }
+      }
+      throw e;
+    }
+  }
+}
