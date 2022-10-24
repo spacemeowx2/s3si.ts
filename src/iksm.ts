@@ -318,7 +318,7 @@ async function getSessionToken({
 }): Promise<string | undefined> {
   const fetch = wrapFetch({ cookieJar });
 
-  const res = await fetch(
+  const resp = await fetch(
     "https://accounts.nintendo.com/connect/1.0.0/api/session_token",
     {
       method: "POST",
@@ -338,8 +338,15 @@ async function getSessionToken({
       }),
     },
   );
-  const resBody = await res.json();
-  return resBody["session_token"];
+  const json = await resp.json();
+  if (json.error) {
+    throw new APIError({
+      response: resp,
+      json,
+      message: "Error getting session token",
+    });
+  }
+  return json["session_token"];
 }
 
 type IminkResponse = {
