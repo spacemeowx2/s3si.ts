@@ -359,7 +359,7 @@ export class App {
       console.log("Fetching battle list...");
       const gameList = await getBattleList(this.state);
 
-      const { redraw, endBar } = this.exporterProgress("Export games");
+      const { redraw, endBar } = this.exporterProgress("Export vs games");
       const fetcher = new GameFetcher({
         cache: this.opts.cache ?? new FileCache(this.state.cacheDir),
         state: this.state,
@@ -397,7 +397,7 @@ export class App {
         BattleListType.Coop,
       );
 
-      const { redraw, endBar } = this.exporterProgress("Export games");
+      const { redraw, endBar } = this.exporterProgress("Export coop games");
       const fetcher = new GameFetcher({
         cache: this.opts.cache ?? new FileCache(this.state.cacheDir),
         state: this.state,
