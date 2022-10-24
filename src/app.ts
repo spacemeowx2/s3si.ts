@@ -562,6 +562,11 @@ export class App {
       for (const battle of workQueue) {
         await step(battle);
       }
+    } else {
+      onStep?.({
+        current: 1,
+        total: 1,
+      });
     }
 
     return exported;
