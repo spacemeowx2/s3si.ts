@@ -1,6 +1,8 @@
 # s3si.ts
 
-Export your battles from SplatNet to stat.ink
+Export your battles from SplatNet to stat.ink.
+
+If you have used s3s, please see [here](#migrate-from-s3s).
 
 ## Usage
 
@@ -16,8 +18,62 @@ Options:
                                  Multiple exporters can be separated by commas
                                  (e.g. "stat.ink,file")
     --no-progress, -n            Disable progress bar
-    --help                       Show this help message and exit
+    --monitor, -m                Monitor mode
+    --skip-mode <mode>, -s       Skip mode (default: null)
+                                 ("vs", "coop")
+    --help                       Show this help message and exit`,
 ```
+
+3. If it's your first time running this, follow the instructions to login to
+   Nintendo Account. Your token will be saved to `profile.json` for future use.
+
+- If you want to use a different profile, use `-p` to specify the path to the
+  profile file.
+
+### profile.json
+
+```js
+{
+  // cacheDir is the directory to store cache files
+  "cacheDir": "./cache",
+  // don't change this if you don't know what it is
+  "fGen": "https://api.imink.app/f",
+  // if you run with -e file, this is the directory to store exported files
+  "fileExportPath": "./export",
+  // the interval to check for new battles in monitor mode
+  "monitorInterval": 500,
+  // login token
+  "loginState": {
+    "sessionToken": "...",
+    "gToken": "...",
+    "bulletToken": "..."
+  },
+  // userLang will effect the language of the exported games to stat.ink
+  "userLang": "zh-CN",
+  "userCountry": "JP",
+  "statInkApiKey": "..."
+}
+```
+
+## Migrate from s3s
+
+If you have used `s3s` before, you can migrate your data to `s3si.ts` by
+creating a `profile.json` file with the following contents:
+
+```json
+{
+  "loginState": {
+    "sessionToken": "<session_token in your s3s' config.txt>"
+  },
+  "statInkApiKey": "<your stat.ink API key>"
+}
+```
+
+Then run `s3si.ts`, and it will work without login prompt.
+
+NOTE: `s3si.ts` can skip uploads of battle data already uploaded by `s3s`, but
+`s3s` can't. So if you have already started using `s3si.ts`, and then back to
+`s3s`, `s3s` will re-upload the battles that `s3si.ts` has already uploaded.
 
 ## Credits
 
