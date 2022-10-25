@@ -99,7 +99,6 @@ export function gameId(
 /**
  * @param id VsHistoryDetail id or CoopHistoryDetail id
  */
-//CoopHistoryDetail-u-quoeuj7rhknjq3jkanmm:20221022T065633_25287bf9-d9a8-42b0-b070-e938da103547
 export function parseHistoryDetailId(id: string) {
   const plainText = new TextDecoder().decode(base64.decode(id));
 
