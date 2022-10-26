@@ -44,7 +44,7 @@ export type BattleListNode = {
   _bid: string;
   id: string;
   udemae: string;
-  judgement: "LOSE" | "WIN" | "DEEMED_LOSE" | "EXEMPTED_LOSE";
+  judgement: "LOSE" | "WIN" | "DEEMED_LOSE" | "EXEMPTED_LOSE" | "DRAW";
 };
 export type CoopListNode = {
   id: string;
@@ -144,7 +144,7 @@ export type VsHistoryDetail = {
 
   myTeam: VsTeam;
   otherTeams: VsTeam[];
-  judgement: "LOSE" | "WIN" | "DEEMED_LOSE" | "EXEMPTED_LOSE";
+  judgement: "LOSE" | "WIN" | "DEEMED_LOSE" | "EXEMPTED_LOSE" | "DRAW";
   knockout: null | undefined | "NEITHER" | "WIN" | "LOSE";
   awards: { name: string; rank: string }[];
   duration: number;

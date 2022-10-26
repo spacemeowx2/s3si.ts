@@ -38,6 +38,7 @@ export const SPLATNET3_STATINK_MAP: {
     LOSE: "lose",
     DEEMED_LOSE: "lose",
     EXEMPTED_LOSE: "exempted_lose",
+    DRAW: "draw",
   },
   DRAGON: {
     NORMAL: undefined,
