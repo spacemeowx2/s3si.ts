@@ -1,7 +1,7 @@
 import type { StatInkPostBody, VsHistoryDetail } from "./types.ts";
 
 export const AGENT_NAME = "s3si.ts";
-export const S3SI_VERSION = "0.1.10";
+export const S3SI_VERSION = "0.1.11";
 export const NSOAPP_VERSION = "2.3.1";
 export const WEB_VIEW_VERSION = "1.0.0-5644e7a2";
 export const S3SI_LINK = "https://github.com/spacemeowx2/s3si.ts";
@@ -14,6 +14,7 @@ export const DEFAULT_APP_USER_AGENT =
 export const SPLATNET3_URL = "https://api.lp1.av5ja.srv.nintendo.net";
 export const SPLATNET3_ENDPOINT =
   "https://api.lp1.av5ja.srv.nintendo.net/api/graphql";
+export const S3S_NAMESPACE = "b3a2dbf5-2c09-4792-b78c-00b548b70aeb";
 export const S3SI_NAMESPACE = "63941e1c-e32e-4b56-9a1d-f6fbe19ef6e1";
 
 export const SPLATNET3_STATINK_MAP: {
