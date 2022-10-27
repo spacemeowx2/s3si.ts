@@ -13,7 +13,6 @@ import {
   RespMap,
   VarsMap,
 } from "./types.ts";
-import { gameId } from "./utils.ts";
 
 async function request<Q extends Queries>(
   state: State,
@@ -154,11 +153,7 @@ export function getCoopDetail(
 
 export async function getBankaraBattleHistories(state: State) {
   const resp = await request(state, Queries.BankaraBattleHistoriesQuery);
-  for (const i of resp.bankaraBattleHistories.historyGroups.nodes) {
-    for (const j of i.historyDetails.nodes) {
-      j._bid = await gameId(j.id);
-    }
-  }
+
   return resp;
 }
 

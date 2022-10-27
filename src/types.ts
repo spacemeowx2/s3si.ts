@@ -40,8 +40,6 @@ export type BankaraMatchChallenge = {
   earnedUdemaePoint: number | null;
 };
 export type BattleListNode = {
-  // battle id added after fetch
-  _bid: string;
   id: string;
   udemae: string;
   judgement: "LOSE" | "WIN" | "DEEMED_LOSE" | "EXEMPTED_LOSE" | "DRAW";

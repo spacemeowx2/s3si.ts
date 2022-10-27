@@ -72,13 +72,12 @@ class GameFetcher {
     this.state = state;
     this.cache = cache;
   }
-  private async getLock(id: string): Promise<Mutex> {
-    const bid = await gameId(id);
+  private getLock(id: string): Mutex {
+    let cur = this.lock[id];
 
-    let cur = this.lock[bid];
     if (!cur) {
       cur = new Mutex();
-      this.lock[bid] = cur;
+      this.lock[id] = cur;
     }
 
     return cur;
@@ -137,10 +136,18 @@ class GameFetcher {
     };
   }
   async getBattleMetaById(id: string): Promise<Omit<VsInfo, "detail">> {
-    const bid = await gameId(id);
+    const gid = await gameId(id);
     const bankaraHistory = await this.getBankaraHistory();
+    const gameIdMap = new Map<BattleListNode, string>();
+
+    for (const i of bankaraHistory) {
+      for (const j of i.historyDetails.nodes) {
+        gameIdMap.set(j, await gameId(j.id));
+      }
+    }
+
     const group = bankaraHistory.find((i) =>
-      i.historyDetails.nodes.some((i) => i._bid === bid)
+      i.historyDetails.nodes.some((i) => gameIdMap.get(i) === gid)
     );
 
     if (!group) {
@@ -153,8 +160,9 @@ class GameFetcher {
     }
 
     const { bankaraMatchChallenge } = group;
-    const listNode = group.historyDetails.nodes.find((i) => i._bid === bid) ??
-      null;
+    const listNode =
+      group.historyDetails.nodes.find((i) => gameIdMap.get(i) === gid) ??
+        null;
     const index = group.historyDetails.nodes.indexOf(listNode!);
 
     let challengeProgress: null | ChallengeProgress = null;
@@ -179,11 +187,11 @@ class GameFetcher {
       challengeProgress,
     };
   }
-  async cacheDetail<T>(
+  cacheDetail<T>(
     id: string,
     getter: () => Promise<T>,
   ): Promise<T> {
-    const lock = await this.getLock(id);
+    const lock = this.getLock(id);
 
     return lock.use(async () => {
       const cached = await this.cache.read<T>(id);
