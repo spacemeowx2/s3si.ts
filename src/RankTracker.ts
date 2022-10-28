@@ -1,14 +1,6 @@
 import { RankState } from "./state.ts";
-import { GameFetcher } from "./GameFetcher.ts";
-
-type RankParam = {
-  rank: string;
-  pointRange: [number, number];
-  entrance: number;
-  openWin: number;
-  openLose: number;
-  rankUp?: boolean;
-};
+import { BattleListNode, HistoryGroups, RankParam } from "./types.ts";
+import { gameId, parseHistoryDetailId } from "./utils.ts";
 
 const splusParams = () => {
   const out: RankParam[] = [];
@@ -18,12 +10,10 @@ const splusParams = () => {
     const item: RankParam = {
       rank: `S+${i}`,
       pointRange: [300 + level * 350, 300 + (level + 1) * 350],
-      entrance: 160,
-      openWin: 8,
-      openLose: 5,
+      charge: 160,
     };
     if (level === 9) {
-      item.rankUp = true;
+      item.promotion = true;
     }
     out.push(item);
   }
@@ -31,9 +21,7 @@ const splusParams = () => {
   out.push({
     rank: "S+50",
     pointRange: [0, 9999],
-    entrance: 160,
-    openWin: 8,
-    openLose: 5,
+    charge: 160,
   });
 
   return out;
@@ -42,72 +30,227 @@ const splusParams = () => {
 export const RANK_PARAMS: RankParam[] = [{
   rank: "C-",
   pointRange: [0, 200],
-  entrance: 0,
-  openWin: 8,
-  openLose: 1,
+  charge: 0,
 }, {
   rank: "C",
   pointRange: [200, 400],
-  entrance: 20,
-  openWin: 8,
-  openLose: 1,
+  charge: 20,
 }, {
   rank: "C+",
   pointRange: [400, 600],
-  entrance: 40,
-  openWin: 8,
-  openLose: 1,
-  rankUp: true,
+  charge: 40,
+  promotion: true,
 }, {
   rank: "B-",
   pointRange: [100, 350],
-  entrance: 55,
-  openWin: 8,
-  openLose: 2,
+  charge: 55,
 }, {
   rank: "B",
   pointRange: [350, 600],
-  entrance: 70,
-  openWin: 8,
-  openLose: 2,
+  charge: 70,
 }, {
   rank: "B+",
   pointRange: [600, 850],
-  entrance: 85,
-  openWin: 8,
-  openLose: 2,
-  rankUp: true,
+  charge: 85,
+  promotion: true,
 }, {
   rank: "A-",
   pointRange: [200, 500],
-  entrance: 100,
-  openWin: 8,
-  openLose: 3,
+  charge: 100,
 }, {
   rank: "A",
   pointRange: [500, 800],
-  entrance: 110,
-  openWin: 8,
-  openLose: 3,
+  charge: 110,
 }, {
   rank: "A+",
   pointRange: [800, 1100],
-  entrance: 120,
-  openWin: 8,
-  openLose: 3,
-  rankUp: true,
+  charge: 120,
+  promotion: true,
 }, {
   rank: "S",
   pointRange: [300, 1000],
-  entrance: 150,
-  openWin: 8,
-  openLose: 4,
-  rankUp: true,
+  charge: 150,
+  promotion: true,
 }, ...splusParams()];
+
+type Delta = {
+  beforeGameId: string;
+  gameId: string;
+  rankPoint: number;
+  isRankUp: boolean;
+  isChallengeFirst: boolean;
+};
+
+function addRank(state: RankState, delta: Delta): RankState {
+  const { rank, rankPoint } = state;
+  const { gameId, isRankUp, isChallengeFirst } = delta;
+
+  const rankIndex = RANK_PARAMS.findIndex((r) => r.rank === rank);
+
+  if (rankIndex === -1) {
+    throw new Error(`Rank not found: ${rank}`);
+  }
+
+  const rankParam = RANK_PARAMS[rankIndex];
+
+  if (isChallengeFirst) {
+    return {
+      gameId,
+      rank,
+      rankPoint: rankPoint - rankParam.charge,
+    };
+  }
+
+  // S+50 is the highest rank
+  if (rankIndex === RANK_PARAMS.length - 1) {
+    return {
+      gameId,
+      rank,
+      rankPoint: Math.min(rankPoint + delta.rankPoint, rankParam.pointRange[1]),
+    };
+  }
+
+  if (isRankUp) {
+    const nextRankParam = RANK_PARAMS[rankIndex + 1];
+
+    return {
+      gameId,
+      rank: nextRankParam.rank,
+      rankPoint: nextRankParam.pointRange[0],
+    };
+  }
+
+  return {
+    gameId,
+    rank,
+    rankPoint: rankPoint + delta.rankPoint,
+  };
+}
+
+const battleTime = (id: string) => {
+  const { timestamp } = parseHistoryDetailId(id);
+
+  const dateStr = timestamp.replace(
+    /(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})/,
+    "$1-$2-$3T$4:$5:$6Z",
+  );
+
+  return new Date(dateStr);
+};
 
 /**
  * if state is empty, it will not track rank.
  */
 export class RankTracker {
-  constructor(private state?: RankState) {}
+  // key: privous game id
+  deltaMap: Map<string, Delta> = new Map();
+
+  constructor(private state: RankState | undefined) {}
+
+  async getRankStateById(id: string): Promise<RankState | undefined> {
+    if (!this.state) {
+      return undefined;
+    }
+    const gid = await gameId(id);
+
+    let cur = this.state;
+    while (cur.gameId !== gid) {
+      const delta = this.deltaMap.get(cur.gameId);
+      if (!delta) {
+        throw new Error("Delta not found");
+      }
+      cur = addRank(cur, delta);
+    }
+
+    return cur;
+  }
+
+  setState(state: RankState | undefined) {
+    this.state = state;
+  }
+
+  async updateState(
+    hisotry: HistoryGroups<BattleListNode>["nodes"],
+  ) {
+    if (!this.state) {
+      return;
+    }
+
+    const flatten = await Promise.all(
+      hisotry
+        .flatMap(
+          ({ historyDetails, bankaraMatchChallenge }) => {
+            return historyDetails.nodes.map((j, index) => ({
+              time: battleTime(j.id),
+              gameId: gameId(j.id),
+              bankaraMatchChallenge,
+              index,
+              groupLength: historyDetails.nodes.length,
+              detail: j,
+            }));
+          },
+        )
+        .sort((a, b) => a.time.getTime() - b.time.getTime())
+        .map((i) => i.gameId.then((gameId) => ({ ...i, gameId }))),
+    );
+
+    const index = flatten.findIndex((i) => i.gameId === this.state!.gameId);
+
+    if (index === -1) {
+      return;
+    }
+
+    const unProcessed = flatten.slice(index);
+    const deltaList: Delta[] = [];
+    let beforeGameId = this.state.gameId;
+
+    for (const i of unProcessed.slice(1)) {
+      if (!i.detail.bankaraMatch) {
+        throw new TypeError("bankaraMatch must be defined");
+      }
+
+      let delta: Delta = {
+        beforeGameId,
+        gameId: i.gameId,
+        rankPoint: 0,
+        isRankUp: false,
+        isChallengeFirst: false,
+      };
+      beforeGameId = i.gameId;
+      // challenge
+      if (i.bankaraMatchChallenge) {
+        if (i.index === 0 && i.bankaraMatchChallenge.state !== "INPROGRESS") {
+          // last battle in challenge
+          delta = {
+            ...delta,
+            rankPoint: i.bankaraMatchChallenge.earnedUdemaePoint ?? 0,
+            isRankUp: i.bankaraMatchChallenge.isUdemaeUp ?? false,
+            isChallengeFirst: i.index === 0,
+          };
+        } else if (i.index === i.groupLength - 1) {
+          // first battle in challenge
+          delta = {
+            ...delta,
+            isChallengeFirst: true,
+          };
+        }
+      } else {
+        delta = {
+          ...delta,
+          rankPoint: i.detail.bankaraMatch?.earnedUdemaePoint,
+        };
+      }
+
+      deltaList.push(delta);
+    }
+
+    let curState = this.state;
+
+    for (const delta of deltaList) {
+      this.deltaMap.set(delta.beforeGameId, delta);
+      curState = addRank(curState, delta);
+    }
+
+    return curState;
+  }
 }

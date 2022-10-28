@@ -1,5 +1,5 @@
 import { Mutex } from "../deps.ts";
-import { State } from "./state.ts";
+import { RankState, State } from "./state.ts";
 import {
   getBankaraBattleHistories,
   getBattleDetail,
@@ -17,6 +17,7 @@ import {
 } from "./types.ts";
 import { Cache, MemoryCache } from "./cache.ts";
 import { gameId } from "./utils.ts";
+import { RankTracker } from "./RankTracker.ts";
 
 /**
  * Fetch game and cache it. It also fetches bankara match challenge info.
@@ -24,6 +25,8 @@ import { gameId } from "./utils.ts";
 export class GameFetcher {
   state: State;
   cache: Cache;
+  rankTracker: RankTracker;
+
   lock: Record<string, Mutex | undefined> = {};
   bankaraLock = new Mutex();
   bankaraHistory?: HistoryGroups<BattleListNode>["nodes"];
@@ -35,6 +38,7 @@ export class GameFetcher {
   ) {
     this.state = state;
     this.cache = cache;
+    this.rankTracker = new RankTracker(state.rankState);
   }
   private getLock(id: string): Mutex {
     let cur = this.lock[id];
@@ -45,6 +49,21 @@ export class GameFetcher {
     }
 
     return cur;
+  }
+
+  setRankState(state: RankState | undefined) {
+    this.rankTracker.setState(state);
+  }
+
+  async updateRank(): Promise<RankState | undefined> {
+    const finalState = await this.rankTracker.updateState(
+      await this.getBankaraHistory(),
+    );
+    return finalState;
+  }
+
+  getRankStateById(id: string): Promise<RankState | undefined> {
+    return this.rankTracker.getRankStateById(id);
   }
 
   getBankaraHistory() {
@@ -120,6 +139,7 @@ export class GameFetcher {
         challengeProgress: null,
         bankaraMatchChallenge: null,
         listNode: null,
+        rankState: null,
       };
     }
 
@@ -149,6 +169,7 @@ export class GameFetcher {
       bankaraMatchChallenge,
       listNode,
       challengeProgress,
+      rankState: await this.rankTracker.getRankStateById(id) ?? null,
     };
   }
   cacheDetail<T>(

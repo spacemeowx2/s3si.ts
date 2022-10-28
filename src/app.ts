@@ -169,6 +169,8 @@ export class App {
         state: this.state,
       });
 
+      const finalRankState = await fetcher.updateRank();
+
       await Promise.all(
         exporters.map((e) =>
           showError(
@@ -188,6 +190,13 @@ export class App {
             })
         ),
       );
+
+      // save rankState only if all exporters succeeded
+      fetcher.setRankState(finalRankState);
+      await this.writeState({
+        ...this.state,
+        rankState: finalRankState,
+      });
 
       endBar();
     }

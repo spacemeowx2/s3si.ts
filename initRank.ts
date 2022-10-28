@@ -80,7 +80,7 @@ if (battleList.length === 0) {
 const { vsHistoryDetail: detail } = await getBattleDetail(state, battleList[0]);
 
 console.log(
-  `Your latest battle is played at ${
+  `Your latest anarchy battle is played at ${
     new Date(detail.playedTime).toLocaleString()
   }. Please enter your rank after this battle(format: RANK,POINT. S+0,300):`,
 );
