@@ -143,9 +143,9 @@ const battleTime = (id: string) => {
  */
 export class RankTracker {
   // key: privous game id
-  deltaMap: Map<string, Delta> = new Map();
+  protected deltaMap: Map<string, Delta> = new Map();
 
-  constructor(private state: RankState | undefined) {}
+  constructor(protected state: RankState | undefined) {}
 
   async getRankStateById(id: string): Promise<RankState | undefined> {
     if (!this.state) {
