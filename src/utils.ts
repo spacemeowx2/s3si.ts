@@ -19,9 +19,11 @@ export function urlBase64Decode(data: string) {
   );
 }
 
-export async function readline() {
+export async function readline(
+  { skipEmpty = true }: { skipEmpty?: boolean } = {},
+) {
   for await (const line of stdinLines) {
-    if (line !== "") {
+    if (!skipEmpty || line !== "") {
       return line;
     }
   }
