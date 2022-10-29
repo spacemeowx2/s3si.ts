@@ -76,6 +76,7 @@ export const RANK_PARAMS: RankParam[] = [{
 type Delta = {
   beforeGameId: string;
   gameId: string;
+  rankAfter?: string;
   rankPoint: number;
   isRankUp: boolean;
   isChallengeFirst: boolean;
@@ -83,7 +84,7 @@ type Delta = {
 
 function addRank(state: RankState, delta: Delta): RankState {
   const { rank, rankPoint } = state;
-  const { gameId, isRankUp, isChallengeFirst } = delta;
+  const { gameId, rankAfter, isRankUp, isChallengeFirst } = delta;
 
   const rankIndex = RANK_PARAMS.findIndex((r) => r.rank === rank);
 
@@ -122,7 +123,7 @@ function addRank(state: RankState, delta: Delta): RankState {
 
   return {
     gameId,
-    rank,
+    rank: rankAfter ?? rank,
     rankPoint: rankPoint + delta.rankPoint,
   };
 }
@@ -149,7 +150,7 @@ export class RankTracker {
 
   async getRankStateById(id: string): Promise<RankState | undefined> {
     if (!this.state) {
-      return undefined;
+      return;
     }
     const gid = await gameId(id);
 
@@ -157,7 +158,7 @@ export class RankTracker {
     while (cur.gameId !== gid) {
       const delta = this.deltaMap.get(cur.gameId);
       if (!delta) {
-        throw new Error("Delta not found");
+        return;
       }
       cur = addRank(cur, delta);
     }
@@ -217,12 +218,13 @@ export class RankTracker {
         isChallengeFirst: false,
       };
       beforeGameId = i.gameId;
-      // challenge
       if (i.bankaraMatchChallenge) {
+        // challenge
         if (i.index === 0 && i.bankaraMatchChallenge.state !== "INPROGRESS") {
           // last battle in challenge
           delta = {
             ...delta,
+            rankAfter: i.bankaraMatchChallenge.udemaeAfter ?? undefined,
             rankPoint: i.bankaraMatchChallenge.earnedUdemaePoint ?? 0,
             isRankUp: i.bankaraMatchChallenge.isUdemaeUp ?? false,
             isChallengeFirst: i.index === 0,
@@ -235,8 +237,11 @@ export class RankTracker {
           };
         }
       } else {
+        // open
         delta = {
           ...delta,
+          // TODO: is this right?
+          rankAfter: i.detail.udemae,
           rankPoint: i.detail.bankaraMatch?.earnedUdemaePoint,
         };
       }
