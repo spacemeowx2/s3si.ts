@@ -78,14 +78,14 @@ type Delta = {
   gameId: string;
   rankAfter?: string;
   rankPoint: number;
-  isRankUp: boolean;
+  isPromotion: boolean;
   isChallengeFirst: boolean;
 };
 
 // TODO: auto rank up using rank params and delta.
 function addRank(state: RankState, delta: Delta): RankState {
   const { rank, rankPoint } = state;
-  const { gameId, rankAfter, isRankUp, isChallengeFirst } = delta;
+  const { gameId, rankAfter, isPromotion, isChallengeFirst } = delta;
 
   const rankIndex = RANK_PARAMS.findIndex((r) => r.rank === rank);
 
@@ -112,7 +112,7 @@ function addRank(state: RankState, delta: Delta): RankState {
     };
   }
 
-  if (isRankUp) {
+  if (isPromotion) {
     const nextRankParam = RANK_PARAMS[rankIndex + 1];
 
     return {
@@ -222,7 +222,7 @@ export class RankTracker {
         beforeGameId,
         gameId: i.gameId,
         rankPoint: 0,
-        isRankUp: false,
+        isPromotion: false,
         isChallengeFirst: false,
       };
       beforeGameId = i.gameId;
@@ -234,7 +234,7 @@ export class RankTracker {
             ...delta,
             rankAfter: i.bankaraMatchChallenge.udemaeAfter ?? undefined,
             rankPoint: i.bankaraMatchChallenge.earnedUdemaePoint ?? 0,
-            isRankUp: i.bankaraMatchChallenge.isUdemaeUp ?? false,
+            isPromotion: i.bankaraMatchChallenge.isPromo ?? false,
             isChallengeFirst: false,
           };
         } else if (i.index === i.groupLength - 1) {
