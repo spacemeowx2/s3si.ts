@@ -82,6 +82,7 @@ type Delta = {
   isChallengeFirst: boolean;
 };
 
+// TODO: auto rank up using rank params and delta.
 function addRank(state: RankState, delta: Delta): RankState {
   const { rank, rankPoint } = state;
   const { gameId, rankAfter, isRankUp, isChallengeFirst } = delta;
@@ -148,22 +149,29 @@ export class RankTracker {
 
   constructor(protected state: RankState | undefined) {}
 
-  async getRankStateById(id: string): Promise<RankState | undefined> {
+  async getRankStateById(
+    id: string,
+  ): Promise<{ before: RankState; after: RankState } | undefined> {
     if (!this.state) {
       return;
     }
     const gid = await gameId(id);
 
     let cur = this.state;
+    let before = cur;
     while (cur.gameId !== gid) {
       const delta = this.deltaMap.get(cur.gameId);
       if (!delta) {
         return;
       }
+      before = cur;
       cur = addRank(cur, delta);
     }
 
-    return cur;
+    return {
+      before,
+      after: cur,
+    };
   }
 
   setState(state: RankState | undefined) {
@@ -240,7 +248,7 @@ export class RankTracker {
         // open
         delta = {
           ...delta,
-          // TODO: is this right?
+          // TODO: rankAfter should be undefined in open battle
           rankAfter: i.detail.udemae,
           rankPoint: i.detail.bankaraMatch?.earnedUdemaePoint,
         };

@@ -115,6 +115,7 @@ export type VsInfo = {
   bankaraMatchChallenge: null | BankaraMatchChallenge;
   challengeProgress: null | ChallengeProgress;
   rankState: null | RankState;
+  rankBeforeState: null | RankState;
   detail: VsHistoryDetail;
 };
 // Salmon run

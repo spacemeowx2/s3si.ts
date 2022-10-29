@@ -62,7 +62,7 @@ export class GameFetcher {
     return finalState;
   }
 
-  getRankStateById(id: string): Promise<RankState | undefined> {
+  getRankStateById(id: string) {
     return this.rankTracker.getRankStateById(id);
   }
 
@@ -140,6 +140,7 @@ export class GameFetcher {
         bankaraMatchChallenge: null,
         listNode: null,
         rankState: null,
+        rankBeforeState: null,
       };
     }
 
@@ -164,12 +165,15 @@ export class GameFetcher {
       };
     }
 
+    const { before, after } = await this.rankTracker.getRankStateById(id) ?? {};
+
     return {
       type: "VsInfo",
       bankaraMatchChallenge,
       listNode,
       challengeProgress,
-      rankState: await this.rankTracker.getRankStateById(id) ?? null,
+      rankState: after ?? null,
+      rankBeforeState: before ?? null,
     };
   }
   cacheDetail<T>(

@@ -173,8 +173,14 @@ export class StatInkExporter implements GameExporter {
     return result;
   }
   async mapBattle(
-    { challengeProgress, bankaraMatchChallenge, listNode, detail: vsDetail }:
-      VsInfo,
+    {
+      challengeProgress,
+      bankaraMatchChallenge,
+      listNode,
+      detail: vsDetail,
+      rankBeforeState,
+      rankState,
+    }: VsInfo,
   ): Promise<StatInkPostBody> {
     const {
       knockout,
@@ -274,6 +280,19 @@ export class StatInkExporter implements GameExporter {
 
       result.challenge_win = challengeProgress.winCount;
       result.challenge_lose = challengeProgress.loseCount;
+    }
+
+    if (rankBeforeState) {
+      result.rank_before_exp = rankBeforeState.rankPoint;
+    }
+
+    if (rankState) {
+      result.rank_after_exp = rankState.rankPoint;
+      if (!result.rank_after) {
+        [result.rank_after, result.rank_after_s_plus] = parseUdemae(
+          rankState.rank,
+        );
+      }
     }
 
     return result;
