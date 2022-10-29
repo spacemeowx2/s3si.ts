@@ -250,7 +250,7 @@ export class RankTracker {
           ...delta,
           // TODO: rankAfter should be undefined in open battle
           rankAfter: i.detail.udemae,
-          rankPoint: i.detail.bankaraMatch?.earnedUdemaePoint,
+          rankPoint: i.detail.bankaraMatch?.earnedUdemaePoint ?? 0,
         };
       }
 

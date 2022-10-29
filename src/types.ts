@@ -52,7 +52,7 @@ export type BattleListNode = {
     id: string;
   };
   bankaraMatch: null | {
-    earnedUdemaePoint: number;
+    earnedUdemaePoint: null | number;
   };
 };
 export type CoopListNode = {

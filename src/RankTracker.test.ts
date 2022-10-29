@@ -55,6 +55,59 @@ function genOpenWins(
   return result;
 }
 
+Deno.test("RankTracker tracks challenge charge", async () => {
+  const tracker = new TestRankTracker(INIT_STATE);
+  assertEquals(tracker.testGet(), {
+    state: INIT_STATE,
+    deltaMap: new Map(),
+  });
+
+  const finalState = await tracker.updateState([{
+    bankaraMatchChallenge: {
+      winCount: 1,
+      loseCount: 0,
+      maxWinCount: 5,
+      maxLoseCount: 3,
+      isPromo: false,
+      isUdemaeUp: false,
+      udemaeAfter: null,
+      earnedUdemaePoint: null,
+      state: "INPROGRESS",
+    },
+    historyDetails: {
+      nodes: [
+        {
+          id: genId(2),
+          udemae: "B-",
+          judgement: "WIN",
+          bankaraMatch: {
+            earnedUdemaePoint: null,
+          },
+          nextHistoryDetail: null,
+          previousHistoryDetail: null,
+        },
+      ],
+    },
+  }, {
+    bankaraMatchChallenge: null,
+    historyDetails: {
+      nodes: genOpenWins({
+        startId: 0,
+        count: 1,
+        udemae: "B-",
+      }),
+    },
+  }]);
+
+  assertEquals(tracker.testGet().state, INIT_STATE);
+
+  assertEquals(finalState, {
+    gameId: await gameId(genId(2)),
+    rank: "B-",
+    rankPoint: 45,
+  });
+});
+
 Deno.test("RankTracker", async () => {
   const tracker = new TestRankTracker(INIT_STATE);
   assertEquals(tracker.testGet(), {
@@ -81,13 +134,13 @@ Deno.test("RankTracker", async () => {
     rankPoint: 244,
   });
 
-  assertEquals(await tracker.getRankStateById(genId(1)), {
+  assertEquals((await tracker.getRankStateById(genId(1)))?.after, {
     gameId: await gameId(genId(1)),
     rank: "B-",
     rankPoint: 108,
   });
 
-  assertEquals(await tracker.getRankStateById(genId(17)), {
+  assertEquals((await tracker.getRankStateById(genId(17)))?.after, {
     gameId: await gameId(genId(17)),
     rank: "B-",
     rankPoint: 236,
@@ -121,7 +174,7 @@ Deno.test("RankTracker", async () => {
     },
   }]);
 
-  assertEquals(await tracker.getRankStateById(genId(29)), {
+  assertEquals((await tracker.getRankStateById(genId(29)))?.after, {
     gameId: await gameId(genId(29)),
     rank: "B-",
     rankPoint: 332,
