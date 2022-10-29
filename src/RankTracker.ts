@@ -235,7 +235,7 @@ export class RankTracker {
             rankAfter: i.bankaraMatchChallenge.udemaeAfter ?? undefined,
             rankPoint: i.bankaraMatchChallenge.earnedUdemaePoint ?? 0,
             isRankUp: i.bankaraMatchChallenge.isUdemaeUp ?? false,
-            isChallengeFirst: i.index === 0,
+            isChallengeFirst: false,
           };
         } else if (i.index === i.groupLength - 1) {
           // first battle in challenge
