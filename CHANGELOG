@@ -1,3 +1,33 @@
+0.1.12
+
+feat: add rank tracker
+
+0.1.11
+
+feat: use s3s' namespace. (see https://github.com/frozenpandaman/s3s/issues/65 for detail)
+refactor: remove `_bid` in exported file
+
+0.1.10
+
+fix: missing draw judgement
+
+0.1.9
+
+update WEB_VIEW_VERSION
+
+0.1.8
+
+feat: add coop export
+
+0.1.7
+
+feat: refetch token when 401 close #5
+feat: add github link to UA
+
+0.1.6
+
+fix: wrong base64 encode/decode. (#4)
+
 0.1.5
 
 fix: rank_up sent on last battle of challenge
