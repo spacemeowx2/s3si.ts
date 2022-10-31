@@ -1,3 +1,5 @@
+import { RankState } from "./state.ts";
+
 export enum Queries {
   HomeQuery = "dba47124d5ec3090c97ba17db5d2f4b3",
   LatestBattleHistoriesQuery = "7d8b560e31617e981cf7c8aa1ca13a00",
@@ -43,6 +45,9 @@ export type BattleListNode = {
   id: string;
   udemae: string;
   judgement: "LOSE" | "WIN" | "DEEMED_LOSE" | "EXEMPTED_LOSE" | "DRAW";
+  bankaraMatch: null | {
+    earnedUdemaePoint: null | number;
+  };
 };
 export type CoopListNode = {
   id: string;
@@ -103,6 +108,8 @@ export type VsInfo = {
   listNode: null | BattleListNode;
   bankaraMatchChallenge: null | BankaraMatchChallenge;
   challengeProgress: null | ChallengeProgress;
+  rankState: null | RankState;
+  rankBeforeState: null | RankState;
   detail: VsHistoryDetail;
 };
 // Salmon run
@@ -164,6 +171,12 @@ export type GameExporter<
   exportGame: (game: T) => Promise<{ url?: string }>;
 };
 
+export type BankaraBattleHistories = {
+  bankaraBattleHistories: {
+    historyGroups: HistoryGroups<BattleListNode>;
+  };
+};
+
 export type RespMap = {
   [Queries.HomeQuery]: {
     currentPlayer: {
@@ -193,11 +206,7 @@ export type RespMap = {
       historyGroups: HistoryGroups<BattleListNode>;
     };
   };
-  [Queries.BankaraBattleHistoriesQuery]: {
-    bankaraBattleHistories: {
-      historyGroups: HistoryGroups<BattleListNode>;
-    };
-  };
+  [Queries.BankaraBattleHistoriesQuery]: BankaraBattleHistories;
   [Queries.PrivateBattleHistoriesQuery]: {
     privateBattleHistories: {
       historyGroups: HistoryGroups<BattleListNode>;
@@ -329,4 +338,11 @@ export type StatInkPostResponse = {
 } & {
   id: string;
   url: string;
+};
+
+export type RankParam = {
+  rank: string;
+  pointRange: [number, number];
+  charge: number;
+  promotion?: boolean;
 };

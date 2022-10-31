@@ -30,6 +30,18 @@ Options:
 - If you want to use a different profile, use `-p` to specify the path to the
   profile file.
 
+### Track your rank
+
+- Run
+  `deno run -Ar https://raw.githubusercontent.com/spacemeowx2/s3si.ts/main/initRank.ts`
+  to initialize your rank data. (You can also use `-p` to specify the path to
+  the profile file.)
+
+- Then enter your current rank and rank point. For example: `S+0,300`. And the
+  rank will be saved in the `profile.json`.
+
+- After that, run `s3si.ts`, the rank point will be reported to `stat.ink`.
+
 ### profile.json
 
 ```js
