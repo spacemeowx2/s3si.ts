@@ -46,14 +46,121 @@ function genOpenWins(
       bankaraMatch: {
         earnedUdemaePoint: 8,
       },
-      nextHistoryDetail: null,
-      previousHistoryDetail: null,
     });
     id += 1;
   }
 
   return result;
 }
+
+Deno.test("RankTracker tracks promotion, ignoring INPROGRESS", async () => {
+  const INIT_STATE = {
+    gameId: await gameId(genId(0)),
+    rank: "B+",
+    rankPoint: 850,
+  };
+
+  const tracker = new TestRankTracker(INIT_STATE);
+  assertEquals(tracker.testGet(), {
+    state: INIT_STATE,
+    deltaMap: new Map(),
+  });
+
+  const finalState = await tracker.updateState([{
+    bankaraMatchChallenge: {
+      winCount: 2,
+      loseCount: 0,
+      maxWinCount: 3,
+      maxLoseCount: 3,
+      state: "INPROGRESS",
+      isPromo: true,
+      isUdemaeUp: true,
+      udemaeAfter: "A-",
+      earnedUdemaePoint: null,
+    },
+    historyDetails: {
+      nodes: [{
+        id: await genId(1),
+        udemae: "B+",
+        judgement: "WIN",
+        bankaraMatch: {
+          earnedUdemaePoint: null,
+        },
+      }, {
+        id: await genId(0),
+        udemae: "B+",
+        judgement: "WIN",
+        bankaraMatch: {
+          earnedUdemaePoint: null,
+        },
+      }],
+    },
+  }]);
+
+  assertEquals(finalState, {
+    gameId: await gameId(genId(1)),
+    rank: "B+",
+    rankPoint: 850,
+  });
+});
+
+Deno.test("RankTracker tracks promotion", async () => {
+  const INIT_STATE = {
+    gameId: await gameId(genId(0)),
+    rank: "B+",
+    rankPoint: 850,
+  };
+
+  const tracker = new TestRankTracker(INIT_STATE);
+  assertEquals(tracker.testGet(), {
+    state: INIT_STATE,
+    deltaMap: new Map(),
+  });
+
+  const finalState = await tracker.updateState([{
+    bankaraMatchChallenge: {
+      winCount: 3,
+      loseCount: 0,
+      maxWinCount: 3,
+      maxLoseCount: 3,
+      state: "SUCCEEDED",
+      isPromo: true,
+      isUdemaeUp: true,
+      udemaeAfter: "A-",
+      earnedUdemaePoint: null,
+    },
+    historyDetails: {
+      nodes: [{
+        id: await genId(2),
+        udemae: "B+",
+        judgement: "WIN",
+        bankaraMatch: {
+          earnedUdemaePoint: null,
+        },
+      }, {
+        id: await genId(1),
+        udemae: "B+",
+        judgement: "WIN",
+        bankaraMatch: {
+          earnedUdemaePoint: null,
+        },
+      }, {
+        id: await genId(0),
+        udemae: "B+",
+        judgement: "WIN",
+        bankaraMatch: {
+          earnedUdemaePoint: null,
+        },
+      }],
+    },
+  }]);
+
+  assertEquals(finalState, {
+    gameId: await gameId(genId(2)),
+    rank: "A-",
+    rankPoint: 200,
+  });
+});
 
 Deno.test("RankTracker tracks challenge charge", async () => {
   const tracker = new TestRankTracker(INIT_STATE);
@@ -83,8 +190,6 @@ Deno.test("RankTracker tracks challenge charge", async () => {
           bankaraMatch: {
             earnedUdemaePoint: null,
           },
-          nextHistoryDetail: null,
-          previousHistoryDetail: null,
         },
       ],
     },

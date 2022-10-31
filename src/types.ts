@@ -45,12 +45,6 @@ export type BattleListNode = {
   id: string;
   udemae: string;
   judgement: "LOSE" | "WIN" | "DEEMED_LOSE" | "EXEMPTED_LOSE" | "DRAW";
-  nextHistoryDetail: null | {
-    id: string;
-  };
-  previousHistoryDetail: null | {
-    id: string;
-  };
   bankaraMatch: null | {
     earnedUdemaePoint: null | number;
   };
