@@ -11,6 +11,7 @@ import {
   GameExporter,
   StatInkPlayer,
   StatInkPostBody,
+  StatInkPostResponse,
   StatInkStage,
   VsHistoryDetail,
   VsInfo,
@@ -58,7 +59,7 @@ export class StatInkExporter implements GameExporter {
   async exportGame(game: VsInfo | CoopInfo) {
     if (game.type === "CoopInfo") {
       // TODO: support coop
-      return;
+      return {};
     }
     const body = await this.mapBattle(game);
 
@@ -71,9 +72,7 @@ export class StatInkExporter implements GameExporter {
       body: msgpack.encode(body),
     });
 
-    const json: {
-      error?: unknown;
-    } = await resp.json().catch(() => ({}));
+    const json: StatInkPostResponse = await resp.json().catch(() => ({}));
 
     if (resp.status !== 200 && resp.status !== 201) {
       throw new APIError({
@@ -90,6 +89,10 @@ export class StatInkExporter implements GameExporter {
         json,
       });
     }
+
+    return {
+      url: json.url,
+    };
   }
   async notExported({ list }: { list: string[] }): Promise<string[]> {
     const uuid = await (await fetch("https://stat.ink/api/v3/s3s/uuid-list", {

@@ -247,6 +247,7 @@ class GameFetcher {
 }
 
 type Progress = {
+  currentUrl?: string;
   current: number;
   total: number;
 };
@@ -340,13 +341,17 @@ export class App {
     const allProgress: Record<string, Progress> = {};
     const redraw = (name: string, progress: Progress) => {
       allProgress[name] = progress;
-      bar?.render(
-        Object.entries(allProgress).map(([name, progress]) => ({
-          completed: progress.current,
-          total: progress.total,
-          text: name,
-        })),
-      );
+      if (bar) {
+        bar.render(
+          Object.entries(allProgress).map(([name, progress]) => ({
+            completed: progress.current,
+            total: progress.total,
+            text: name,
+          })),
+        );
+      } else if (progress.currentUrl) {
+        console.log(`Battle uploaded to ${progress.currentUrl}`);
+      }
     };
     const endBar = () => {
       bar?.end();
@@ -554,9 +559,10 @@ export class App {
 
     const step = async (id: string) => {
       const detail = await fetcher.fetch(type, id);
-      await exporter.exportGame(detail);
+      const { url } = await exporter.exportGame(detail);
       exported += 1;
       onStep?.({
+        currentUrl: url,
         current: exported,
         total: workQueue.length,
       });

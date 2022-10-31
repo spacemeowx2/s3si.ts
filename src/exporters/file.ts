@@ -53,6 +53,10 @@ export class FileExporter implements GameExporter {
       filepath,
       JSON.stringify(body, replacer),
     );
+
+    return {
+      url: filepath,
+    };
   }
   async notExported({ list }: { list: string[] }): Promise<string[]> {
     const out: string[] = [];

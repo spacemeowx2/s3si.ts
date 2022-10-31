@@ -161,7 +161,7 @@ export type GameExporter<
   notExported: (
     { type, list }: { type: T["type"]; list: string[] },
   ) => Promise<string[]>;
-  exportGame: (game: T) => Promise<void>;
+  exportGame: (game: T) => Promise<{ url?: string }>;
 };
 
 export type RespMap = {
@@ -322,4 +322,11 @@ export type StatInkPostBody = {
   automated: "yes";
   start_at: number; // the battle starts at e.g. 1599577200
   end_at: number;
+};
+
+export type StatInkPostResponse = {
+  error?: unknown;
+} & {
+  id: string;
+  url: string;
 };
