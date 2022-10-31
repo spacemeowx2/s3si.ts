@@ -1,3 +1,8 @@
+0.1.13
+
+feat: auto track after promotion challenge success
+fix: failed promotion challenge can also lead to tracked promotions
+
 0.1.12
 
 feat: add rank tracker

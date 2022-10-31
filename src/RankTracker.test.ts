@@ -53,6 +53,92 @@ function genOpenWins(
   return result;
 }
 
+Deno.test("RankTracker don't promo after failed challenge", async () => {
+  const tracker = new TestRankTracker(undefined);
+  assertEquals(tracker.testGet(), {
+    state: undefined,
+    deltaMap: new Map(),
+  });
+
+  const finalState = await tracker.updateState([{
+    bankaraMatchChallenge: {
+      winCount: 0,
+      loseCount: 3,
+      maxWinCount: 3,
+      maxLoseCount: 3,
+      state: "FAILED",
+      isPromo: true,
+      isUdemaeUp: false,
+      udemaeAfter: "B+",
+      earnedUdemaePoint: null,
+    },
+    historyDetails: {
+      nodes: [{
+        id: genId(1),
+        udemae: "B+",
+        judgement: "LOSE",
+        bankaraMatch: {
+          earnedUdemaePoint: null,
+        },
+      }, {
+        id: genId(0),
+        udemae: "B+",
+        judgement: "LOSE",
+        bankaraMatch: {
+          earnedUdemaePoint: null,
+        },
+      }],
+    },
+  }]);
+
+  assertEquals(finalState, undefined);
+});
+
+Deno.test("RankTracker autotrack after promotion", async () => {
+  const tracker = new TestRankTracker(undefined);
+  assertEquals(tracker.testGet(), {
+    state: undefined,
+    deltaMap: new Map(),
+  });
+
+  const finalState = await tracker.updateState([{
+    bankaraMatchChallenge: {
+      winCount: 3,
+      loseCount: 0,
+      maxWinCount: 3,
+      maxLoseCount: 3,
+      state: "SUCCEEDED",
+      isPromo: true,
+      isUdemaeUp: true,
+      udemaeAfter: "A-",
+      earnedUdemaePoint: null,
+    },
+    historyDetails: {
+      nodes: [{
+        id: genId(1),
+        udemae: "B+",
+        judgement: "WIN",
+        bankaraMatch: {
+          earnedUdemaePoint: null,
+        },
+      }, {
+        id: genId(0),
+        udemae: "B+",
+        judgement: "WIN",
+        bankaraMatch: {
+          earnedUdemaePoint: null,
+        },
+      }],
+    },
+  }]);
+
+  assertEquals(finalState, {
+    gameId: await gameId(genId(1)),
+    rank: "A-",
+    rankPoint: 200,
+  });
+});
+
 Deno.test("RankTracker tracks promotion, ignoring INPROGRESS", async () => {
   const INIT_STATE = {
     gameId: await gameId(genId(0)),
@@ -80,14 +166,14 @@ Deno.test("RankTracker tracks promotion, ignoring INPROGRESS", async () => {
     },
     historyDetails: {
       nodes: [{
-        id: await genId(1),
+        id: genId(1),
         udemae: "B+",
         judgement: "WIN",
         bankaraMatch: {
           earnedUdemaePoint: null,
         },
       }, {
-        id: await genId(0),
+        id: genId(0),
         udemae: "B+",
         judgement: "WIN",
         bankaraMatch: {
@@ -131,21 +217,21 @@ Deno.test("RankTracker tracks promotion", async () => {
     },
     historyDetails: {
       nodes: [{
-        id: await genId(2),
+        id: genId(2),
         udemae: "B+",
         judgement: "WIN",
         bankaraMatch: {
           earnedUdemaePoint: null,
         },
       }, {
-        id: await genId(1),
+        id: genId(1),
         udemae: "B+",
         judgement: "WIN",
         bankaraMatch: {
           earnedUdemaePoint: null,
         },
       }, {
-        id: await genId(0),
+        id: genId(0),
         udemae: "B+",
         judgement: "WIN",
         bankaraMatch: {
