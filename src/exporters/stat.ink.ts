@@ -56,9 +56,12 @@ export class StatInkExporter implements GameExporter {
       "Authorization": `Bearer ${this.statInkApiKey}`,
     };
   }
+  isTriColor({ vsMode }: VsHistoryDetail): boolean {
+    return vsMode.mode === "FEST" && b64Number(vsMode.id) === 8;
+  }
   async exportGame(game: VsInfo | CoopInfo) {
-    if (game.type === "CoopInfo") {
-      // TODO: support coop
+    if (game.type === "CoopInfo" || (this.isTriColor(game.detail))) {
+      // TODO: support coop and tri-color fest
       return {};
     }
     const body = await this.mapBattle(game);
@@ -130,11 +133,13 @@ export class StatInkExporter implements GameExporter {
     } else if (vsMode === "PRIVATE") {
       return "private";
     } else if (vsMode === "FEST") {
-      const modeId = b64Number(vsDetail.id);
+      const modeId = b64Number(vsDetail.vsMode.id);
       if (modeId === 6) {
         return "splatfest_open";
       } else if (modeId === 7) {
         return "splatfest_challenge";
+      } else if (modeId === 8) {
+        throw new Error("Tri-color battle is not supported");
       }
     }
 
