@@ -83,10 +83,6 @@ creating a `profile.json` file with the following contents:
 
 Then run `s3si.ts`, and it will work without login prompt.
 
-NOTE: `s3si.ts` can skip uploads of battle data already uploaded by `s3s`, but
-`s3s` can't. So if you have already started using `s3si.ts`, and then back to
-`s3s`, `s3s` will re-upload the battles that `s3si.ts` has already uploaded.
-
 ## Credits
 
 - https://github.com/frozenpandaman/s3s
