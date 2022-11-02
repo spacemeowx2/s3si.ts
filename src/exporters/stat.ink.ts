@@ -292,7 +292,7 @@ export class StatInkExporter implements GameExporter {
       result.rank_after_exp = rankState.rankPoint;
 
       // splatnet returns null, so we need to calculate it
-      if (result.rank_exp_change === null) {
+      if (result.rank_exp_change === undefined) {
         result.rank_exp_change = result.rank_after_exp - result.rank_before_exp;
       }
 
