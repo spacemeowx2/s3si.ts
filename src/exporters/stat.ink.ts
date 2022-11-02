@@ -287,12 +287,15 @@ export class StatInkExporter implements GameExporter {
       result.challenge_lose = challengeProgress.loseCount;
     }
 
-    if (rankBeforeState) {
+    if (rankBeforeState && rankState) {
       result.rank_before_exp = rankBeforeState.rankPoint;
-    }
-
-    if (rankState) {
       result.rank_after_exp = rankState.rankPoint;
+
+      // splatnet returns null, so we need to calculate it
+      if (result.rank_exp_change === null) {
+        result.rank_exp_change = result.rank_after_exp - result.rank_before_exp;
+      }
+
       if (!result.rank_after) {
         [result.rank_after, result.rank_after_s_plus] = parseUdemae(
           rankState.rank,
