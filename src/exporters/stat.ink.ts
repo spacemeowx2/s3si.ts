@@ -263,7 +263,7 @@ export class StatInkExporter implements GameExporter {
     }
     result.our_team_count = myTeam?.result?.score ?? undefined;
     result.their_team_count = otherTeams?.[0]?.result?.score ?? undefined;
-    result.rank_exp_change = bankaraMatch?.earnedUdemaePoint;
+    result.rank_exp_change = bankaraMatch?.earnedUdemaePoint ?? undefined;
     if (listNode) {
       [result.rank_before, result.rank_before_s_plus] = parseUdemae(
         listNode.udemae,

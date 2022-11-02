@@ -138,7 +138,7 @@ export type VsHistoryDetail = {
   playedTime: string; // 2021-01-01T00:00:00Z
 
   bankaraMatch: {
-    earnedUdemaePoint: number;
+    earnedUdemaePoint: null | number;
     mode: "OPEN" | "CHALLENGE";
   } | null;
   festMatch: {
