@@ -43,6 +43,16 @@ type Progress = {
   total: number;
 };
 
+function printStats(stats: Record<string, number>) {
+  console.log(
+    `Exported ${
+      Object.entries(stats)
+        .map(([name, count]) => `${name}: ${count}`)
+        .join(", ")
+    }`,
+  );
+}
+
 export class App {
   state: State = DEFAULT_STATE;
   stateBackend: StateBackend;
@@ -118,8 +128,29 @@ export class App {
 
     return out;
   }
-  exportOnce() {
-    return retryRecoverableError(() => this._exportOnce(), this.recoveryToken);
+  async exportOnce() {
+    const exporters = await this.getExporters();
+    const stats: Record<string, number> = Object.fromEntries(
+      exporters.map((e) => [e.name, 0]),
+    );
+
+    await retryRecoverableError(() =>
+      this._exportOnce({
+        stats,
+      }), {
+      ...this.recoveryToken,
+      recovery: () => {
+        if (Object.values(stats).some((i) => i > 0)) {
+          printStats(stats);
+          for (const key of Object.keys(stats)) {
+            stats[key] = 0;
+          }
+        }
+        return this.recoveryToken.recovery();
+      },
+    });
+
+    printStats(stats);
   }
   exporterProgress(title: string) {
     const bar = !this.opts.noProgress
@@ -150,12 +181,13 @@ export class App {
 
     return { redraw, endBar };
   }
-  async _exportOnce() {
+  private async _exportOnce(
+    { stats }: {
+      stats: Record<string, number>;
+    },
+  ) {
     const exporters = await this.getExporters();
     const skipMode = this.getSkipMode();
-    const stats: Record<string, number> = Object.fromEntries(
-      exporters.map((e) => [e.name, 0]),
-    );
 
     if (skipMode.includes("vs")) {
       console.log("Skip exporting VS games.");
@@ -201,7 +233,9 @@ export class App {
       endBar();
     }
 
-    if (skipMode.includes("coop")) {
+    // TODO: remove this filter when stat.ink support coop export
+    const coopExporter = exporters.filter((e) => e.name !== "stat.ink");
+    if (skipMode.includes("coop") || coopExporter.length === 0) {
       console.log("Skip exporting Coop games.");
     } else {
       console.log("Fetching coop battle list...");
@@ -217,8 +251,7 @@ export class App {
       });
 
       await Promise.all(
-        // TODO: remove this filter when stat.ink support coop export
-        exporters.filter((e) => e.name !== "stat.ink").map((e) =>
+        coopExporter.map((e) =>
           showError(
             this.exportGameList({
               type: "CoopInfo",
@@ -239,14 +272,6 @@ export class App {
 
       endBar();
     }
-
-    console.log(
-      `Exported ${
-        Object.entries(stats)
-          .map(([name, count]) => `${name}: ${count}`)
-          .join(", ")
-      }`,
-    );
   }
   async monitor() {
     while (true) {
