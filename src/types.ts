@@ -61,6 +61,19 @@ export type HistoryGroups<T> = {
     };
   }[];
 };
+export type PlayerGear = {
+  name: string;
+  primaryGearPower: {
+    name: string;
+  };
+  additionalGearPowers: {
+    name: string;
+  }[];
+  brand: {
+    name: string;
+    id: string;
+  };
+};
 export type VsPlayer = {
   id: string;
   nameId: string | null;
@@ -81,6 +94,10 @@ export type VsPlayer = {
     special: number;
   } | null;
   paint: number;
+
+  headGear: PlayerGear;
+  clothingGear: PlayerGear;
+  shoesGear: PlayerGear;
 };
 export type VsTeam = {
   players: VsPlayer[];
@@ -240,6 +257,23 @@ export enum BattleListType {
   Coop,
 }
 
+export type StatInkAbility = {
+  key: string;
+  name: Record<string, string>;
+  primary_only: boolean;
+}[];
+
+export type StatInkGear = {
+  primary_ability: string;
+  secondary_abilities: (string | null)[];
+};
+
+export type StatInkGears = {
+  headgear: StatInkGear;
+  clothing: StatInkGear;
+  shoes: StatInkGear;
+};
+
 export type StatInkPlayer = {
   me: "yes" | "no";
   rank_in_team: number;
@@ -253,6 +287,7 @@ export type StatInkPlayer = {
   kill_or_assist?: number;
   death?: number;
   special?: number;
+  gears?: StatInkGears;
   disconnected: "yes" | "no";
 };
 

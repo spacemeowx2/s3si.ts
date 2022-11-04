@@ -210,6 +210,8 @@ export class App {
         ),
       );
 
+      endBar();
+
       printStats(stats);
       if (errors.length > 0) {
         throw errors[0];
@@ -221,8 +223,6 @@ export class App {
         ...this.state,
         rankState: finalRankState,
       });
-
-      endBar();
     }
 
     stats = initStats();
@@ -268,12 +268,12 @@ export class App {
         ),
       );
 
+      endBar();
+
       printStats(stats);
       if (errors.length > 0) {
         throw errors[0];
       }
-
-      endBar();
     }
   }
   async monitor() {
