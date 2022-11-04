@@ -129,28 +129,7 @@ export class App {
     return out;
   }
   async exportOnce() {
-    const exporters = await this.getExporters();
-    const stats: Record<string, number> = Object.fromEntries(
-      exporters.map((e) => [e.name, 0]),
-    );
-
-    await retryRecoverableError(() =>
-      this._exportOnce({
-        stats,
-      }), {
-      ...this.recoveryToken,
-      recovery: () => {
-        if (Object.values(stats).some((i) => i > 0)) {
-          printStats(stats);
-          for (const key of Object.keys(stats)) {
-            stats[key] = 0;
-          }
-        }
-        return this.recoveryToken.recovery();
-      },
-    });
-
-    printStats(stats);
+    await retryRecoverableError(() => this._exportOnce(), this.recoveryToken);
   }
   exporterProgress(title: string) {
     const bar = !this.opts.noProgress
@@ -172,7 +151,9 @@ export class App {
           })),
         );
       } else if (progress.currentUrl) {
-        console.log(`Battle uploaded to ${progress.currentUrl}`);
+        console.log(
+          `Battle exported to ${progress.currentUrl} (${progress.current}/${progress.total})`,
+        );
       }
     };
     const endBar = () => {
@@ -181,13 +162,15 @@ export class App {
 
     return { redraw, endBar };
   }
-  private async _exportOnce(
-    { stats }: {
-      stats: Record<string, number>;
-    },
-  ) {
+  private async _exportOnce() {
     const exporters = await this.getExporters();
+    const initStats = () =>
+      Object.fromEntries(
+        exporters.map((e) => [e.name, 0]),
+      );
+    let stats = initStats();
     const skipMode = this.getSkipMode();
+    const errors: unknown[] = [];
 
     if (skipMode.includes("vs")) {
       console.log("Skip exporting VS games.");
@@ -211,17 +194,26 @@ export class App {
               fetcher,
               exporter: e,
               gameList,
-              onStep: (progress) => redraw(e.name, progress),
+              onStep: (progress) => {
+                redraw(e.name, progress);
+                stats[e.name] = progress.current;
+              },
             })
               .then((count) => {
                 stats[e.name] = count;
               }),
           )
             .catch((err) => {
+              errors.push(err);
               console.error(`\nFailed to export to ${e.name}:`, err);
             })
         ),
       );
+
+      printStats(stats);
+      if (errors.length > 0) {
+        throw errors[0];
+      }
 
       // save rankState only if all exporters succeeded
       fetcher.setRankState(finalRankState);
@@ -232,6 +224,8 @@ export class App {
 
       endBar();
     }
+
+    stats = initStats();
 
     // TODO: remove this filter when stat.ink support coop export
     const coopExporter = exporters.filter((e) => e.name !== "stat.ink");
@@ -258,17 +252,26 @@ export class App {
               fetcher,
               exporter: e,
               gameList: coopBattleList,
-              onStep: (progress) => redraw(e.name, progress),
+              onStep: (progress) => {
+                stats[e.name] = progress.current;
+                redraw(e.name, progress);
+              },
             })
               .then((count) => {
                 stats[e.name] = count;
               }),
           )
             .catch((err) => {
+              errors.push(err);
               console.error(`\nFailed to export to ${e.name}:`, err);
             })
         ),
       );
+
+      printStats(stats);
+      if (errors.length > 0) {
+        throw errors[0];
+      }
 
       endBar();
     }
