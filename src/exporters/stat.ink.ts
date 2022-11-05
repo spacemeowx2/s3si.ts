@@ -195,7 +195,7 @@ export class StatInkExporter implements GameExporter {
     const amap = await getAbility();
     const mapAbility = ({ name }: { name: string }): string | null => {
       const abilityIdx = this.nameDict.gearPower[name];
-      if (!abilityIdx) {
+      if (abilityIdx === undefined) {
         return null;
       }
       const result = amap[abilityIdx];
@@ -373,6 +373,8 @@ export class StatInkExporter implements GameExporter {
         );
       }
     }
+
+    Deno.writeTextFileSync("debug1.json", JSON.stringify(result, null, 2));
 
     return result;
   }
