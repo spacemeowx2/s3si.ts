@@ -53,6 +53,10 @@ async function _getStage(): Promise<StatInkStage> {
 const getAbility = cache(_getAbility);
 const getStage = cache(_getStage);
 
+export type NameDict = {
+  gearPower: Record<string, number | undefined>;
+};
+
 /**
  * Exporter to stat.ink.
  *
@@ -60,11 +64,23 @@ const getStage = cache(_getStage);
  */
 export class StatInkExporter implements GameExporter {
   name = "stat.ink";
+  private statInkApiKey: string;
+  private uploadMode: string;
+  private nameDict: NameDict;
 
-  constructor(private statInkApiKey: string, private uploadMode: string) {
+  constructor(
+    { statInkApiKey, uploadMode, nameDict }: {
+      statInkApiKey: string;
+      uploadMode: string;
+      nameDict: NameDict;
+    },
+  ) {
     if (statInkApiKey.length !== 43) {
       throw new Error("Invalid stat.ink API key");
     }
+    this.statInkApiKey = statInkApiKey;
+    this.uploadMode = uploadMode;
+    this.nameDict = nameDict;
   }
   requestHeaders() {
     return {
@@ -176,12 +192,13 @@ export class StatInkExporter implements GameExporter {
   async mapGears(
     { headGear, clothingGear, shoesGear }: VsPlayer,
   ): Promise<StatInkGears> {
-    const amap = (await getAbility()).map((i) => ({
-      ...i,
-      names: Object.values(i.name),
-    }));
+    const amap = await getAbility();
     const mapAbility = ({ name }: { name: string }): string | null => {
-      const result = amap.find((a) => a.names.includes(name));
+      const abilityIdx = this.nameDict.gearPower[name];
+      if (!abilityIdx) {
+        return null;
+      }
+      const result = amap[abilityIdx];
       if (!result) {
         return null;
       }

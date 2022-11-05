@@ -162,3 +162,12 @@ export async function getCoopHistories(state: State) {
 
   return resp;
 }
+
+export async function getGearPower(state: State) {
+  const resp = await request(
+    state,
+    Queries.myOutfitCommonDataFilteringConditionQuery,
+  );
+
+  return resp;
+}

@@ -9,6 +9,8 @@ export enum Queries {
   VsHistoryDetailQuery = "2b085984f729cd51938fc069ceef784a",
   CoopHistoryQuery = "817618ce39bcf5570f52a97d73301b30",
   CoopHistoryDetailQuery = "f3799a033f0a7ad4b1b396f9a3bafb1e",
+  myOutfitCommonDataFilteringConditionQuery =
+    "d02ab22c9dccc440076055c8baa0fa7a",
 }
 export type VarsMap = {
   [Queries.HomeQuery]: [];
@@ -23,6 +25,7 @@ export type VarsMap = {
   [Queries.CoopHistoryDetailQuery]: [{
     coopHistoryDetailId: string;
   }];
+  [Queries.myOutfitCommonDataFilteringConditionQuery]: [];
 };
 
 export type Image = {
@@ -239,6 +242,13 @@ export type RespMap = {
   };
   [Queries.CoopHistoryDetailQuery]: {
     coopHistoryDetail: CoopHistoryDetail;
+  };
+  [Queries.myOutfitCommonDataFilteringConditionQuery]: {
+    gearPowers: {
+      nodes: {
+        name: string;
+      }[];
+    };
   };
 };
 export type GraphQLResponse<T> = {
