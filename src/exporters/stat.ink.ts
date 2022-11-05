@@ -9,6 +9,10 @@ import {
 import {
   CoopInfo,
   GameExporter,
+  PlayerGear,
+  StatInkAbility,
+  StatInkGear,
+  StatInkGears,
   StatInkPlayer,
   StatInkPostBody,
   StatInkPostResponse,
@@ -17,7 +21,7 @@ import {
   VsInfo,
   VsPlayer,
 } from "../types.ts";
-import { base64, msgpack } from "../../deps.ts";
+import { base64, msgpack, Mutex } from "../../deps.ts";
 import { APIError } from "../APIError.ts";
 import { cache, gameId } from "../utils.ts";
 
@@ -30,12 +34,28 @@ function b64Number(id: string): number {
   return parseInt(num);
 }
 
+const FETCH_LOCK = new Mutex();
+async function _getAbility(): Promise<StatInkAbility> {
+  const release = await FETCH_LOCK.acquire();
+  try {
+    const resp = await fetch("https://stat.ink/api/v3/ability?full=1");
+    const json = await resp.json();
+    return json;
+  } finally {
+    release();
+  }
+}
 async function _getStage(): Promise<StatInkStage> {
   const resp = await fetch("https://stat.ink/api/v3/stage");
   const json = await resp.json();
   return json;
 }
+const getAbility = cache(_getAbility);
 const getStage = cache(_getStage);
+
+export type NameDict = {
+  gearPower: Record<string, number | undefined>;
+};
 
 /**
  * Exporter to stat.ink.
@@ -44,11 +64,23 @@ const getStage = cache(_getStage);
  */
 export class StatInkExporter implements GameExporter {
   name = "stat.ink";
+  private statInkApiKey: string;
+  private uploadMode: string;
+  private nameDict: NameDict;
 
-  constructor(private statInkApiKey: string, private uploadMode: string) {
+  constructor(
+    { statInkApiKey, uploadMode, nameDict }: {
+      statInkApiKey: string;
+      uploadMode: string;
+      nameDict: NameDict;
+    },
+  ) {
     if (statInkApiKey.length !== 43) {
       throw new Error("Invalid stat.ink API key");
     }
+    this.statInkApiKey = statInkApiKey;
+    this.uploadMode = uploadMode;
+    this.nameDict = nameDict;
   }
   requestHeaders() {
     return {
@@ -157,7 +189,43 @@ export class StatInkExporter implements GameExporter {
 
     return result.key;
   }
-  mapPlayer(player: VsPlayer, index: number): StatInkPlayer {
+  async mapGears(
+    { headGear, clothingGear, shoesGear }: VsPlayer,
+  ): Promise<StatInkGears> {
+    const amap = await getAbility();
+    const mapAbility = ({ name }: { name: string }): string | null => {
+      const abilityIdx = this.nameDict.gearPower[name];
+      if (!abilityIdx) {
+        return null;
+      }
+      const result = amap[abilityIdx];
+      if (!result) {
+        return null;
+      }
+      return result.key;
+    };
+    const mapGear = (
+      { primaryGearPower, additionalGearPowers }: PlayerGear,
+    ): StatInkGear => {
+      const primary = mapAbility(primaryGearPower);
+      if (!primary) {
+        throw new Error("Unknown ability: " + primaryGearPower.name);
+      }
+      return {
+        primary_ability: primary,
+        secondary_abilities: additionalGearPowers.map(mapAbility),
+      };
+    };
+    return {
+      headgear: mapGear(headGear),
+      clothing: mapGear(clothingGear),
+      shoes: mapGear(shoesGear),
+    };
+  }
+  mapPlayer = async (
+    player: VsPlayer,
+    index: number,
+  ): Promise<StatInkPlayer> => {
     const result: StatInkPlayer = {
       me: player.isMyself ? "yes" : "no",
       rank_in_team: index + 1,
@@ -166,6 +234,7 @@ export class StatInkExporter implements GameExporter {
       splashtag_title: player.byname,
       weapon: b64Number(player.weapon.id).toString(),
       inked: player.paint,
+      gears: await this.mapGears(player),
       disconnected: player.result ? "no" : "yes",
     };
     if (player.result) {
@@ -176,7 +245,7 @@ export class StatInkExporter implements GameExporter {
       result.special = player.result.special;
     }
     return result;
-  }
+  };
   async mapBattle(
     {
       challengeProgress,
@@ -216,9 +285,11 @@ export class StatInkExporter implements GameExporter {
 
       medals: vsDetail.awards.map((i) => i.name),
 
-      our_team_players: myTeam.players.map(this.mapPlayer),
-      their_team_players: otherTeams.flatMap((i) => i.players).map(
-        this.mapPlayer,
+      our_team_players: await Promise.all(myTeam.players.map(this.mapPlayer)),
+      their_team_players: await Promise.all(
+        otherTeams.flatMap((i) => i.players).map(
+          this.mapPlayer,
+        ),
       ),
 
       agent: AGENT_NAME,
