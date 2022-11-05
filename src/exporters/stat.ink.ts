@@ -374,8 +374,6 @@ export class StatInkExporter implements GameExporter {
       }
     }
 
-    Deno.writeTextFileSync("debug1.json", JSON.stringify(result, null, 2));
-
     return result;
   }
 }
