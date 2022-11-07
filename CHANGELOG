@@ -1,3 +1,9 @@
+## 0.1.18
+
+feat: remove gear map workaround
+
+https://github.com/fetus-hina/stat.ink/issues/1127
+
 ## 0.1.17
 
 feat: add gears to stat.ink

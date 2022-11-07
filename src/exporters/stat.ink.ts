@@ -66,13 +66,11 @@ export class StatInkExporter implements GameExporter {
   name = "stat.ink";
   private statInkApiKey: string;
   private uploadMode: string;
-  private nameDict: NameDict;
 
   constructor(
-    { statInkApiKey, uploadMode, nameDict }: {
+    { statInkApiKey, uploadMode }: {
       statInkApiKey: string;
       uploadMode: string;
-      nameDict: NameDict;
     },
   ) {
     if (statInkApiKey.length !== 43) {
@@ -80,7 +78,6 @@ export class StatInkExporter implements GameExporter {
     }
     this.statInkApiKey = statInkApiKey;
     this.uploadMode = uploadMode;
-    this.nameDict = nameDict;
   }
   requestHeaders() {
     return {
@@ -192,13 +189,12 @@ export class StatInkExporter implements GameExporter {
   async mapGears(
     { headGear, clothingGear, shoesGear }: VsPlayer,
   ): Promise<StatInkGears> {
-    const amap = await getAbility();
+    const amap = (await getAbility()).map((i) => ({
+      ...i,
+      names: Object.values(i.name),
+    }));
     const mapAbility = ({ name }: { name: string }): string | null => {
-      const abilityIdx = this.nameDict.gearPower[name];
-      if (abilityIdx === undefined) {
-        return null;
-      }
-      const result = amap[abilityIdx];
+      const result = amap.find((a) => a.names.includes(name));
       if (!result) {
         return null;
       }
