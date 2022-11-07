@@ -6,7 +6,7 @@ import {
   State,
   StateBackend,
 } from "./state.ts";
-import { getBattleList, getGearPower, isTokenExpired } from "./splatnet3.ts";
+import { getBattleList, isTokenExpired } from "./splatnet3.ts";
 import { BattleListType, Game, GameExporter } from "./types.ts";
 import { Cache, FileCache } from "./cache.ts";
 import { StatInkExporter } from "./exporters/stat.ink.ts";
@@ -65,7 +65,6 @@ export class App {
       await this.fetchToken();
     },
   };
-  gearMap: Record<string, number> | null = null;
 
   constructor(public opts: Opts) {
     this.stateBackend = opts.stateBackend ??
@@ -88,16 +87,6 @@ export class App {
       );
       await this.writeState(DEFAULT_STATE);
     }
-  }
-  async getGearMap() {
-    if (this.gearMap) {
-      return this.gearMap;
-    }
-    const { gearPowers } = await getGearPower(this.state);
-    this.gearMap = Object.fromEntries(
-      gearPowers.nodes.map((i, id) => [i.name, id]),
-    );
-    return this.gearMap;
   }
   getSkipMode(): ("vs" | "coop")[] {
     const mode = this.opts.skipMode;
@@ -129,9 +118,6 @@ export class App {
         new StatInkExporter({
           statInkApiKey: this.state.statInkApiKey!,
           uploadMode: this.opts.monitor ? "Monitoring" : "Manual",
-          nameDict: {
-            gearPower: await this.getGearMap(),
-          },
         }),
       );
     }
