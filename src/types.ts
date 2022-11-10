@@ -321,6 +321,46 @@ export type StatInkStage = {
   };
 }[];
 
+export type StatInkCoopTitle = "profreshional_0";
+
+export type StatInkCoopPostBody = {
+  test?: "yes" | "no";
+  uuid: string;
+  big_run: "no";
+  stage: string;
+  weapon: string;
+  // [0, 333]
+  danger_rate: number;
+  // [0, 3]
+  clear_waves: number;
+  king_salmonid: string;
+  clear_extra: "yes" | "no";
+  title_before: StatInkCoopTitle;
+  // [0, 999]
+  title_exp_before: number;
+  title_after: StatInkCoopTitle;
+  // [0, 999]
+  title_exp_after: number;
+  golden_eggs: number;
+  power_eggs: number;
+  gold_scale: number;
+  silver_scale: number;
+  bronze_scale: number;
+  job_point: number;
+  job_score: number;
+  job_rate: number;
+  job_bonus: number;
+  note: string;
+  private_note: string;
+  link_url: string;
+  agent: string;
+  agent_version: string;
+  agent_variables: Record<string, string>;
+  automated: "yes";
+  start_at: number;
+  end_at: number;
+};
+
 export type StatInkPostBody = {
   test?: "yes" | "no";
   uuid: string;
