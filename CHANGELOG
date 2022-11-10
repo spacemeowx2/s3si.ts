@@ -1,3 +1,7 @@
+## 0.1.19
+
+fix: don't set rank_exp_change if isUdemaeUp is true
+
 ## 0.1.18
 
 feat: remove gear map workaround

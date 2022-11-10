@@ -358,8 +358,12 @@ export class StatInkExporter implements GameExporter {
       result.rank_before_exp = rankBeforeState.rankPoint;
       result.rank_after_exp = rankState.rankPoint;
 
-      // splatnet returns null, so we need to calculate it
-      if (result.rank_exp_change === undefined) {
+      // splatnet returns null, so we need to calculate it.
+      // don't calculate if it's a promotion battle.
+      if (
+        !bankaraMatchChallenge?.isUdemaeUp &&
+        result.rank_exp_change === undefined
+      ) {
         result.rank_exp_change = result.rank_after_exp - result.rank_before_exp;
       }
 
