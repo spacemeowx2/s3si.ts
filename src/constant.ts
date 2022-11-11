@@ -14,7 +14,8 @@ export const DEFAULT_APP_USER_AGENT =
 export const SPLATNET3_URL = "https://api.lp1.av5ja.srv.nintendo.net";
 export const SPLATNET3_ENDPOINT =
   "https://api.lp1.av5ja.srv.nintendo.net/api/graphql";
-export const S3S_NAMESPACE = "b3a2dbf5-2c09-4792-b78c-00b548b70aeb";
+export const BATTLE_NAMESPACE = "b3a2dbf5-2c09-4792-b78c-00b548b70aeb";
+export const COOP_NAMESPACE = "f1911910-605e-11ed-a622-7085c2057a9d";
 export const S3SI_NAMESPACE = "63941e1c-e32e-4b56-9a1d-f6fbe19ef6e1";
 
 export const SPLATNET3_STATINK_MAP: {

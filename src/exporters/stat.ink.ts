@@ -1,7 +1,5 @@
 import {
   AGENT_NAME,
-  S3S_NAMESPACE,
-  S3SI_NAMESPACE,
   S3SI_VERSION,
   SPLATNET3_STATINK_MAP,
   USERAGENT,
@@ -23,7 +21,7 @@ import {
 } from "../types.ts";
 import { base64, msgpack, Mutex } from "../../deps.ts";
 import { APIError } from "../APIError.ts";
-import { cache, gameId } from "../utils.ts";
+import { cache, gameId, s3siGameId } from "../utils.ts";
 
 /**
  * Decode ID and get number after '-'
@@ -134,8 +132,8 @@ export class StatInkExporter implements GameExporter {
     const out: string[] = [];
 
     for (const id of list) {
-      const s3sId = await gameId(id, S3S_NAMESPACE);
-      const s3siId = await gameId(id, S3SI_NAMESPACE);
+      const s3sId = await gameId(id);
+      const s3siId = await s3siGameId(id);
 
       if (!uuid.includes(s3sId) && !uuid.includes(s3siId)) {
         out.push(id);

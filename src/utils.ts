@@ -1,5 +1,9 @@
 import { APIError } from "./APIError.ts";
-import { S3S_NAMESPACE } from "./constant.ts";
+import {
+  BATTLE_NAMESPACE,
+  COOP_NAMESPACE,
+  S3SI_NAMESPACE,
+} from "./constant.ts";
 import { base64, uuid } from "../deps.ts";
 import { Env } from "./env.ts";
 import { io } from "../deps.ts";
@@ -87,16 +91,28 @@ export async function showError<T>(env: Env, p: Promise<T>): Promise<T> {
 
 /**
  * @param id id of VsHistoryDetail or CoopHistoryDetail
- * @param namespace uuid namespace
  * @returns
  */
 export function gameId(
   id: string,
-  namespace = S3S_NAMESPACE,
 ): Promise<string> {
+  const parsed = parseHistoryDetailId(id);
+  if (parsed.type === "VsHistoryDetail") {
+    const content = new TextEncoder().encode(
+      `${parsed.timestamp}_${parsed.uuid}`,
+    );
+    return uuid.v5.generate(BATTLE_NAMESPACE, content);
+  } else if (parsed.type === "CoopHistoryDetail") {
+    return uuid.v5.generate(COOP_NAMESPACE, base64.decode(id));
+  } else {
+    throw new Error("Unknown type");
+  }
+}
+
+export function s3siGameId(id: string) {
   const fullId = base64.decode(id);
   const tsUuid = fullId.slice(fullId.length - 52, fullId.length);
-  return uuid.v5.generate(namespace, tsUuid);
+  return uuid.v5.generate(S3SI_NAMESPACE, tsUuid);
 }
 
 /**
@@ -117,7 +133,7 @@ export function parseHistoryDetailId(id: string) {
       listType,
       timestamp,
       uuid,
-    };
+    } as const;
   } else if (coopRE.test(plainText)) {
     const [, uid, timestamp, uuid] = plainText.match(coopRE)!;
 
@@ -126,7 +142,7 @@ export function parseHistoryDetailId(id: string) {
       uid,
       timestamp,
       uuid,
-    };
+    } as const;
   } else {
     throw new Error(`Invalid ID: ${plainText}`);
   }
