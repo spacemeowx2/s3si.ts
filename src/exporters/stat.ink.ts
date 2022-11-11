@@ -9,12 +9,14 @@ import {
   GameExporter,
   PlayerGear,
   StatInkAbility,
+  StatInkCoopPostBody,
   StatInkGear,
   StatInkGears,
   StatInkPlayer,
   StatInkPostBody,
   StatInkPostResponse,
   StatInkStage,
+  StatInkWeapon,
   VsHistoryDetail,
   VsInfo,
   VsPlayer,
@@ -22,6 +24,10 @@ import {
 import { base64, msgpack, Mutex } from "../../deps.ts";
 import { APIError } from "../APIError.ts";
 import { cache, gameId, s3siGameId } from "../utils.ts";
+
+const UA = {
+  "User-Agent": USERAGENT,
+};
 
 /**
  * Decode ID and get number after '-'
@@ -32,50 +38,14 @@ function b64Number(id: string): number {
   return parseInt(num);
 }
 
-const FETCH_LOCK = new Mutex();
-async function _getAbility(): Promise<StatInkAbility> {
-  const release = await FETCH_LOCK.acquire();
-  try {
-    const resp = await fetch("https://stat.ink/api/v3/ability?full=1");
-    const json = await resp.json();
-    return json;
-  } finally {
-    release();
-  }
-}
-async function _getStage(): Promise<StatInkStage> {
-  const resp = await fetch("https://stat.ink/api/v3/stage");
-  const json = await resp.json();
-  return json;
-}
-const getAbility = cache(_getAbility);
-const getStage = cache(_getStage);
+class StatInkAPI {
+  FETCH_LOCK = new Mutex();
+  cache: Record<string, unknown> = {};
 
-export type NameDict = {
-  gearPower: Record<string, number | undefined>;
-};
-
-/**
- * Exporter to stat.ink.
- *
- * This is the default exporter. It will upload each battle detail to stat.ink.
- */
-export class StatInkExporter implements GameExporter {
-  name = "stat.ink";
-  private statInkApiKey: string;
-  private uploadMode: string;
-
-  constructor(
-    { statInkApiKey, uploadMode }: {
-      statInkApiKey: string;
-      uploadMode: string;
-    },
-  ) {
+  constructor(private statInkApiKey: string) {
     if (statInkApiKey.length !== 43) {
       throw new Error("Invalid stat.ink API key");
     }
-    this.statInkApiKey = statInkApiKey;
-    this.uploadMode = uploadMode;
   }
   requestHeaders() {
     return {
@@ -83,16 +53,14 @@ export class StatInkExporter implements GameExporter {
       "Authorization": `Bearer ${this.statInkApiKey}`,
     };
   }
-  isTriColor({ vsMode }: VsHistoryDetail): boolean {
-    return vsMode.mode === "FEST" && b64Number(vsMode.id) === 8;
-  }
-  async exportGame(game: VsInfo | CoopInfo) {
-    if (game.type === "CoopInfo" || (this.isTriColor(game.detail))) {
-      // TODO: support coop and tri-color fest
-      return {};
-    }
-    const body = await this.mapBattle(game);
 
+  async uuidList(): Promise<string[]> {
+    return await (await fetch("https://stat.ink/api/v3/s3s/uuid-list", {
+      headers: this.requestHeaders(),
+    })).json();
+  }
+
+  async postBattle(body: StatInkPostBody) {
     const resp = await fetch("https://stat.ink/api/v3/battle", {
       method: "POST",
       headers: {
@@ -120,14 +88,115 @@ export class StatInkExporter implements GameExporter {
       });
     }
 
-    return {
-      url: json.url,
-    };
+    return json;
+  }
+
+  async postCoop(body: StatInkCoopPostBody) {
+    const resp = await fetch("https://stat.ink/api/v3/battle", {
+      method: "POST",
+      headers: {
+        ...this.requestHeaders(),
+        "Content-Type": "application/x-msgpack",
+      },
+      body: msgpack.encode(body),
+    });
+
+    const json: StatInkPostResponse = await resp.json().catch(() => ({}));
+
+    if (resp.status !== 200 && resp.status !== 201) {
+      throw new APIError({
+        response: resp,
+        message: "Failed to export battle",
+        json,
+      });
+    }
+
+    if (json.error) {
+      throw new APIError({
+        response: resp,
+        message: "Failed to export battle",
+        json,
+      });
+    }
+
+    return json;
+  }
+
+  async _getCached<T>(url: string): Promise<T> {
+    const release = await this.FETCH_LOCK.acquire();
+    try {
+      if (this.cache[url]) {
+        return this.cache[url] as T;
+      }
+      const resp = await fetch(url, {
+        headers: this.requestHeaders(),
+      });
+      const json = await resp.json();
+      this.cache[url] = json;
+      return json;
+    } finally {
+      release();
+    }
+  }
+
+  getWeapon = () =>
+    this._getCached<StatInkWeapon>("https://stat.ink/api/v3/weapon?full=1");
+  getAbility = () =>
+    this._getCached<StatInkAbility>("https://stat.ink/api/v3/ability?full=1");
+  getStage = () =>
+    this._getCached<StatInkStage>("https://stat.ink/api/v3/stage");
+}
+
+export type NameDict = {
+  gearPower: Record<string, number | undefined>;
+};
+
+/**
+ * Exporter to stat.ink.
+ *
+ * This is the default exporter. It will upload each battle detail to stat.ink.
+ */
+export class StatInkExporter implements GameExporter {
+  name = "stat.ink";
+  private api: StatInkAPI;
+  private uploadMode: string;
+
+  constructor(
+    { statInkApiKey, uploadMode }: {
+      statInkApiKey: string;
+      uploadMode: string;
+    },
+  ) {
+    this.api = new StatInkAPI(statInkApiKey);
+    this.uploadMode = uploadMode;
+  }
+  isTriColor({ vsMode }: VsHistoryDetail): boolean {
+    return vsMode.mode === "FEST" && b64Number(vsMode.id) === 8;
+  }
+  async exportGame(game: VsInfo | CoopInfo) {
+    if (game.type === "VsInfo" && this.isTriColor(game.detail)) {
+      // TODO: support coop and tri-color fest
+      return {};
+    }
+
+    if (game.type === "VsInfo") {
+      const body = await this.mapBattle(game);
+      const { url } = await this.api.postBattle(body);
+
+      return {
+        url,
+      };
+    } else {
+      const body = await this.mapCoop(game);
+      const { url } = await this.api.postCoop(body);
+
+      return {
+        url,
+      };
+    }
   }
   async notExported({ list }: { list: string[] }): Promise<string[]> {
-    const uuid = await (await fetch("https://stat.ink/api/v3/s3s/uuid-list", {
-      headers: this.requestHeaders(),
-    })).json();
+    const uuid = await this.api.uuidList();
 
     const out: string[] = [];
 
@@ -174,7 +243,7 @@ export class StatInkExporter implements GameExporter {
   }
   async mapStage({ vsStage }: VsHistoryDetail): Promise<string> {
     const id = b64Number(vsStage.id).toString();
-    const stage = await getStage();
+    const stage = await this.api.getStage();
 
     const result = stage.find((s) => s.aliases.includes(id));
 
@@ -187,7 +256,7 @@ export class StatInkExporter implements GameExporter {
   async mapGears(
     { headGear, clothingGear, shoesGear }: VsPlayer,
   ): Promise<StatInkGears> {
-    const amap = (await getAbility()).map((i) => ({
+    const amap = (await this.api.getAbility()).map((i) => ({
       ...i,
       names: Object.values(i.name),
     }));
@@ -373,6 +442,65 @@ export class StatInkExporter implements GameExporter {
     }
 
     return result;
+  }
+  async mapCoopWeapon({ name }: { name: string }): Promise<string> {
+    await this.api.getWeapon();
+    return "";
+  }
+  async mapCoop(
+    {
+      detail,
+    }: CoopInfo,
+  ): Promise<StatInkCoopPostBody> {
+    const {
+      dangerRate,
+      resultWave,
+      bossResult,
+      myResult,
+      memberResults,
+      scale,
+      playedTime,
+    } = detail;
+
+    const startedAt = Math.floor(new Date(playedTime).getTime() / 1000);
+    const golden_eggs = myResult.goldenDeliverCount +
+      memberResults.reduce((acc, i) => acc + i.goldenDeliverCount, 0);
+    const power_eggs = myResult.deliverCount +
+      memberResults.reduce((p, i) => p + i.deliverCount, 0);
+
+    const result: StatInkCoopPostBody = {
+      test: "yes",
+      uuid: await gameId(detail.id),
+      big_run: "no",
+      stage: "",
+      weapon: await this.mapCoopWeapon(myResult.weapons[0]),
+      danger_rate: dangerRate * 100,
+      clear_waves: resultWave,
+      king_salmonid: "",
+      clear_extra: bossResult?.hasDefeatBoss ? "yes" : "no",
+      // title_after: detail.afterGrade,
+      title_exp_after: detail.afterGradePoint,
+      golden_eggs,
+      power_eggs,
+      gold_scale: scale.gold,
+      silver_scale: scale.silver,
+      bronze_scale: scale.bronze,
+      job_point: detail.jobPoint,
+      job_score: detail.jobScore,
+      job_rate: detail.jobRate,
+      job_bonus: detail.jobBonus,
+      waves: [],
+      players: [],
+      bosses: {},
+      agent: AGENT_NAME,
+      agent_version: S3SI_VERSION,
+      agent_variables: {
+        "Upload Mode": this.uploadMode,
+      },
+      automated: "yes",
+      start_at: startedAt,
+    };
+    throw new Error("WIP");
   }
 }
 

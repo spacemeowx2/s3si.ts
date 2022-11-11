@@ -454,7 +454,7 @@ export type StatInkCoopPostBody = {
   title_before?: StatInkCoopTitle;
   // [0, 999]
   title_exp_before?: number;
-  title_after: StatInkCoopTitle;
+  title_after?: StatInkCoopTitle;
   // [0, 999]
   title_exp_after: number;
   golden_eggs: number;
