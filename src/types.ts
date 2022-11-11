@@ -323,6 +323,39 @@ export type StatInkStage = {
 
 export type StatInkCoopTitle = "profreshional_0";
 
+export type StatInkCoopWave = {
+  tide: "low" | "normal" | "high";
+  // https://stat.ink/api-info/salmon-event3
+  event: string;
+  golden_quota: number;
+  golden_delivered: number;
+  golden_appearances: number;
+  special_uses: Record<string, number>;
+};
+
+export type StatInkCoopPlayer = {
+  me: "yes" | "no";
+  name: string;
+  number: string;
+  splashtag_title: string;
+  uniform: "orange" | "green" | "yellow" | "pink" | "blue" | "black" | "white";
+  special: string;
+  weapons: string[];
+  golden_eggs: number;
+  golden_assist: number;
+  power_eggs: number;
+  rescue: number;
+  rescued: number;
+  defeat_boss: number;
+  disconnected: "yes" | "no";
+};
+
+export type StatInkCoopBoss = {
+  appearances: number;
+  defeated: number;
+  defeated_by_me: number;
+};
+
 export type StatInkCoopPostBody = {
   test?: "yes" | "no";
   uuid: string;
@@ -334,7 +367,7 @@ export type StatInkCoopPostBody = {
   // [0, 3]
   clear_waves: number;
   king_salmonid: string;
-  clear_extra: "yes" | "no";
+  clear_extra?: "yes" | "no";
   title_before: StatInkCoopTitle;
   // [0, 999]
   title_exp_before: number;
@@ -350,6 +383,9 @@ export type StatInkCoopPostBody = {
   job_score: number;
   job_rate: number;
   job_bonus: number;
+  waves: StatInkCoopWave[];
+  players: StatInkCoopPlayer[];
+  bosses: Record<string, StatInkCoopBoss>[];
   note: string;
   private_note: string;
   link_url: string;
