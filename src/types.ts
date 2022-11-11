@@ -176,8 +176,86 @@ export type VsHistoryDetail = {
   awards: { name: string; rank: string }[];
   duration: number;
 };
+
+export type CoopHistoryPlayerResult = {
+  player: {
+    byname: string | null;
+    name: string;
+    nameId: string;
+  };
+  weapons: { name: string }[];
+  specialWeapon: {
+    name: string;
+    id: string;
+  };
+  defeatEnemyCount: number;
+  deliverCount: number;
+  goldenAssistCount: number;
+  goldenDeliverCount: number;
+  rescueCount: number;
+  rescuedCount: number;
+};
+
 export type CoopHistoryDetail = {
   id: string;
+  afterGrade: {
+    name: string;
+    id: string;
+  };
+  rule: "REGULAR";
+  myResult: CoopHistoryPlayerResult;
+  memberResults: CoopHistoryPlayerResult[];
+  bossResult: null | {
+    hasDefeatBoss: boolean;
+    boss: {
+      name: string;
+      id: string;
+    };
+  };
+  enemyResults: {
+    defeatCount: number;
+    teamDefeatCount: number;
+    popCount: number;
+    enemy: {
+      name: string;
+      id: string;
+    };
+  }[];
+  waveResults: {
+    waveNumber: number;
+    waterLevel: number;
+    eventWave: {
+      name: string;
+      id: string;
+    };
+    deliverNorm: number;
+    goldenPopCount: number;
+    teamDeliverCount: number;
+    specialWeapons: {
+      id: string;
+      name: string;
+    }[];
+  }[];
+  resultWave: number;
+  playedTime: string;
+  coopStage: {
+    name: string;
+    id: string;
+  };
+  dangerRate: number;
+  scenarioCode: null;
+  smellMeter: number;
+  weapons: { name: string }[];
+  afterGradePoint: number;
+  scale: {
+    gold: number;
+    silver: number;
+    bronze: number;
+  };
+  jobPoint: number;
+  jobScore: number;
+  jobRate: number;
+  jobBonus: number;
 };
 
 export type GameExporter<
@@ -281,6 +359,11 @@ export type StatInkAbility = {
   primary_only: boolean;
 }[];
 
+export type StatInkWeapon = {
+  key: string;
+  name: Record<string, string>;
+}[];
+
 export type StatInkGear = {
   primary_ability: string;
   secondary_abilities: (string | null)[];
@@ -367,10 +450,10 @@ export type StatInkCoopPostBody = {
   // [0, 3]
   clear_waves: number;
   king_salmonid: string;
-  clear_extra?: "yes" | "no";
-  title_before: StatInkCoopTitle;
+  clear_extra: "yes" | "no";
+  title_before?: StatInkCoopTitle;
   // [0, 999]
-  title_exp_before: number;
+  title_exp_before?: number;
   title_after: StatInkCoopTitle;
   // [0, 999]
   title_exp_after: number;
@@ -385,16 +468,16 @@ export type StatInkCoopPostBody = {
   job_bonus: number;
   waves: StatInkCoopWave[];
   players: StatInkCoopPlayer[];
-  bosses: Record<string, StatInkCoopBoss>[];
-  note: string;
-  private_note: string;
-  link_url: string;
+  bosses: Record<string, StatInkCoopBoss>;
+  note?: string;
+  private_note?: string;
+  link_url?: string;
   agent: string;
   agent_version: string;
   agent_variables: Record<string, string>;
   automated: "yes";
   start_at: number;
-  end_at: number;
+  end_at?: number;
 };
 
 export type StatInkPostBody = {
