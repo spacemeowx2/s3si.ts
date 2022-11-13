@@ -23,11 +23,7 @@ import {
 } from "../types.ts";
 import { base64, msgpack, Mutex } from "../../deps.ts";
 import { APIError } from "../APIError.ts";
-import { cache, gameId, s3siGameId } from "../utils.ts";
-
-const UA = {
-  "User-Agent": USERAGENT,
-};
+import { gameId, s3siGameId } from "../utils.ts";
 
 /**
  * Decode ID and get number after '-'
