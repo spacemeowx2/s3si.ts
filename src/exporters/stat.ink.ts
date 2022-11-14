@@ -5,10 +5,12 @@ import {
   USERAGENT,
 } from "../constant.ts";
 import {
+  CoopHistoryPlayerResult,
   CoopInfo,
   GameExporter,
   PlayerGear,
   StatInkAbility,
+  StatInkCoopPlayer,
   StatInkCoopPostBody,
   StatInkGear,
   StatInkGears,
@@ -88,7 +90,7 @@ class StatInkAPI {
   }
 
   async postCoop(body: StatInkCoopPostBody) {
-    const resp = await fetch("https://stat.ink/api/v3/battle", {
+    const resp = await fetch("https://stat.ink/api/v3/salmon", {
       method: "POST",
       headers: {
         ...this.requestHeaders(),
@@ -440,8 +442,46 @@ export class StatInkExporter implements GameExporter {
     return result;
   }
   async mapCoopWeapon({ name }: { name: string }): Promise<string> {
-    await this.api.getWeapon();
-    return "";
+    const weaponMap = await this.api.getWeapon();
+    const weapon = weaponMap.find((i) => Object.values(i.name).includes(name));
+
+    if (!weapon) {
+      throw new Error(`Weapon not found: ${name}`);
+    }
+
+    return weapon.key;
+  }
+  async mapBoss(id: string): Promise<string> {
+    // TODO: map boss
+    return await id;
+  }
+  async mapCoopPlayer({
+    player,
+    weapons,
+    specialWeapon,
+    defeatEnemyCount,
+    deliverCount,
+    goldenAssistCount,
+    goldenDeliverCount,
+    rescueCount,
+    rescuedCount,
+  }: CoopHistoryPlayerResult): Promise<StatInkCoopPlayer> {
+    return {
+      me: player.isMyself ? "yes" : "no",
+      name: player.name,
+      number: player.nameId,
+      splashtag_title: player.byname,
+      // uniform: b64Number(player.uniform).toString(),
+      special: b64Number(specialWeapon.id).toString(),
+      weapons: await Promise.all(weapons.map((w) => this.mapCoopWeapon(w))),
+      golden_eggs: goldenDeliverCount,
+      golden_assist: goldenAssistCount,
+      power_eggs: deliverCount,
+      rescue: rescueCount,
+      rescued: rescuedCount,
+      defeat_boss: defeatEnemyCount,
+      disconnected: "no",
+    };
   }
   async mapCoop(
     {
@@ -456,6 +496,7 @@ export class StatInkExporter implements GameExporter {
       memberResults,
       scale,
       playedTime,
+      enemyResults,
     } = detail;
 
     const startedAt = Math.floor(new Date(playedTime).getTime() / 1000);
@@ -486,8 +527,20 @@ export class StatInkExporter implements GameExporter {
       job_rate: detail.jobRate,
       job_bonus: detail.jobBonus,
       waves: [],
-      players: [],
-      bosses: {},
+      players: await Promise.all([
+        this.mapCoopPlayer(myResult),
+        ...memberResults.map((p) => this.mapCoopPlayer(p)),
+      ]),
+      bosses: Object.fromEntries(
+        await Promise.all(enemyResults.map((i) =>
+          this.mapBoss(i.enemy.id)
+            .then((key) => [key, {
+              appearances: i.popCount,
+              defeated: i.teamDefeatCount,
+              defeated_by_me: i.defeatCount,
+            }])
+        )),
+      ),
       agent: AGENT_NAME,
       agent_version: S3SI_VERSION,
       agent_variables: {

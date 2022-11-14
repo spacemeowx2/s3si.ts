@@ -182,6 +182,11 @@ export type CoopHistoryPlayerResult = {
     byname: string | null;
     name: string;
     nameId: string;
+    uniform: {
+      name: string;
+      id: string;
+    };
+    isMyself: boolean;
   };
   weapons: { name: string }[];
   specialWeapon: {
@@ -420,8 +425,8 @@ export type StatInkCoopPlayer = {
   me: "yes" | "no";
   name: string;
   number: string;
-  splashtag_title: string;
-  uniform: "orange" | "green" | "yellow" | "pink" | "blue" | "black" | "white";
+  splashtag_title: string | null;
+  uniform?: "orange" | "green" | "yellow" | "pink" | "blue" | "black" | "white";
   special: string;
   weapons: string[];
   golden_eggs: number;
