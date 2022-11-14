@@ -171,3 +171,21 @@ export async function getGearPower(state: State) {
 
   return resp;
 }
+
+export async function getLatestBattleHistoriesQuery(state: State) {
+  const resp = await request(
+    state,
+    Queries.LatestBattleHistoriesQuery,
+  );
+
+  return resp;
+}
+
+export async function getGears(state: State) {
+  const resp = await request(
+    state,
+    Queries.myOutfitCommonDataEquipmentsQuery,
+  );
+
+  return resp;
+}

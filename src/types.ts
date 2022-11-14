@@ -11,6 +11,7 @@ export enum Queries {
   CoopHistoryDetailQuery = "f3799a033f0a7ad4b1b396f9a3bafb1e",
   myOutfitCommonDataFilteringConditionQuery =
     "d02ab22c9dccc440076055c8baa0fa7a",
+  myOutfitCommonDataEquipmentsQuery = "d29cd0c2b5e6bac90dd5b817914832f8",
 }
 export type VarsMap = {
   [Queries.HomeQuery]: [];
@@ -26,6 +27,7 @@ export type VarsMap = {
     coopHistoryDetailId: string;
   }];
   [Queries.myOutfitCommonDataFilteringConditionQuery]: [];
+  [Queries.myOutfitCommonDataEquipmentsQuery]: [];
 };
 
 export type Image = {
@@ -249,6 +251,12 @@ export type RespMap = {
         name: string;
       }[];
     };
+  };
+  [Queries.myOutfitCommonDataEquipmentsQuery]: {
+    weapons: unknown[];
+    headGears: unknown[];
+    clothingGears: unknown[];
+    shoesGears: unknown[];
   };
 };
 export type GraphQLResponse<T> = {
