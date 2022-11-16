@@ -12,6 +12,10 @@ jobs:
       - uses: denoland/setup-deno@v1
         with:
           deno-version: ${{ matrix.deno }}
+      - name: Check fmt
+        run: deno fmt --check
+      - name: Run lint
+        run: deno lint
       - name: Check entries
         run: deno check s3si.ts initRank.ts ./scripts/*
       - name: Run tests
