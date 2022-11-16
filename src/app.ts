@@ -1,24 +1,14 @@
-import { getBulletToken, getGToken, loginManually } from "./iksm.ts";
+import { loginManually } from "./iksm.ts";
 import { MultiProgressBar } from "../deps.ts";
-import {
-  DEFAULT_STATE,
-  FileStateBackend,
-  State,
-  StateBackend,
-} from "./state.ts";
-import { getBattleList, isTokenExpired } from "./splatnet3.ts";
+import { FileStateBackend, Profile, StateBackend } from "./state.ts";
+import { Splatnet3 } from "./splatnet3.ts";
 import { BattleListType, Game, GameExporter } from "./types.ts";
 import { Cache, FileCache } from "./cache.ts";
 import { StatInkExporter } from "./exporters/stat.ink.ts";
 import { FileExporter } from "./exporters/file.ts";
-import {
-  delay,
-  readline,
-  RecoverableError,
-  retryRecoverableError,
-  showError,
-} from "./utils.ts";
+import { delay, showError } from "./utils.ts";
 import { GameFetcher } from "./GameFetcher.ts";
+import { DEFAULT_ENV, Env } from "./env.ts";
 
 export type Opts = {
   profilePath: string;
@@ -28,6 +18,7 @@ export type Opts = {
   skipMode?: string;
   cache?: Cache;
   stateBackend?: StateBackend;
+  env: Env;
 };
 
 export const DEFAULT_OPTS: Opts = {
@@ -35,6 +26,7 @@ export const DEFAULT_OPTS: Opts = {
   exporter: "stat.ink",
   noProgress: false,
   monitor: false,
+  env: DEFAULT_ENV,
 };
 
 type Progress = {
@@ -43,51 +35,20 @@ type Progress = {
   total: number;
 };
 
-function printStats(stats: Record<string, number>) {
-  console.log(
-    `Exported ${
-      Object.entries(stats)
-        .map(([name, count]) => `${name}: ${count}`)
-        .join(", ")
-    }`,
-  );
-}
-
 export class App {
-  state: State = DEFAULT_STATE;
-  stateBackend: StateBackend;
-  recoveryToken: RecoverableError = {
-    name: "Refetch Token",
-    is: isTokenExpired,
-    recovery: async () => {
-      console.log("Token expired, refetch tokens.");
-
-      await this.fetchToken();
-    },
-  };
+  profile: Profile;
+  env: Env;
 
   constructor(public opts: Opts) {
-    this.stateBackend = opts.stateBackend ??
+    const stateBackend = opts.stateBackend ??
       new FileStateBackend(opts.profilePath);
+    this.profile = new Profile({
+      stateBackend,
+      env: opts.env,
+    });
+    this.env = opts.env;
   }
-  async writeState(newState: State) {
-    this.state = newState;
-    await this.stateBackend.write(newState);
-  }
-  async readState() {
-    try {
-      const json = await this.stateBackend.read();
-      this.state = {
-        ...DEFAULT_STATE,
-        ...json,
-      };
-    } catch (e) {
-      console.warn(
-        `Failed to read config file, create new config file. (${e})`,
-      );
-      await this.writeState(DEFAULT_STATE);
-    }
-  }
+
   getSkipMode(): ("vs" | "coop")[] {
     const mode = this.opts.skipMode;
     if (mode === "vs") {
@@ -98,38 +59,36 @@ export class App {
     return [];
   }
   async getExporters(): Promise<GameExporter[]> {
+    const state = this.profile.state;
     const exporters = this.opts.exporter.split(",");
     const out: GameExporter[] = [];
 
     if (exporters.includes("stat.ink")) {
-      if (!this.state.statInkApiKey) {
-        console.log("stat.ink API key is not set. Please enter below.");
-        const key = (await readline()).trim();
+      if (!state.statInkApiKey) {
+        this.env.logger.log("stat.ink API key is not set. Please enter below.");
+        const key = (await this.env.readline()).trim();
         if (!key) {
-          console.error("API key is required.");
+          this.env.logger.error("API key is required.");
           Deno.exit(1);
         }
-        await this.writeState({
-          ...this.state,
+        await this.profile.writeState({
+          ...state,
           statInkApiKey: key,
         });
       }
       out.push(
         new StatInkExporter({
-          statInkApiKey: this.state.statInkApiKey!,
+          statInkApiKey: state.statInkApiKey!,
           uploadMode: this.opts.monitor ? "Monitoring" : "Manual",
         }),
       );
     }
 
     if (exporters.includes("file")) {
-      out.push(new FileExporter(this.state.fileExportPath));
+      out.push(new FileExporter(state.fileExportPath));
     }
 
     return out;
-  }
-  async exportOnce() {
-    await retryRecoverableError(() => this._exportOnce(), this.recoveryToken);
   }
   exporterProgress(title: string) {
     const bar = !this.opts.noProgress
@@ -151,7 +110,7 @@ export class App {
           })),
         );
       } else if (progress.currentUrl) {
-        console.log(
+        this.env.logger.log(
           `Battle exported to ${progress.currentUrl} (${progress.current}/${progress.total})`,
         );
       }
@@ -162,7 +121,8 @@ export class App {
 
     return { redraw, endBar };
   }
-  private async _exportOnce() {
+  private async exportOnce() {
+    const splatnet = new Splatnet3({ profile: this.profile, env: this.env });
     const exporters = await this.getExporters();
     const initStats = () =>
       Object.fromEntries(
@@ -173,15 +133,15 @@ export class App {
     const errors: unknown[] = [];
 
     if (skipMode.includes("vs")) {
-      console.log("Skip exporting VS games.");
+      this.env.logger.log("Skip exporting VS games.");
     } else {
-      console.log("Fetching battle list...");
-      const gameList = await getBattleList(this.state);
+      this.env.logger.log("Fetching battle list...");
+      const gameList = await splatnet.getBattleList();
 
       const { redraw, endBar } = this.exporterProgress("Export vs games");
       const fetcher = new GameFetcher({
-        cache: this.opts.cache ?? new FileCache(this.state.cacheDir),
-        state: this.state,
+        cache: this.opts.cache ?? new FileCache(this.profile.state.cacheDir),
+        splatnet,
       });
 
       const finalRankState = await fetcher.updateRank();
@@ -189,6 +149,7 @@ export class App {
       await Promise.all(
         exporters.map((e) =>
           showError(
+            this.env,
             this.exportGameList({
               type: "VsInfo",
               fetcher,
@@ -205,22 +166,22 @@ export class App {
           )
             .catch((err) => {
               errors.push(err);
-              console.error(`\nFailed to export to ${e.name}:`, err);
+              this.env.logger.error(`\nFailed to export to ${e.name}:`, err);
             })
         ),
       );
 
       endBar();
 
-      printStats(stats);
+      this.printStats(stats);
       if (errors.length > 0) {
         throw errors[0];
       }
 
       // save rankState only if all exporters succeeded
       fetcher.setRankState(finalRankState);
-      await this.writeState({
-        ...this.state,
+      await this.profile.writeState({
+        ...this.profile.state,
         rankState: finalRankState,
       });
     }
@@ -230,23 +191,24 @@ export class App {
     // TODO: remove this filter when stat.ink support coop export
     const coopExporter = exporters.filter((e) => e.name !== "stat.ink");
     if (skipMode.includes("coop") || coopExporter.length === 0) {
-      console.log("Skip exporting Coop games.");
+      this.env.logger.log("Skip exporting coop games.");
     } else {
-      console.log("Fetching coop battle list...");
-      const coopBattleList = await getBattleList(
-        this.state,
+      this.env.logger.log("Fetching coop battle list...");
+      const coopBattleList = await splatnet.getBattleList(
         BattleListType.Coop,
       );
 
       const { redraw, endBar } = this.exporterProgress("Export coop games");
       const fetcher = new GameFetcher({
-        cache: this.opts.cache ?? new FileCache(this.state.cacheDir),
-        state: this.state,
+        cache: this.opts.cache ?? new FileCache(this.profile.state.cacheDir),
+        splatnet,
+        rankState: this.profile.state.rankState,
       });
 
       await Promise.all(
         coopExporter.map((e) =>
           showError(
+            this.env,
             this.exportGameList({
               type: "CoopInfo",
               fetcher,
@@ -263,14 +225,14 @@ export class App {
           )
             .catch((err) => {
               errors.push(err);
-              console.error(`\nFailed to export to ${e.name}:`, err);
+              this.env.logger.error(`\nFailed to export to ${e.name}:`, err);
             })
         ),
       );
 
       endBar();
 
-      printStats(stats);
+      this.printStats(stats);
       if (errors.length > 0) {
         throw errors[0];
       }
@@ -279,7 +241,7 @@ export class App {
   async monitor() {
     while (true) {
       await this.exportOnce();
-      await this.countDown(this.state.monitorInterval);
+      await this.countDown(this.profile.state.monitorInterval);
     }
   }
   async countDown(sec: number) {
@@ -298,46 +260,16 @@ export class App {
     }
     bar?.end();
   }
-  async fetchToken() {
-    const sessionToken = this.state.loginState?.sessionToken;
-
-    if (!sessionToken) {
-      throw new Error("Session token is not set.");
-    }
-
-    const { webServiceToken, userCountry, userLang } = await getGToken({
-      fApi: this.state.fGen,
-      sessionToken,
-    });
-
-    const bulletToken = await getBulletToken({
-      webServiceToken,
-      userLang,
-      userCountry,
-      appUserAgent: this.state.appUserAgent,
-    });
-
-    await this.writeState({
-      ...this.state,
-      loginState: {
-        ...this.state.loginState,
-        gToken: webServiceToken,
-        bulletToken,
-      },
-      userLang: this.state.userLang ?? userLang,
-      userCountry: this.state.userCountry ?? userCountry,
-    });
-  }
   async run() {
-    await this.readState();
+    await this.profile.readState();
 
-    if (!this.state.loginState?.sessionToken) {
-      const sessionToken = await loginManually();
+    if (!this.profile.state.loginState?.sessionToken) {
+      const sessionToken = await loginManually(this.env);
 
-      await this.writeState({
-        ...this.state,
+      await this.profile.writeState({
+        ...this.profile.state,
         loginState: {
-          ...this.state.loginState,
+          ...this.profile.state.loginState,
           sessionToken,
         },
       });
@@ -412,5 +344,14 @@ export class App {
     }
 
     return exported;
+  }
+  printStats(stats: Record<string, number>) {
+    this.env.logger.log(
+      `Exported ${
+        Object.entries(stats)
+          .map(([name, count]) => `${name}: ${count}`)
+          .join(", ")
+      }`,
+    );
   }
 }

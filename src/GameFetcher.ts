@@ -1,11 +1,6 @@
 import { Mutex } from "../deps.ts";
-import { RankState, State } from "./state.ts";
-import {
-  getBankaraBattleHistories,
-  getBattleDetail,
-  getCoopDetail,
-  getCoopHistories,
-} from "./splatnet3.ts";
+import { RankState } from "./state.ts";
+import { Splatnet3 } from "./splatnet3.ts";
 import {
   BattleListNode,
   ChallengeProgress,
@@ -23,7 +18,7 @@ import { RankTracker } from "./RankTracker.ts";
  * Fetch game and cache it. It also fetches bankara match challenge info.
  */
 export class GameFetcher {
-  state: State;
+  splatnet: Splatnet3;
   cache: Cache;
   rankTracker: RankTracker;
 
@@ -34,11 +29,15 @@ export class GameFetcher {
   coopHistory?: HistoryGroups<CoopListNode>["nodes"];
 
   constructor(
-    { cache = new MemoryCache(), state }: { state: State; cache?: Cache },
+    { cache = new MemoryCache(), splatnet, rankState }: {
+      splatnet: Splatnet3;
+      rankState?: RankState;
+      cache?: Cache;
+    },
   ) {
-    this.state = state;
+    this.splatnet = splatnet;
     this.cache = cache;
-    this.rankTracker = new RankTracker(state.rankState);
+    this.rankTracker = new RankTracker(rankState);
   }
   private getLock(id: string): Mutex {
     let cur = this.lock[id];
@@ -72,10 +71,8 @@ export class GameFetcher {
         return this.bankaraHistory;
       }
 
-      const { bankaraBattleHistories: { historyGroups } } =
-        await getBankaraBattleHistories(
-          this.state,
-        );
+      const { bankaraBattleHistories: { historyGroups } } = await this.splatnet
+        .getBankaraBattleHistories();
 
       this.bankaraHistory = historyGroups.nodes;
 
@@ -88,9 +85,8 @@ export class GameFetcher {
         return this.coopHistory;
       }
 
-      const { coopResult: { historyGroups } } = await getCoopHistories(
-        this.state,
-      );
+      const { coopResult: { historyGroups } } = await this.splatnet
+        .getCoopHistories();
 
       this.coopHistory = historyGroups.nodes;
 
@@ -208,7 +204,7 @@ export class GameFetcher {
   async fetchBattle(id: string): Promise<VsInfo> {
     const detail = await this.cacheDetail(
       id,
-      () => getBattleDetail(this.state, id).then((r) => r.vsHistoryDetail),
+      () => this.splatnet.getBattleDetail(id).then((r) => r.vsHistoryDetail),
     );
     const metadata = await this.getBattleMetaById(id);
 
@@ -222,7 +218,7 @@ export class GameFetcher {
   async fetchCoop(id: string): Promise<CoopInfo> {
     const detail = await this.cacheDetail(
       id,
-      () => getCoopDetail(this.state, id).then((r) => r.coopHistoryDetail),
+      () => this.splatnet.getCoopDetail(id).then((r) => r.coopHistoryDetail),
     );
     const metadata = await this.getCoopMetaById(id);
 

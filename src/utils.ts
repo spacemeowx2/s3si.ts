@@ -1,8 +1,7 @@
 import { APIError } from "./APIError.ts";
 import { S3S_NAMESPACE } from "./constant.ts";
-import { base64, io, uuid } from "../deps.ts";
-
-const stdinLines = io.readLines(Deno.stdin);
+import { base64, uuid } from "../deps.ts";
+import { Env } from "./env.ts";
 
 export function urlBase64Encode(data: ArrayBuffer) {
   return base64.encode(data)
@@ -17,17 +16,6 @@ export function urlBase64Decode(data: string) {
       .replaceAll("_", "/")
       .replaceAll("-", "+"),
   );
-}
-
-export async function readline(
-  { skipEmpty = true }: { skipEmpty?: boolean } = {},
-) {
-  for await (const line of stdinLines) {
-    if (!skipEmpty || line !== "") {
-      return line;
-    }
-  }
-  throw new Error("EOF");
 }
 
 type PromiseReturnType<T> = T extends () => Promise<infer R> ? R : never;
@@ -65,12 +53,12 @@ export function cache<F extends () => Promise<unknown>>(
   };
 }
 
-export async function showError<T>(p: Promise<T>): Promise<T> {
+export async function showError<T>(env: Env, p: Promise<T>): Promise<T> {
   try {
     return await p;
   } catch (e) {
     if (e instanceof APIError) {
-      console.error(
+      env.logger.error(
         `\n\nAPIError: ${e.message}`,
         "\nResponse: ",
         e.response,
@@ -78,7 +66,7 @@ export async function showError<T>(p: Promise<T>): Promise<T> {
         e.json,
       );
     } else {
-      console.error(e);
+      env.logger.error(e);
     }
     throw e;
   }
@@ -133,35 +121,3 @@ export function parseHistoryDetailId(id: string) {
 
 export const delay = (ms: number) =>
   new Promise<void>((resolve) => setTimeout(resolve, ms));
-
-export type RecoverableError = {
-  name: string;
-  is: (err: unknown) => boolean;
-  recovery: () => Promise<void>;
-  retryTimes?: number;
-  delayTime?: number;
-};
-export async function retryRecoverableError<F extends () => Promise<unknown>>(
-  f: F,
-  ...errors: RecoverableError[]
-): Promise<PromiseReturnType<F>> {
-  const retryTimes: Record<string, number> = Object.fromEntries(
-    errors.map(({ name, retryTimes }) => [name, retryTimes ?? 1]),
-  );
-  while (true) {
-    try {
-      return await f() as PromiseReturnType<F>;
-    } catch (e) {
-      const error = errors.find((error) => error.is(e));
-      if (error) {
-        if (retryTimes[error.name] > 0) {
-          retryTimes[error.name]--;
-          await error.recovery();
-          await delay(error.delayTime ?? 1000);
-          continue;
-        }
-      }
-      throw e;
-    }
-  }
-}

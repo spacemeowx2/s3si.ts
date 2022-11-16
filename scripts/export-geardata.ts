@@ -7,13 +7,12 @@
  */
 
 import Murmurhash3 from "https://deno.land/x/murmurhash@v1.0.0/mod.ts";
-import { base64 } from "../deps.ts";
-import { getBulletToken, getGToken, loginManually } from "../src/iksm.ts";
-import { getGears, getLatestBattleHistoriesQuery } from "../src/splatnet3.ts";
-import { DEFAULT_STATE, FileStateBackend, State } from "../src/state.ts";
+import { base64, flags } from "../deps.ts";
+import { DEFAULT_ENV } from "../src/env.ts";
+import { loginManually } from "../src/iksm.ts";
+import { Splatnet3 } from "../src/splatnet3.ts";
+import { FileStateBackend, Profile } from "../src/state.ts";
 import { parseHistoryDetailId } from "../src/utils.ts";
-
-const PROFILE_PATH = "./profile.json";
 
 function encryptKey(uid: string) {
   const hasher = new Murmurhash3();
@@ -29,52 +28,52 @@ function encryptKey(uid: string) {
   };
 }
 
-// https://stackoverflow.com/questions/56658114/how-can-one-check-if-a-file-or-directory-exists-using-deno
-const exists = async (filename: string): Promise<boolean> => {
-  try {
-    await Deno.stat(filename);
-    // successful, file or directory must exist
-    return true;
-  } catch (error) {
-    if (error instanceof Deno.errors.NotFound) {
-      // file or directory does not exist
-      return false;
-    } else {
-      // unexpected error, maybe permissions, pass it along
-      throw error;
-    }
-  }
+const parseArgs = (args: string[]) => {
+  const parsed = flags.parse(args, {
+    string: ["profilePath"],
+    alias: {
+      "help": "h",
+      "profilePath": ["p", "profile-path"],
+    },
+  });
+  return parsed;
 };
 
-let state: State;
-
-if (await exists(PROFILE_PATH)) {
-  state = await new FileStateBackend(PROFILE_PATH).read();
-} else {
-  const sessionToken = await loginManually();
-
-  const { webServiceToken, userCountry, userLang } = await getGToken({
-    fApi: DEFAULT_STATE.fGen,
-    sessionToken,
-  });
-
-  const bulletToken = await getBulletToken({
-    webServiceToken,
-    userLang,
-    userCountry,
-  });
-
-  state = {
-    ...DEFAULT_STATE,
-    loginState: {
-      sessionToken,
-      gToken: webServiceToken,
-      bulletToken,
-    },
-  };
+const opts = parseArgs(Deno.args);
+if (opts.help) {
+  console.log(
+    `Usage: deno run -A ${Deno.mainModule} [options]
+  
+  Options:
+      --profile-path <path>, -p    Path to config file (default: ./profile.json)
+      --help                       Show this help message and exit`,
+  );
+  Deno.exit(0);
 }
 
-const [latest, gears] = [getLatestBattleHistoriesQuery(state), getGears(state)];
+const env = DEFAULT_ENV;
+const stateBackend = new FileStateBackend(opts.profilePath ?? "./profile.json");
+const profile = new Profile({ stateBackend, env });
+await profile.readState();
+
+if (!profile.state.loginState?.sessionToken) {
+  const sessionToken = await loginManually(env);
+
+  await profile.writeState({
+    ...profile.state,
+    loginState: {
+      ...profile.state.loginState,
+      sessionToken,
+    },
+  });
+}
+
+const splatnet = new Splatnet3({ profile, env });
+
+const [latest, gears] = [
+  splatnet.getLatestBattleHistoriesQuery(),
+  splatnet.getGears(),
+];
 
 console.log("Fetching uid...");
 const { latestBattleHistories: { historyGroups } } = await latest;

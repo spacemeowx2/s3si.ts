@@ -4,15 +4,26 @@
  * This script get token from `./profile.json`, and replace `userLang` with each language to get the full map
  * Make sure to update token before running this script.
  */
-import { getGearPower } from "../src/splatnet3.ts";
-import { FileStateBackend } from "../src/state.ts";
+import { Splatnet3 } from "../src/splatnet3.ts";
+import {
+  FileStateBackend,
+  InMemoryStateBackend,
+  Profile,
+} from "../src/state.ts";
 import { StatInkAbility } from "../src/types.ts";
 
 console.log("Getting keys from stat.ink");
 const abilityResponse = await fetch("https://stat.ink/api/v3/ability");
 const abilityKeys: StatInkAbility = await abilityResponse.json();
 
-const state = await new FileStateBackend("./profile.json").read();
+const stateBackend = new FileStateBackend("./profile.json");
+const profile = new Profile({ stateBackend });
+await profile.readState();
+const splatnet = new Splatnet3({ profile });
+if (!await splatnet.checkToken()) {
+  await splatnet.fetchToken();
+}
+const state = profile.state;
 const LANGS = [
   "de-DE",
   "en-GB",
@@ -32,15 +43,21 @@ const LANGS = [
 
 const langsResult: Record<
   string,
-  Awaited<ReturnType<typeof getGearPower>>["gearPowers"]["nodes"]
+  Awaited<ReturnType<Splatnet3["getGearPower"]>>["gearPowers"]["nodes"]
 > = {};
+
 for (const lang of LANGS) {
   const langState = {
     ...state,
     userLang: lang,
   };
   console.log(`Getting ${lang}...`);
-  langsResult[lang] = (await getGearPower(langState)).gearPowers.nodes;
+
+  const stateBackend = new InMemoryStateBackend(langState);
+  const profile = new Profile({ stateBackend });
+  await profile.readState();
+  const splatnet = new Splatnet3({ profile });
+  langsResult[lang] = (await splatnet.getGearPower()).gearPowers.nodes;
 }
 
 const result: StatInkAbility = abilityKeys.map((i, idx) => ({

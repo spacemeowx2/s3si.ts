@@ -2,12 +2,12 @@
  * If rankState in profile.json is not defined, it will be initialized.
  */
 import { flags } from "./deps.ts";
-import { getBulletToken, getGToken } from "./src/iksm.ts";
-import { checkToken, getBattleDetail, getBattleList } from "./src/splatnet3.ts";
-import { gameId, readline } from "./src/utils.ts";
-import { FileStateBackend } from "./src/state.ts";
+import { Splatnet3 } from "./src/splatnet3.ts";
+import { gameId } from "./src/utils.ts";
+import { FileStateBackend, Profile } from "./src/state.ts";
 import { BattleListType } from "./src/types.ts";
 import { RANK_PARAMS } from "./src/RankTracker.ts";
+import { DEFAULT_ENV } from "./src/env.ts";
 
 const parseArgs = (args: string[]) => {
   const parsed = flags.parse(args, {
@@ -32,52 +32,26 @@ if (opts.help) {
   Deno.exit(0);
 }
 
+const env = DEFAULT_ENV;
 const stateBackend = new FileStateBackend(opts.profilePath ?? "./profile.json");
-let state = await stateBackend.read();
+const profile = new Profile({ stateBackend, env });
+await profile.readState();
 
-if (state.rankState) {
+if (profile.state.rankState) {
   console.log("rankState is already initialized.");
   Deno.exit(0);
 }
 
-if (!await checkToken(state)) {
-  const sessionToken = state.loginState?.sessionToken;
+const splatnet = new Splatnet3({ profile, env });
 
-  if (!sessionToken) {
-    throw new Error("Session token is not set.");
-  }
-
-  const { webServiceToken, userCountry, userLang } = await getGToken({
-    fApi: state.fGen,
-    sessionToken,
-  });
-
-  const bulletToken = await getBulletToken({
-    webServiceToken,
-    userLang,
-    userCountry,
-    appUserAgent: state.appUserAgent,
-  });
-
-  state = {
-    ...state,
-    loginState: {
-      ...state.loginState,
-      gToken: webServiceToken,
-      bulletToken,
-    },
-    userLang: state.userLang ?? userLang,
-    userCountry: state.userCountry ?? userCountry,
-  };
-  await stateBackend.write(state);
-}
-
-const battleList = await getBattleList(state, BattleListType.Bankara);
+const battleList = await splatnet.getBattleList(BattleListType.Bankara);
 if (battleList.length === 0) {
   console.log("No anarchy battle found. Did you play anarchy?");
   Deno.exit(0);
 }
-const { vsHistoryDetail: detail } = await getBattleDetail(state, battleList[0]);
+const { vsHistoryDetail: detail } = await splatnet.getBattleDetail(
+  battleList[0],
+);
 
 console.log(
   `Your latest anarchy battle is played at ${
@@ -86,7 +60,7 @@ console.log(
 );
 
 while (true) {
-  const userInput = await readline();
+  const userInput = await env.readline();
   const [rank, point] = userInput.split(",");
   const pointNumber = parseInt(point);
 
@@ -95,18 +69,17 @@ while (true) {
   } else if (isNaN(pointNumber)) {
     console.log("Invalid point. Please enter again:");
   } else {
-    state = {
-      ...state,
+    profile.writeState({
+      ...profile.state,
       rankState: {
         gameId: await gameId(detail.id),
         rank,
         rankPoint: pointNumber,
       },
-    };
+    });
 
     break;
   }
 }
 
-await stateBackend.write(state);
 console.log("rankState is initialized.");
