@@ -1,0 +1,14 @@
+name: Pull request check
+on: [pull_request]
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: denoland/setup-deno@v1
+        with:
+          deno-version: 1.x
+      - name: Check constant updates
+        run: deno run --A ./scripts/update-constant.ts
+      - name: Check if workspace is clean
+        run: git diff --exit-code
