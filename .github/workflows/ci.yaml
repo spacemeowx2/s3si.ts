@@ -16,7 +16,15 @@ jobs:
         run: deno fmt --check
       - name: Run lint
         run: deno lint
+      - name: All entries
+        uses: tj-actions/glob@v16
+        id: entries
+        with:
+          files: |
+            s3si.ts
+            initRank.ts
+            ./scripts/*.ts
       - name: Check entries
-        run: deno check s3si.ts initRank.ts ./scripts/*
+        run: deno check ${{ steps.entries.outputs.paths }}
       - name: Run tests
         run: deno test
