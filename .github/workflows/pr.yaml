@@ -9,6 +9,6 @@ jobs:
         with:
           deno-version: 1.x
       - name: Check constant updates
-        run: deno run --A ./scripts/update-constant.ts
+        run: deno run -A ./scripts/update-constant.ts
       - name: Check if workspace is clean
         run: git diff --exit-code
