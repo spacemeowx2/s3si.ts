@@ -41,8 +41,9 @@ export class Splatnet3 {
         },
         variables,
       };
-      const resp = await fetch(SPLATNET3_ENDPOINT, {
-        method: "POST",
+      const { post } = this.env.newFetcher();
+      const resp = await post({
+        url: SPLATNET3_ENDPOINT,
         headers: {
           "Authorization": `Bearer ${state.loginState?.bulletToken}`,
           "Accept-Language": state.userLang ?? "en-US",
@@ -99,6 +100,7 @@ export class Splatnet3 {
     const { webServiceToken, userCountry, userLang } = await getGToken({
       fApi: state.fGen,
       sessionToken,
+      env: this.env,
     });
 
     const bulletToken = await getBulletToken({
@@ -106,6 +108,7 @@ export class Splatnet3 {
       userLang,
       userCountry,
       appUserAgent: state.appUserAgent,
+      env: this.env,
     });
 
     await this.profile.writeState({
