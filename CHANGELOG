@@ -1,3 +1,7 @@
+## 0.1.20
+
+refactor: splatnet3 is a class now
+
 ## 0.1.19
 
 fix: don't set rank_exp_change if isUdemaeUp is true
