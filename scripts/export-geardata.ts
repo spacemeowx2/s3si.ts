@@ -104,4 +104,4 @@ await Deno.writeTextFile(
   }),
 );
 
-console.log("Done");
+console.log("Write file:" + `geardata_${timestamp}.json`);
