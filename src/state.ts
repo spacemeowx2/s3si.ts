@@ -1,3 +1,6 @@
+import { DeepReadonly } from "../deps.ts";
+import { DEFAULT_ENV, Env } from "./env.ts";
+
 export type LoginState = {
   sessionToken?: string;
   gToken?: string;
@@ -41,10 +44,27 @@ export type StateBackend = {
   write: (newState: State) => Promise<void>;
 };
 
+export class InMemoryStateBackend implements StateBackend {
+  state: State;
+
+  constructor(state?: State) {
+    this.state = state ?? DEFAULT_STATE;
+  }
+
+  read() {
+    return Promise.resolve(this.state);
+  }
+
+  write(newState: State) {
+    this.state = newState;
+    return Promise.resolve();
+  }
+}
+
 export class FileStateBackend implements StateBackend {
   constructor(private path: string) {}
 
-  async read(): Promise<State> {
+  async read(): Promise<DeepReadonly<State>> {
     const data = await Deno.readTextFile(this.path);
     const json = JSON.parse(data);
     return json;
@@ -55,5 +75,47 @@ export class FileStateBackend implements StateBackend {
     const swapPath = `${this.path}.swap`;
     await Deno.writeTextFile(swapPath, data);
     await Deno.rename(swapPath, this.path);
+  }
+}
+
+export class Profile {
+  protected _state?: State;
+  protected stateBackend: StateBackend;
+  protected env: Env;
+
+  constructor(
+    { stateBackend, env = DEFAULT_ENV }: {
+      stateBackend: StateBackend;
+      env?: Env;
+    },
+  ) {
+    this.stateBackend = stateBackend;
+    this.env = env;
+  }
+
+  get state(): DeepReadonly<State> {
+    if (!this._state) {
+      throw new Error("state is not initialized");
+    }
+    return this._state;
+  }
+
+  async writeState(newState: State) {
+    this._state = newState;
+    await this.stateBackend.write(newState);
+  }
+  async readState() {
+    try {
+      const json = await this.stateBackend.read();
+      this._state = {
+        ...DEFAULT_STATE,
+        ...json,
+      };
+    } catch (e) {
+      this.env.logger.warn(
+        `Failed to read config file, create new config file. (${e})`,
+      );
+      await this.writeState(DEFAULT_STATE);
+    }
   }
 }

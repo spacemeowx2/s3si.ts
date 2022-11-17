@@ -41,4 +41,4 @@ const app = new App({
   ...DEFAULT_OPTS,
   ...opts,
 });
-await showError(app.run());
+await showError(app.env, app.run());

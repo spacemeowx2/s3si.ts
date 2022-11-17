@@ -11,3 +11,4 @@ export * as msgpack from "https://deno.land/x/msgpack@v1.4/mod.ts";
 export * as path from "https://deno.land/std@0.160.0/path/mod.ts";
 export { MultiProgressBar } from "https://deno.land/x/progress@v1.2.8/mod.ts";
 export { Mutex } from "https://deno.land/x/semaphore@v1.1.1/mod.ts";
+export type { DeepReadonly } from "https://deno.land/x/ts_essentials@v9.1.2/mod.ts";

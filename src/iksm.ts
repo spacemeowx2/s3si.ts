@@ -1,5 +1,5 @@
 import { CookieJar, wrapFetch } from "../deps.ts";
-import { readline, retry, urlBase64Encode } from "./utils.ts";
+import { retry, urlBase64Encode } from "./utils.ts";
 import {
   DEFAULT_APP_USER_AGENT,
   NSOAPP_VERSION,
@@ -7,8 +7,11 @@ import {
   WEB_VIEW_VERSION,
 } from "./constant.ts";
 import { APIError } from "./APIError.ts";
+import { Env } from "./env.ts";
 
-export async function loginManually(): Promise<string> {
+export async function loginManually(
+  { logger, readline }: Env,
+): Promise<string> {
   const cookieJar = new CookieJar();
   const fetch = wrapFetch({ cookieJar });
 
@@ -52,9 +55,9 @@ export async function loginManually(): Promise<string> {
     },
   );
 
-  console.log("Navigate to this URL in your browser:");
-  console.log(res.url);
-  console.log(
+  logger.log("Navigate to this URL in your browser:");
+  logger.log(res.url);
+  logger.log(
     'Log in, right click the "Select this account" button, copy the link address, and paste it below:',
   );
 
