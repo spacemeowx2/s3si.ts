@@ -55,6 +55,7 @@ export async function loginManually(
   if (!login) {
     throw new Error("No login URL provided");
   }
+
   const loginURL = new URL(login);
   const params = new URLSearchParams(loginURL.hash.substring(1));
   const sessionTokenCode = params.get("session_token_code");
