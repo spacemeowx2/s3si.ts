@@ -505,12 +505,11 @@ export class StatInkExporter implements GameExporter {
     const power_eggs = myResult.deliverCount +
       memberResults.reduce((p, i) => p + i.deliverCount, 0);
 
-    const result: StatInkCoopPostBody = {
+    const _result: StatInkCoopPostBody = {
       test: "yes",
       uuid: await gameId(detail.id),
       big_run: "no",
       stage: "",
-      weapon: await this.mapCoopWeapon(myResult.weapons[0]),
       danger_rate: dangerRate * 100,
       clear_waves: resultWave,
       king_salmonid: "",
