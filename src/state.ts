@@ -47,8 +47,8 @@ export type StateBackend = {
 export class InMemoryStateBackend implements StateBackend {
   state: State;
 
-  constructor(state: State) {
-    this.state = state;
+  constructor(state?: State) {
+    this.state = state ?? DEFAULT_STATE;
   }
 
   read() {

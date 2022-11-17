@@ -11,7 +11,11 @@ import { base64, flags } from "../deps.ts";
 import { DEFAULT_ENV } from "../src/env.ts";
 import { loginManually } from "../src/iksm.ts";
 import { Splatnet3 } from "../src/splatnet3.ts";
-import { FileStateBackend, Profile } from "../src/state.ts";
+import {
+  FileStateBackend,
+  InMemoryStateBackend,
+  Profile,
+} from "../src/state.ts";
 import { parseHistoryDetailId } from "../src/utils.ts";
 
 function encryptKey(uid: string) {
@@ -45,14 +49,16 @@ if (opts.help) {
     `Usage: deno run -A ${Deno.mainModule} [options]
   
   Options:
-      --profile-path <path>, -p    Path to config file (default: ./profile.json)
+      --profile-path <path>, -p    Path to config file (default: null, login token will be dropped)
       --help                       Show this help message and exit`,
   );
   Deno.exit(0);
 }
 
 const env = DEFAULT_ENV;
-const stateBackend = new FileStateBackend(opts.profilePath ?? "./profile.json");
+const stateBackend = opts.profilePath
+  ? new FileStateBackend(opts.profilePath)
+  : new InMemoryStateBackend();
 const profile = new Profile({ stateBackend, env });
 await profile.readState();
 
