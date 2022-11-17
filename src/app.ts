@@ -141,6 +141,7 @@ export class App {
       const { redraw, endBar } = this.exporterProgress("Export vs games");
       const fetcher = new GameFetcher({
         cache: this.opts.cache ?? new FileCache(this.profile.state.cacheDir),
+        state: this.profile.state,
         splatnet,
       });
 
@@ -201,8 +202,8 @@ export class App {
       const { redraw, endBar } = this.exporterProgress("Export coop games");
       const fetcher = new GameFetcher({
         cache: this.opts.cache ?? new FileCache(this.profile.state.cacheDir),
+        state: this.profile.state,
         splatnet,
-        rankState: this.profile.state.rankState,
       });
 
       await Promise.all(

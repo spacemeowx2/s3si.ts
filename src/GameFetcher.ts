@@ -1,5 +1,5 @@
 import { Mutex } from "../deps.ts";
-import { RankState } from "./state.ts";
+import { RankState, State } from "./state.ts";
 import { Splatnet3 } from "./splatnet3.ts";
 import {
   BattleListNode,
@@ -29,15 +29,15 @@ export class GameFetcher {
   coopHistory?: HistoryGroups<CoopListNode>["nodes"];
 
   constructor(
-    { cache = new MemoryCache(), splatnet, rankState }: {
+    { cache = new MemoryCache(), splatnet, state }: {
       splatnet: Splatnet3;
-      rankState?: RankState;
+      state: State;
       cache?: Cache;
     },
   ) {
     this.splatnet = splatnet;
     this.cache = cache;
-    this.rankTracker = new RankTracker(rankState);
+    this.rankTracker = new RankTracker(state.rankState);
   }
   private getLock(id: string): Mutex {
     let cur = this.lock[id];
