@@ -449,11 +449,11 @@ export type StatInkCoopPostBody = {
   uuid: string;
   big_run: "no";
   stage: string;
-  weapon: string;
   // [0, 333]
   danger_rate: number;
   // [0, 3]
   clear_waves: number;
+  fail_reason?: null | "wipe_out" | "time_limit";
   king_salmonid: string;
   clear_extra: "yes" | "no";
   title_before?: StatInkCoopTitle;
