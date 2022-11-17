@@ -14,9 +14,9 @@ export async function readline(
 }
 
 export type Fetcher = {
-  get(opts: { url: string; headers?: Headers }): Promise<Response>;
+  get(opts: { url: string; headers?: HeadersInit }): Promise<Response>;
   post(
-    opts: { url: string; body: BodyInit; headers?: Headers },
+    opts: { url: string; body?: BodyInit; headers?: HeadersInit },
   ): Promise<Response>;
 };
 

@@ -1,4 +1,3 @@
-import { CookieJar, wrapFetch } from "../deps.ts";
 import { retry, urlBase64Encode } from "./utils.ts";
 import {
   DEFAULT_APP_USER_AGENT,
@@ -7,13 +6,12 @@ import {
   WEB_VIEW_VERSION,
 } from "./constant.ts";
 import { APIError } from "./APIError.ts";
-import { Env } from "./env.ts";
+import { Env, Fetcher } from "./env.ts";
 
 export async function loginManually(
-  { logger, readline }: Env,
+  { logger, readline, newFetcher }: Env,
 ): Promise<string> {
-  const cookieJar = new CookieJar();
-  const fetch = wrapFetch({ cookieJar });
+  const fetch = newFetcher();
 
   const state = urlBase64Encode(random(36));
   const authCodeVerifier = urlBase64Encode(random(32));
@@ -36,10 +34,9 @@ export async function loginManually(
   const url = "https://accounts.nintendo.com/connect/1.0.0/authorize?" +
     new URLSearchParams(body);
 
-  const res = await fetch(
-    url,
+  const res = await fetch.get(
     {
-      method: "GET",
+      url,
       headers: {
         "Host": "accounts.nintendo.com",
         "Connection": "keep-alive",
@@ -73,7 +70,7 @@ export async function loginManually(
   }
 
   const sessionToken = await getSessionToken({
-    cookieJar,
+    fetch,
     sessionTokenCode,
     authCodeVerifier,
   });
@@ -85,12 +82,12 @@ export async function loginManually(
 }
 
 export async function getGToken(
-  { fApi, sessionToken }: { fApi: string; sessionToken: string },
+  { fApi, sessionToken, env }: { fApi: string; sessionToken: string; env: Env },
 ) {
-  const idResp = await fetch(
-    "https://accounts.nintendo.com/connect/1.0.0/api/token",
+  const fetch = env.newFetcher();
+  const idResp = await fetch.post(
     {
-      method: "POST",
+      url: "https://accounts.nintendo.com/connect/1.0.0/api/token",
       headers: {
         "Host": "accounts.nintendo.com",
         "Accept-Encoding": "gzip",
@@ -117,9 +114,9 @@ export async function getGToken(
     });
   }
 
-  const uiResp = await fetch(
-    "https://api.accounts.nintendo.com/2.0.0/users/me",
+  const uiResp = await fetch.get(
     {
+      url: "https://api.accounts.nintendo.com/2.0.0/users/me",
       headers: {
         "User-Agent": "NASDKAPI; Android",
         "Content-Type": "application/json",
@@ -139,11 +136,11 @@ export async function getGToken(
       fApi,
       step: 1,
       idToken,
+      env,
     });
-    const resp = await fetch(
-      "https://api-lp1.znc.srv.nintendo.net/v3/Account/Login",
+    const resp = await fetch.post(
       {
-        method: "POST",
+        url: "https://api-lp1.znc.srv.nintendo.net/v3/Account/Login",
         headers: {
           "X-Platform": "Android",
           "X-ProductVersion": NSOAPP_VERSION,
@@ -184,11 +181,11 @@ export async function getGToken(
       step: 2,
       idToken,
       fApi,
+      env,
     });
-    const resp = await fetch(
-      "https://api-lp1.znc.srv.nintendo.net/v2/Game/GetWebServiceToken",
+    const resp = await fetch.post(
       {
-        method: "POST",
+        url: "https://api-lp1.znc.srv.nintendo.net/v2/Game/GetWebServiceToken",
         headers: {
           "X-Platform": "Android",
           "X-ProductVersion": NSOAPP_VERSION,
@@ -240,30 +237,30 @@ export async function getBulletToken(
     appUserAgent = DEFAULT_APP_USER_AGENT,
     userLang,
     userCountry,
+    env,
   }: {
     webServiceToken: string;
     appUserAgent?: string;
     userLang: string;
     userCountry: string;
+    env: Env;
   },
 ) {
-  const resp = await fetch(
-    "https://api.lp1.av5ja.srv.nintendo.net/api/bullet_tokens",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Accept-Language": userLang,
-        "User-Agent": appUserAgent,
-        "X-Web-View-Ver": WEB_VIEW_VERSION,
-        "X-NACOUNTRY": userCountry,
-        "Accept": "*/*",
-        "Origin": "https://api.lp1.av5ja.srv.nintendo.net",
-        "X-Requested-With": "com.nintendo.znca",
-        "Cookie": `_gtoken=${webServiceToken}`,
-      },
+  const { post } = env.newFetcher();
+  const resp = await post({
+    url: "https://api.lp1.av5ja.srv.nintendo.net/api/bullet_tokens",
+    headers: {
+      "Content-Type": "application/json",
+      "Accept-Language": userLang,
+      "User-Agent": appUserAgent,
+      "X-Web-View-Ver": WEB_VIEW_VERSION,
+      "X-NACOUNTRY": userCountry,
+      "Accept": "*/*",
+      "Origin": "https://api.lp1.av5ja.srv.nintendo.net",
+      "X-Requested-With": "com.nintendo.znca",
+      "Cookie": `_gtoken=${webServiceToken}`,
     },
-  );
+  });
 
   if (resp.status == 401) {
     throw new APIError({
@@ -311,20 +308,17 @@ function random(size: number): ArrayBuffer {
 }
 
 async function getSessionToken({
-  cookieJar,
+  fetch,
   sessionTokenCode,
   authCodeVerifier,
 }: {
-  cookieJar: CookieJar;
+  fetch: Fetcher;
   sessionTokenCode: string;
   authCodeVerifier: string;
 }): Promise<string | undefined> {
-  const fetch = wrapFetch({ cookieJar });
-
-  const resp = await fetch(
-    "https://accounts.nintendo.com/connect/1.0.0/api/session_token",
+  const resp = await fetch.post(
     {
-      method: "POST",
+      url: "https://accounts.nintendo.com/connect/1.0.0/api/session_token",
       headers: {
         "User-Agent": `OnlineLounge/${NSOAPP_VERSION} NASDKAPI Android`,
         "Accept-Language": "en-US",
@@ -358,10 +352,16 @@ type IminkResponse = {
   timestamp: number;
 };
 async function callImink(
-  { fApi, step, idToken }: { fApi: string; step: number; idToken: string },
+  { fApi, step, idToken, env }: {
+    fApi: string;
+    step: number;
+    idToken: string;
+    env: Env;
+  },
 ): Promise<IminkResponse> {
-  const resp = await fetch(fApi, {
-    method: "POST",
+  const { post } = env.newFetcher();
+  const resp = await post({
+    url: fApi,
     headers: {
       "User-Agent": USERAGENT,
       "Content-Type": "application/json; charset=utf-8",
