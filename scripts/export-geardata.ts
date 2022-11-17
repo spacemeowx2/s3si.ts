@@ -76,13 +76,9 @@ if (!profile.state.loginState?.sessionToken) {
 
 const splatnet = new Splatnet3({ profile, env });
 
-const [latest, gears] = [
-  splatnet.getLatestBattleHistoriesQuery(),
-  splatnet.getGears(),
-];
-
 console.log("Fetching uid...");
-const { latestBattleHistories: { historyGroups } } = await latest;
+const { latestBattleHistories: { historyGroups } } = await splatnet
+  .getLatestBattleHistoriesQuery();
 
 const id = historyGroups.nodes?.[0].historyDetails.nodes?.[0].id;
 
@@ -94,7 +90,7 @@ if (!id) {
 const { uid } = parseHistoryDetailId(id);
 
 console.log("Fetching gears...");
-const data = await gears;
+const data = await splatnet.getGears();
 const timestamp = Math.floor(new Date().getTime() / 1000);
 
 await Deno.writeTextFile(
