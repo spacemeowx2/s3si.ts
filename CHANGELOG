@@ -1,3 +1,8 @@
+## 0.1.21
+
+refactor: use `Env::newFetcher` instead of `fetch`
+fix: error after stat ink key prompt
+
 ## 0.1.20
 
 refactor: splatnet3 is a class now
