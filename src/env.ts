@@ -1,4 +1,4 @@
-import { CookieJar, wrapFetch } from "../deps.ts";
+import { CookieJar, CookieOptions, wrapFetch } from "../deps.ts";
 import { io } from "../deps.ts";
 
 const stdinLines = io.readLines(Deno.stdin);
@@ -30,7 +30,7 @@ export type Logger = {
 export type Env = {
   logger: Logger;
   readline: () => Promise<string>;
-  newFetcher: () => Fetcher;
+  newFetcher: (opts?: { cookies?: CookieOptions[] }) => Fetcher;
 };
 
 export const DEFAULT_ENV: Env = {
@@ -41,8 +41,8 @@ export const DEFAULT_ENV: Env = {
     error: console.error,
   },
   readline,
-  newFetcher: () => {
-    const cookieJar = new CookieJar();
+  newFetcher: ({ cookies } = {}) => {
+    const cookieJar = new CookieJar(cookies);
     const fetch = wrapFetch({ cookieJar });
 
     return {
@@ -62,3 +62,5 @@ export const DEFAULT_ENV: Env = {
     };
   },
 };
+
+export type { CookieOptions };

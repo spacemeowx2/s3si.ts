@@ -243,7 +243,13 @@ export async function getBulletToken(
     env: Env;
   },
 ) {
-  const { post } = env.newFetcher();
+  const { post } = env.newFetcher({
+    cookies: [{
+      name: "_gtoken",
+      value: webServiceToken,
+      domain: "api.lp1.av5ja.srv.nintendo.net",
+    }],
+  });
   const resp = await post({
     url: "https://api.lp1.av5ja.srv.nintendo.net/api/bullet_tokens",
     headers: {
@@ -255,7 +261,6 @@ export async function getBulletToken(
       "Accept": "*/*",
       "Origin": "https://api.lp1.av5ja.srv.nintendo.net",
       "X-Requested-With": "com.nintendo.znca",
-      "Cookie": `_gtoken=${webServiceToken}`,
     },
   });
 
