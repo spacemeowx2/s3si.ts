@@ -263,9 +263,20 @@ export class App {
   }
   async run() {
     await this.profile.readState();
+    const { logger, readline, newFetcher } = this.env;
 
     if (!this.profile.state.loginState?.sessionToken) {
-      const sessionToken = await loginManually(this.env);
+      const sessionToken = await loginManually({
+        newFetcher,
+        promptLogin: async (url: string) => {
+          logger.log("Navigate to this URL in your browser:");
+          logger.log(url);
+          logger.log(
+            'Log in, right click the "Select this account" button, copy the link address, and paste it below:',
+          );
+          return await readline();
+        },
+      });
 
       await this.profile.writeState({
         ...this.profile.state,

@@ -9,7 +9,10 @@ import { APIError } from "./APIError.ts";
 import { Env, Fetcher } from "./env.ts";
 
 export async function loginManually(
-  { logger, readline, newFetcher }: Env,
+  { newFetcher, promptLogin }: {
+    newFetcher: () => Fetcher;
+    promptLogin: (url: string) => Promise<string>;
+  },
 ): Promise<string> {
   const fetch = newFetcher();
 
@@ -52,13 +55,7 @@ export async function loginManually(
     },
   );
 
-  logger.log("Navigate to this URL in your browser:");
-  logger.log(res.url);
-  logger.log(
-    'Log in, right click the "Select this account" button, copy the link address, and paste it below:',
-  );
-
-  const login = (await readline()).trim();
+  const login = (await promptLogin(res.url)).trim();
   if (!login) {
     throw new Error("No login URL provided");
   }
