@@ -12,6 +12,7 @@
         "export/",
         "cache/",
         ".vscode/",
+        ".github/",
         "profile.json"
       ]
     }
