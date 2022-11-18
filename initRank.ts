@@ -3,7 +3,7 @@
  */
 import { flags } from "./deps.ts";
 import { Splatnet3 } from "./src/splatnet3.ts";
-import { gameId } from "./src/utils.ts";
+import { gameId, readline } from "./src/utils.ts";
 import { FileStateBackend, Profile } from "./src/state.ts";
 import { BattleListType } from "./src/types.ts";
 import { RANK_PARAMS } from "./src/RankTracker.ts";
@@ -60,7 +60,7 @@ console.log(
 );
 
 while (true) {
-  const userInput = await env.readline();
+  const userInput = await readline();
   const [rank, point] = userInput.split(",");
   const pointNumber = parseInt(point);
 
