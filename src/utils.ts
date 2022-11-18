@@ -2,6 +2,19 @@ import { APIError } from "./APIError.ts";
 import { S3S_NAMESPACE } from "./constant.ts";
 import { base64, uuid } from "../deps.ts";
 import { Env } from "./env.ts";
+import { io } from "../deps.ts";
+
+const stdinLines = io.readLines(Deno.stdin);
+export async function readline(
+  { skipEmpty = true }: { skipEmpty?: boolean } = {},
+) {
+  for await (const line of stdinLines) {
+    if (!skipEmpty || line !== "") {
+      return line;
+    }
+  }
+  throw new Error("EOF");
+}
 
 export function urlBase64Encode(data: ArrayBuffer) {
   return base64.encode(data)

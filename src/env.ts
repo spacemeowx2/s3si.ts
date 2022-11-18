@@ -1,17 +1,4 @@
 import { CookieJar, CookieOptions, wrapFetch } from "../deps.ts";
-import { io } from "../deps.ts";
-
-const stdinLines = io.readLines(Deno.stdin);
-export async function readline(
-  { skipEmpty = true }: { skipEmpty?: boolean } = {},
-) {
-  for await (const line of stdinLines) {
-    if (!skipEmpty || line !== "") {
-      return line;
-    }
-  }
-  throw new Error("EOF");
-}
 
 export type Fetcher = {
   get(opts: { url: string; headers?: HeadersInit }): Promise<Response>;
@@ -29,7 +16,6 @@ export type Logger = {
 
 export type Env = {
   logger: Logger;
-  readline: () => Promise<string>;
   newFetcher: (opts?: { cookies?: CookieOptions[] }) => Fetcher;
 };
 
@@ -40,7 +26,6 @@ export const DEFAULT_ENV: Env = {
     warn: console.warn,
     error: console.error,
   },
-  readline,
   newFetcher: ({ cookies } = {}) => {
     const cookieJar = new CookieJar(cookies);
     const fetch = wrapFetch({ cookieJar });
