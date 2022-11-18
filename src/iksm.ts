@@ -9,10 +9,7 @@ import { APIError } from "./APIError.ts";
 import { Env, Fetcher } from "./env.ts";
 
 export async function loginManually(
-  { newFetcher, promptLogin }: {
-    newFetcher: () => Fetcher;
-    promptLogin: (url: string) => Promise<string>;
-  },
+  { newFetcher, prompts: { promptLogin } }: Env,
 ): Promise<string> {
   const fetch = newFetcher();
 

@@ -65,8 +65,9 @@ export class App {
 
     if (exporters.includes("stat.ink")) {
       if (!state.statInkApiKey) {
-        this.env.logger.log("stat.ink API key is not set. Please enter below.");
-        const key = (await this.env.readline()).trim();
+        const key = (await this.env.prompts.prompt(
+          "stat.ink API key is not set. Please enter below.",
+        )).trim();
         if (!key) {
           this.env.logger.error("API key is required.");
           Deno.exit(1);
@@ -263,20 +264,9 @@ export class App {
   }
   async run() {
     await this.profile.readState();
-    const { logger, readline, newFetcher } = this.env;
 
     if (!this.profile.state.loginState?.sessionToken) {
-      const sessionToken = await loginManually({
-        newFetcher,
-        promptLogin: async (url: string) => {
-          logger.log("Navigate to this URL in your browser:");
-          logger.log(url);
-          logger.log(
-            'Log in, right click the "Select this account" button, copy the link address, and paste it below:',
-          );
-          return await readline();
-        },
-      });
+      const sessionToken = await loginManually(this.env);
 
       await this.profile.writeState({
         ...this.profile.state,

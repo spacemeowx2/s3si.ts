@@ -1,4 +1,16 @@
 import { CookieJar, CookieOptions, wrapFetch } from "../deps.ts";
+import { readline } from "./utils.ts";
+
+export type Prompts = {
+  /**
+   * Prompt the user to enter the npf url.
+   */
+  promptLogin: (url: string) => Promise<string>;
+  /**
+   * Prompt the user to enter the string.
+   */
+  prompt: (tips: string) => Promise<string>;
+};
 
 export type Fetcher = {
   get(opts: { url: string; headers?: HeadersInit }): Promise<Response>;
@@ -15,11 +27,26 @@ export type Logger = {
 };
 
 export type Env = {
+  prompts: Prompts;
   logger: Logger;
   newFetcher: (opts?: { cookies?: CookieOptions[] }) => Fetcher;
 };
 
 export const DEFAULT_ENV: Env = {
+  prompts: {
+    promptLogin: async (url: string) => {
+      console.log("Navigate to this URL in your browser:");
+      console.log(url);
+      console.log(
+        'Log in, right click the "Select this account" button, copy the link address, and paste it below:',
+      );
+      return await readline();
+    },
+    prompt: async (tips: string) => {
+      console.log(tips);
+      return await readline();
+    },
+  },
   logger: {
     debug: console.debug,
     log: console.log,
