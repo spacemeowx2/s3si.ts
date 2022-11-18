@@ -79,7 +79,7 @@ export class App {
       }
       out.push(
         new StatInkExporter({
-          statInkApiKey: state.statInkApiKey!,
+          statInkApiKey: this.profile.state.statInkApiKey!,
           uploadMode: this.opts.monitor ? "Monitoring" : "Manual",
         }),
       );
