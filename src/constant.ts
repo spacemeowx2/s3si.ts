@@ -25,6 +25,9 @@ export const SPLATNET3_STATINK_MAP: {
     NonNullable<VsHistoryDetail["festMatch"]>["dragonMatchType"],
     StatInkPostBody["fest_dragon"]
   >;
+  BOSS_MAP: Record<number, string | undefined>;
+  COOP_EVENT_MAP: Record<number, string | undefined>;
+  WATER_LEVEL_MAP: Record<0 | 1 | 2, "low" | "normal" | "high">;
 } = {
   RULE: {
     TURF_WAR: "nawabari",
@@ -47,5 +50,16 @@ export const SPLATNET3_STATINK_MAP: {
     DECUPLE: "10x",
     DRAGON: "100x",
     DOUBLE_DRAGON: "333x",
+  },
+  BOSS_MAP: {
+    23: "yokozuna",
+  },
+  COOP_EVENT_MAP: {
+    2: "goldie_seeking",
+  },
+  WATER_LEVEL_MAP: {
+    0: "low",
+    1: "normal",
+    2: "high",
   },
 };

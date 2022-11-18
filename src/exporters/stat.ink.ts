@@ -5,6 +5,7 @@ import {
   USERAGENT,
 } from "../constant.ts";
 import {
+  CoopHistoryDetail,
   CoopHistoryPlayerResult,
   CoopInfo,
   GameExporter,
@@ -12,6 +13,7 @@ import {
   StatInkAbility,
   StatInkCoopPlayer,
   StatInkCoopPostBody,
+  StatInkCoopWave,
   StatInkGear,
   StatInkGears,
   StatInkPlayer,
@@ -492,6 +494,30 @@ export class StatInkExporter implements GameExporter {
       disconnected: "no",
     };
   }
+  mapKing(id?: string) {
+    if (!id) {
+      return undefined;
+    }
+    const nid = b64Number(id);
+    const key = SPLATNET3_STATINK_MAP.BOSS_MAP[nid];
+    if (!key) {
+      throw new Error(`Boss not found: ${id}`);
+    }
+    return key;
+  }
+  mapWave(wave: CoopHistoryDetail["waveResults"]["0"]): StatInkCoopWave {
+    const event = wave.eventWave
+      ? SPLATNET3_STATINK_MAP.COOP_EVENT_MAP[b64Number(wave.eventWave.id)]
+      : undefined;
+    return {
+      tide: SPLATNET3_STATINK_MAP.WATER_LEVEL_MAP[wave.waterLevel],
+      event,
+      golden_quota: wave.deliverNorm,
+      golden_appearances: wave.goldenPopCount,
+      golden_delivered: wave.teamDeliverCount,
+      // special_uses: wave.specialWeapons
+    };
+  }
   async mapCoop(
     {
       detail,
@@ -518,12 +544,12 @@ export class StatInkExporter implements GameExporter {
       test: "yes",
       uuid: await gameId(detail.id),
       big_run: "no",
-      stage: "",
+      stage: b64Number(detail.coopStage.id).toString(),
       danger_rate: dangerRate * 100,
       clear_waves: resultWave,
-      king_salmonid: "",
+      king_salmonid: this.mapKing(detail.bossResult?.boss.id),
       clear_extra: bossResult?.hasDefeatBoss ? "yes" : "no",
-      // title_after: detail.afterGrade,
+      title_after: b64Number(detail.afterGrade.id).toString(),
       title_exp_after: detail.afterGradePoint,
       golden_eggs,
       power_eggs,
@@ -534,7 +560,7 @@ export class StatInkExporter implements GameExporter {
       job_score: detail.jobScore,
       job_rate: detail.jobRate,
       job_bonus: detail.jobBonus,
-      waves: [],
+      waves: detail.waveResults.map((w) => this.mapWave(w)),
       players: await Promise.all([
         this.mapCoopPlayer(myResult),
         ...memberResults.map((p) => this.mapCoopPlayer(p)),

@@ -228,7 +228,7 @@ export type CoopHistoryDetail = {
   }[];
   waveResults: {
     waveNumber: number;
-    waterLevel: number;
+    waterLevel: 0 | 1 | 2;
     eventWave: {
       name: string;
       id: string;
@@ -409,16 +409,14 @@ export type StatInkStage = {
   };
 }[];
 
-export type StatInkCoopTitle = "profreshional_0";
-
 export type StatInkCoopWave = {
   tide: "low" | "normal" | "high";
   // https://stat.ink/api-info/salmon-event3
-  event: string;
+  event?: string;
   golden_quota: number;
   golden_delivered: number;
   golden_appearances: number;
-  special_uses: Record<string, number>;
+  special_uses?: Record<string, number>;
 };
 
 export type StatInkCoopPlayer = {
@@ -454,12 +452,12 @@ export type StatInkCoopPostBody = {
   // [0, 3]
   clear_waves: number;
   fail_reason?: null | "wipe_out" | "time_limit";
-  king_salmonid: string;
+  king_salmonid?: string;
   clear_extra: "yes" | "no";
-  title_before?: StatInkCoopTitle;
+  title_before?: string;
   // [0, 999]
   title_exp_before?: number;
-  title_after?: StatInkCoopTitle;
+  title_after?: string;
   // [0, 999]
   title_exp_after: number;
   golden_eggs: number;
