@@ -81,6 +81,7 @@ export class App {
         new StatInkExporter({
           statInkApiKey: this.profile.state.statInkApiKey!,
           uploadMode: this.opts.monitor ? "Monitoring" : "Manual",
+          env: this.env,
         }),
       );
     }

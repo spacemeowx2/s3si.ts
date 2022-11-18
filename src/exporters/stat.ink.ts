@@ -26,6 +26,7 @@ import {
 import { base64, msgpack, Mutex } from "../../deps.ts";
 import { APIError } from "../APIError.ts";
 import { gameId, s3siGameId } from "../utils.ts";
+import { Env } from "../env.ts";
 
 /**
  * Decode ID and get number after '-'
@@ -40,11 +41,12 @@ class StatInkAPI {
   FETCH_LOCK = new Mutex();
   cache: Record<string, unknown> = {};
 
-  constructor(private statInkApiKey: string) {
+  constructor(private statInkApiKey: string, private env: Env) {
     if (statInkApiKey.length !== 43) {
       throw new Error("Invalid stat.ink API key");
     }
   }
+
   requestHeaders() {
     return {
       "User-Agent": USERAGENT,
@@ -53,14 +55,17 @@ class StatInkAPI {
   }
 
   async uuidList(): Promise<string[]> {
-    return await (await fetch("https://stat.ink/api/v3/s3s/uuid-list", {
+    const fetch = this.env.newFetcher();
+    return await (await fetch.get({
+      url: "https://stat.ink/api/v3/s3s/uuid-list",
       headers: this.requestHeaders(),
     })).json();
   }
 
   async postBattle(body: StatInkPostBody) {
-    const resp = await fetch("https://stat.ink/api/v3/battle", {
-      method: "POST",
+    const fetch = this.env.newFetcher();
+    const resp = await fetch.post({
+      url: "https://stat.ink/api/v3/battle",
       headers: {
         ...this.requestHeaders(),
         "Content-Type": "application/x-msgpack",
@@ -90,8 +95,9 @@ class StatInkAPI {
   }
 
   async postCoop(body: StatInkCoopPostBody) {
-    const resp = await fetch("https://stat.ink/api/v3/salmon", {
-      method: "POST",
+    const fetch = this.env.newFetcher();
+    const resp = await fetch.post({
+      url: "https://stat.ink/api/v3/salmon",
       headers: {
         ...this.requestHeaders(),
         "Content-Type": "application/x-msgpack",
@@ -126,7 +132,9 @@ class StatInkAPI {
       if (this.cache[url]) {
         return this.cache[url] as T;
       }
-      const resp = await fetch(url, {
+      const fetch = this.env.newFetcher();
+      const resp = await fetch.get({
+        url,
         headers: this.requestHeaders(),
       });
       const json = await resp.json();
@@ -160,12 +168,13 @@ export class StatInkExporter implements GameExporter {
   private uploadMode: string;
 
   constructor(
-    { statInkApiKey, uploadMode }: {
+    { statInkApiKey, uploadMode, env }: {
       statInkApiKey: string;
       uploadMode: string;
+      env: Env;
     },
   ) {
-    this.api = new StatInkAPI(statInkApiKey);
+    this.api = new StatInkAPI(statInkApiKey, env);
     this.uploadMode = uploadMode;
   }
   isTriColor({ vsMode }: VsHistoryDetail): boolean {
