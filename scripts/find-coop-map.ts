@@ -16,6 +16,7 @@ for (const dir of dirs) {
 const events = new Map<number, string>();
 const uniforms = new Map<number, string>();
 const specials = new Map<number, string>();
+const bosses = new Map<number, string>();
 
 for (const file of files) {
   try {
@@ -45,6 +46,10 @@ for (const file of files) {
       ) {
         specials.set(b64Number(id), name);
       }
+
+      for (const { id, name } of data.detail.enemyResults.map((i) => i.enemy)) {
+        bosses.set(b64Number(id), name);
+      }
     }
   } catch (e) {
     console.log("Failed to process file", file, e);
@@ -54,3 +59,4 @@ for (const file of files) {
 console.log([...events.entries()].sort((a, b) => a[0] - b[0]));
 console.log([...uniforms.entries()].sort((a, b) => a[0] - b[0]));
 console.log([...specials.entries()].sort((a, b) => a[0] - b[0]));
+console.log([...bosses.entries()].sort((a, b) => a[0] - b[0]));

@@ -191,9 +191,7 @@ export class App {
 
     stats = initStats();
 
-    // TODO: remove this filter when stat.ink support coop export
-    const coopExporter = exporters.filter((e) => e.name !== "stat.ink");
-    if (skipMode.includes("coop") || coopExporter.length === 0) {
+    if (skipMode.includes("coop")) {
       this.env.logger.log("Skip exporting coop games.");
     } else {
       this.env.logger.log("Fetching coop battle list...");
@@ -209,7 +207,7 @@ export class App {
       });
 
       await Promise.all(
-        coopExporter.map((e) =>
+        exporters.map((e) =>
           showError(
             this.env,
             this.exportGameList({

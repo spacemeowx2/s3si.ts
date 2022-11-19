@@ -30,6 +30,7 @@ import { msgpack, Mutex } from "../../deps.ts";
 import { APIError } from "../APIError.ts";
 import { b64Number, gameId, s3siGameId } from "../utils.ts";
 import { Env } from "../env.ts";
+import { KEY_DICT } from "../dict/stat.ink.ts";
 
 class StatInkAPI {
   FETCH_LOCK = new Mutex();
@@ -96,9 +97,9 @@ class StatInkAPI {
       url: "https://stat.ink/api/v3/salmon",
       headers: {
         ...this.requestHeaders(),
-        "Content-Type": "application/x-msgpack",
+        "Content-Type": "application/json",
       },
-      body: msgpack.encode(body),
+      body: JSON.stringify(body),
     });
 
     const json: StatInkPostResponse = await resp.json().catch(() => ({}));
@@ -450,13 +451,15 @@ export class StatInkExporter implements GameExporter {
   }
   async mapCoopWeapon({ name }: { name: string }): Promise<string> {
     const weaponMap = await this.api.getWeapon();
-    const weapon = weaponMap.find((i) => Object.values(i.name).includes(name));
+    const weapon =
+      weaponMap.find((i) => Object.values(i.name).includes(name))?.key ??
+        KEY_DICT.get(name);
 
     if (!weapon) {
       throw new Error(`Weapon not found: ${name}`);
     }
 
-    return weapon.key;
+    return weapon;
   }
   async mapCoopPlayer({
     player,
@@ -476,7 +479,8 @@ export class StatInkExporter implements GameExporter {
       splashtag_title: player.byname,
       uniform:
         SPLATNET3_STATINK_MAP.COOP_UNIFORM_MAP[b64Number(player.uniform.id)],
-      special: b64Number(specialWeapon.id).toString(),
+      special:
+        SPLATNET3_STATINK_MAP.COOP_SPECIAL_MAP[b64Number(specialWeapon.id)],
       weapons: await Promise.all(weapons.map((w) => this.mapCoopWeapon(w))),
       golden_eggs: goldenDeliverCount,
       golden_assist: goldenAssistCount,
@@ -499,20 +503,22 @@ export class StatInkExporter implements GameExporter {
     const event = wave.eventWave
       ? SPLATNET3_STATINK_MAP.COOP_EVENT_MAP[b64Number(wave.eventWave.id)]
       : undefined;
+    const special_uses = wave.specialWeapons.reduce((p, { id }) => {
+      const key = SPLATNET3_STATINK_MAP.COOP_SPECIAL_MAP[b64Number(id)];
+
+      return {
+        ...p,
+        [key]: (p[key] ?? 0) + 1,
+      };
+    }, {} as Record<string, number | undefined>) as Record<string, number>;
+
     return {
       tide: SPLATNET3_STATINK_MAP.WATER_LEVEL_MAP[wave.waterLevel],
       event,
       golden_quota: wave.deliverNorm,
       golden_appearances: wave.goldenPopCount,
       golden_delivered: wave.teamDeliverCount,
-      special_uses: wave.specialWeapons.reduce((p, { id }) => {
-        const key = SPLATNET3_STATINK_MAP.COOP_SPECIAL_MAP[b64Number(id)];
-
-        return {
-          ...p,
-          [key]: (p[key] ?? 0) + 1,
-        };
-      }, {} as Record<string, number | undefined>) as Record<string, number>,
+      special_uses,
     };
   }
   async mapCoop(
@@ -537,6 +543,15 @@ export class StatInkExporter implements GameExporter {
       memberResults.reduce((acc, i) => acc + i.goldenDeliverCount, 0);
     const power_eggs = myResult.deliverCount +
       memberResults.reduce((p, i) => p + i.deliverCount, 0);
+    const bosses = Object.fromEntries(
+      enemyResults.map((
+        i,
+      ) => [SPLATNET3_STATINK_MAP.COOP_BOSS_MAP[b64Number(i.enemy.id)], {
+        appearances: i.popCount,
+        defeated: i.teamDefeatCount,
+        defeated_by_me: i.defeatCount,
+      }]),
+    );
 
     const result: StatInkCoopPostBody = {
       test: "yes",
@@ -549,13 +564,15 @@ export class StatInkExporter implements GameExporter {
       fail_reason: null,
       king_salmonid: this.mapKing(detail.bossResult?.boss.id),
       clear_extra: bossResult?.hasDefeatBoss ? "yes" : "no",
-      title_after: b64Number(detail.afterGrade.id).toString(),
+      title_after: detail.afterGrade
+        ? b64Number(detail.afterGrade.id).toString()
+        : undefined,
       title_exp_after: detail.afterGradePoint,
       golden_eggs,
       power_eggs,
-      gold_scale: scale.gold,
-      silver_scale: scale.silver,
-      bronze_scale: scale.bronze,
+      gold_scale: scale?.gold,
+      silver_scale: scale?.silver,
+      bronze_scale: scale?.bronze,
       job_point: detail.jobPoint,
       job_score: detail.jobScore,
       job_rate: detail.jobRate,
@@ -565,13 +582,7 @@ export class StatInkExporter implements GameExporter {
         this.mapCoopPlayer(myResult),
         ...memberResults.map((p) => this.mapCoopPlayer(p)),
       ]),
-      bosses: Object.fromEntries(
-        enemyResults.map((i) => [b64Number(i.enemy.id).toString(), {
-          appearances: i.popCount,
-          defeated: i.teamDefeatCount,
-          defeated_by_me: i.defeatCount,
-        }]),
-      ),
+      bosses,
       agent: AGENT_NAME,
       agent_version: S3SI_VERSION,
       agent_variables: {

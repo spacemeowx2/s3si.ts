@@ -224,7 +224,7 @@ export type CoopHistoryPlayerResult = {
 
 export type CoopHistoryDetail = {
   id: string;
-  afterGrade: {
+  afterGrade: null | {
     name: string;
     id: string;
   };
@@ -270,18 +270,18 @@ export type CoopHistoryDetail = {
   };
   dangerRate: number;
   scenarioCode: null;
-  smellMeter: number;
+  smellMeter: null | number;
   weapons: { name: string }[];
-  afterGradePoint: number;
-  scale: {
+  afterGradePoint: null | number;
+  scale: null | {
     gold: number;
     silver: number;
     bronze: number;
   };
-  jobPoint: number;
-  jobScore: number;
-  jobRate: number;
-  jobBonus: number;
+  jobPoint: null | number;
+  jobScore: null | number;
+  jobRate: null | number;
+  jobBonus: null | number;
 };
 
 export type GameExporter<
@@ -481,16 +481,16 @@ export type StatInkCoopPostBody = {
   title_exp_before?: number;
   title_after?: string;
   // [0, 999]
-  title_exp_after: number;
+  title_exp_after: null | number;
   golden_eggs: number;
   power_eggs: number;
-  gold_scale: number;
-  silver_scale: number;
-  bronze_scale: number;
-  job_point: number;
-  job_score: number;
-  job_rate: number;
-  job_bonus: number;
+  gold_scale?: null | number;
+  silver_scale?: null | number;
+  bronze_scale?: null | number;
+  job_point: null | number;
+  job_score: null | number;
+  job_rate: null | number;
+  job_bonus: null | number;
   waves: StatInkCoopWave[];
   players: StatInkCoopPlayer[];
   bosses: Record<string, StatInkCoopBoss>;
