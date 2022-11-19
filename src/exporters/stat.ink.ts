@@ -8,6 +8,7 @@ import {
   CoopHistoryDetail,
   CoopHistoryPlayerResult,
   CoopInfo,
+  Game,
   GameExporter,
   PlayerGear,
   StatInkAbility,
@@ -56,10 +57,12 @@ class StatInkAPI {
     };
   }
 
-  async uuidList(): Promise<string[]> {
+  async uuidList(type: Game["type"]): Promise<string[]> {
     const fetch = this.env.newFetcher();
     return await (await fetch.get({
-      url: "https://stat.ink/api/v3/s3s/uuid-list",
+      url: type === "VsInfo"
+        ? "https://stat.ink/api/v3/s3s/uuid-list"
+        : "https://stat.ink/api/v3/salmon/uuid-list",
       headers: this.requestHeaders(),
     })).json();
   }
@@ -204,8 +207,10 @@ export class StatInkExporter implements GameExporter {
       };
     }
   }
-  async notExported({ list }: { list: string[] }): Promise<string[]> {
-    const uuid = await this.api.uuidList();
+  async notExported(
+    { type, list }: { list: string[]; type: Game["type"] },
+  ): Promise<string[]> {
+    const uuid = await this.api.uuidList(type);
 
     const out: string[] = [];
 

@@ -4,8 +4,8 @@ import { Splatnet3 } from "./splatnet3.ts";
 import {
   BattleListNode,
   ChallengeProgress,
+  CoopHistoryGroups,
   CoopInfo,
-  CoopListNode,
   Game,
   HistoryGroups,
   VsInfo,
@@ -26,7 +26,7 @@ export class GameFetcher {
   bankaraLock = new Mutex();
   bankaraHistory?: HistoryGroups<BattleListNode>["nodes"];
   coopLock = new Mutex();
-  coopHistory?: HistoryGroups<CoopListNode>["nodes"];
+  coopHistory?: CoopHistoryGroups["nodes"];
 
   constructor(
     { cache = new MemoryCache(), splatnet, state }: {
@@ -103,15 +103,18 @@ export class GameFetcher {
       return {
         type: "CoopInfo",
         listNode: null,
+        groupInfo: null,
       };
     }
 
-    const listNode = group.historyDetails.nodes.find((i) => i.id === id) ??
+    const { historyDetails, ...groupInfo } = group;
+    const listNode = historyDetails.nodes.find((i) => i.id === id) ??
       null;
 
     return {
       type: "CoopInfo",
       listNode,
+      groupInfo,
     };
   }
   async getBattleMetaById(id: string): Promise<Omit<VsInfo, "detail">> {

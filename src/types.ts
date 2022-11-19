@@ -66,6 +66,26 @@ export type HistoryGroups<T> = {
     };
   }[];
 };
+export type CoopHistoryGroup = {
+  startTime: null | string;
+  endTime: null | string;
+  highestResult: null | {
+    grade: {
+      id: string;
+    };
+    gradePoint: number;
+    jobScore: number;
+  };
+  mode: "PRIVATE_CUSTOM" | "REGULAR";
+  rule: "REGULAR";
+
+  historyDetails: {
+    nodes: CoopListNode[];
+  };
+};
+export type CoopHistoryGroups = {
+  nodes: CoopHistoryGroup[];
+};
 export type PlayerGear = {
   name: string;
   primaryGearPower: {
@@ -138,6 +158,7 @@ export type VsInfo = {
 export type CoopInfo = {
   type: "CoopInfo";
   listNode: null | CoopListNode;
+  groupInfo: null | Omit<CoopHistoryGroup, "historyDetails">;
   detail: CoopHistoryDetail;
 };
 export type Game = VsInfo | CoopInfo;
@@ -322,7 +343,7 @@ export type RespMap = {
   };
   [Queries.CoopHistoryQuery]: {
     coopResult: {
-      historyGroups: HistoryGroups<CoopListNode>;
+      historyGroups: CoopHistoryGroups;
     };
   };
   [Queries.CoopHistoryDetailQuery]: {
