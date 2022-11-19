@@ -525,6 +525,7 @@ export class StatInkExporter implements GameExporter {
   }
   async mapCoop(
     {
+      groupInfo,
       detail,
     }: CoopInfo,
   ): Promise<StatInkCoopPostBody> {
@@ -548,6 +549,7 @@ export class StatInkExporter implements GameExporter {
     const _result: StatInkCoopPostBody = {
       test: "yes",
       uuid: await gameId(detail.id),
+      private: groupInfo?.mode === "PRIVATE_CUSTOM" ? "yes" : "no",
       big_run: "no",
       stage: b64Number(detail.coopStage.id).toString(),
       danger_rate: dangerRate * 100,

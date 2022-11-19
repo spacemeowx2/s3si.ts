@@ -466,6 +466,7 @@ export type StatInkCoopBoss = {
 export type StatInkCoopPostBody = {
   test?: "yes" | "no";
   uuid: string;
+  private: "yes" | "no";
   big_run: "no";
   stage: string;
   // [0, 333]
