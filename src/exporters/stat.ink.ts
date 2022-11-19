@@ -179,7 +179,7 @@ export class StatInkExporter implements GameExporter {
   }
   async exportGame(game: VsInfo | CoopInfo) {
     if (game.type === "VsInfo" && this.isTriColor(game.detail)) {
-      // TODO: support coop and tri-color fest
+      // TODO: support tri-color fest
       return {};
     }
 
