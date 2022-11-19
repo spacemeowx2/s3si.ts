@@ -250,7 +250,7 @@ export type CoopHistoryDetail = {
   waveResults: {
     waveNumber: number;
     waterLevel: 0 | 1 | 2;
-    eventWave: {
+    eventWave: null | {
       name: string;
       id: string;
     };

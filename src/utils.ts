@@ -150,3 +150,12 @@ export function parseHistoryDetailId(id: string) {
 
 export const delay = (ms: number) =>
   new Promise<void>((resolve) => setTimeout(resolve, ms));
+
+/**
+ * Decode ID and get number after '-'
+ */
+export function b64Number(id: string): number {
+  const text = new TextDecoder().decode(base64.decode(id));
+  const [_, num] = text.split("-");
+  return parseInt(num);
+}

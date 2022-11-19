@@ -26,19 +26,10 @@ import {
   VsInfo,
   VsPlayer,
 } from "../types.ts";
-import { base64, msgpack, Mutex } from "../../deps.ts";
+import { msgpack, Mutex } from "../../deps.ts";
 import { APIError } from "../APIError.ts";
-import { gameId, s3siGameId } from "../utils.ts";
+import { b64Number, gameId, s3siGameId } from "../utils.ts";
 import { Env } from "../env.ts";
-
-/**
- * Decode ID and get number after '-'
- */
-function b64Number(id: string): number {
-  const text = new TextDecoder().decode(base64.decode(id));
-  const [_, num] = text.split("-");
-  return parseInt(num);
-}
 
 class StatInkAPI {
   FETCH_LOCK = new Mutex();
@@ -467,10 +458,6 @@ export class StatInkExporter implements GameExporter {
 
     return weapon.key;
   }
-  async mapBoss(id: string): Promise<string> {
-    // TODO: map boss
-    return await id;
-  }
   async mapCoopPlayer({
     player,
     weapons,
@@ -487,7 +474,8 @@ export class StatInkExporter implements GameExporter {
       name: player.name,
       number: player.nameId,
       splashtag_title: player.byname,
-      // uniform: b64Number(player.uniform).toString(),
+      uniform:
+        SPLATNET3_STATINK_MAP.COOP_UNIFORM_MAP[b64Number(player.uniform.id)],
       special: b64Number(specialWeapon.id).toString(),
       weapons: await Promise.all(weapons.map((w) => this.mapCoopWeapon(w))),
       golden_eggs: goldenDeliverCount,
@@ -503,12 +491,9 @@ export class StatInkExporter implements GameExporter {
     if (!id) {
       return undefined;
     }
-    const nid = b64Number(id);
-    const key = SPLATNET3_STATINK_MAP.BOSS_MAP[nid];
-    if (!key) {
-      throw new Error(`Boss not found: ${id}`);
-    }
-    return key;
+    const nid = b64Number(id).toString();
+
+    return nid;
   }
   mapWave(wave: CoopHistoryDetail["waveResults"]["0"]): StatInkCoopWave {
     const event = wave.eventWave
@@ -520,7 +505,14 @@ export class StatInkExporter implements GameExporter {
       golden_quota: wave.deliverNorm,
       golden_appearances: wave.goldenPopCount,
       golden_delivered: wave.teamDeliverCount,
-      // special_uses: wave.specialWeapons
+      special_uses: wave.specialWeapons.reduce((p, { id }) => {
+        const key = SPLATNET3_STATINK_MAP.COOP_SPECIAL_MAP[b64Number(id)];
+
+        return {
+          ...p,
+          [key]: (p[key] ?? 0) + 1,
+        };
+      }, {} as Record<string, number | undefined>) as Record<string, number>,
     };
   }
   async mapCoop(
@@ -546,7 +538,7 @@ export class StatInkExporter implements GameExporter {
     const power_eggs = myResult.deliverCount +
       memberResults.reduce((p, i) => p + i.deliverCount, 0);
 
-    const _result: StatInkCoopPostBody = {
+    const result: StatInkCoopPostBody = {
       test: "yes",
       uuid: await gameId(detail.id),
       private: groupInfo?.mode === "PRIVATE_CUSTOM" ? "yes" : "no",
@@ -554,6 +546,7 @@ export class StatInkExporter implements GameExporter {
       stage: b64Number(detail.coopStage.id).toString(),
       danger_rate: dangerRate * 100,
       clear_waves: resultWave,
+      fail_reason: null,
       king_salmonid: this.mapKing(detail.bossResult?.boss.id),
       clear_extra: bossResult?.hasDefeatBoss ? "yes" : "no",
       title_after: b64Number(detail.afterGrade.id).toString(),
@@ -573,14 +566,11 @@ export class StatInkExporter implements GameExporter {
         ...memberResults.map((p) => this.mapCoopPlayer(p)),
       ]),
       bosses: Object.fromEntries(
-        await Promise.all(enemyResults.map((i) =>
-          this.mapBoss(i.enemy.id)
-            .then((key) => [key, {
-              appearances: i.popCount,
-              defeated: i.teamDefeatCount,
-              defeated_by_me: i.defeatCount,
-            }])
-        )),
+        enemyResults.map((i) => [b64Number(i.enemy.id).toString(), {
+          appearances: i.popCount,
+          defeated: i.teamDefeatCount,
+          defeated_by_me: i.defeatCount,
+        }]),
       ),
       agent: AGENT_NAME,
       agent_version: S3SI_VERSION,
@@ -590,7 +580,7 @@ export class StatInkExporter implements GameExporter {
       automated: "yes",
       start_at: startedAt,
     };
-    throw new Error("WIP");
+    return result;
   }
 }
 

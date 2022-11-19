@@ -25,8 +25,19 @@ export const SPLATNET3_STATINK_MAP: {
     NonNullable<VsHistoryDetail["festMatch"]>["dragonMatchType"],
     StatInkPostBody["fest_dragon"]
   >;
-  BOSS_MAP: Record<number, string | undefined>;
   COOP_EVENT_MAP: Record<number, string | undefined>;
+  COOP_UNIFORM_MAP: Record<
+    number,
+    | "orange"
+    | "green"
+    | "yellow"
+    | "pink"
+    | "blue"
+    | "black"
+    | "white"
+    | undefined
+  >;
+  COOP_SPECIAL_MAP: Record<number, string>;
   WATER_LEVEL_MAP: Record<0 | 1 | 2, "low" | "normal" | "high">;
 } = {
   RULE: {
@@ -51,11 +62,33 @@ export const SPLATNET3_STATINK_MAP: {
     DRAGON: "100x",
     DOUBLE_DRAGON: "333x",
   },
-  BOSS_MAP: {
-    23: "yokozuna",
-  },
   COOP_EVENT_MAP: {
+    1: "rush",
     2: "goldie_seeking",
+    3: "griller",
+    4: "mothership",
+    5: "fog",
+    6: "cohock_charge",
+    7: "giant_tornado",
+    8: "mudmouth_eruption",
+  },
+  COOP_UNIFORM_MAP: {
+    1: "orange",
+    2: "green",
+    3: "yellow",
+    4: "pink",
+    5: "blue",
+    6: "black",
+    7: "white",
+  },
+  COOP_SPECIAL_MAP: {
+    20006: "nicedama",
+    20007: "hopsonar",
+    20009: "megaphone51",
+    20010: "jetpack",
+    20012: "kanitank",
+    20013: "sameride",
+    20014: "tripletornado",
   },
   WATER_LEVEL_MAP: {
     0: "low",
