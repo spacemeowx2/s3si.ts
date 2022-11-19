@@ -89,4 +89,4 @@ Then run `s3si.ts`, and it will work without login prompt.
 ## Credits
 
 - https://github.com/frozenpandaman/s3s
-- https://github.dev/fetus-hina/stat.ink
+- https://github.com/fetus-hina/stat.ink
