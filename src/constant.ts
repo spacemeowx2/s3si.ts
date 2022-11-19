@@ -25,7 +25,6 @@ export const SPLATNET3_STATINK_MAP: {
     NonNullable<VsHistoryDetail["festMatch"]>["dragonMatchType"],
     StatInkPostBody["fest_dragon"]
   >;
-  COOP_BOSS_MAP: Record<number, string>;
   COOP_EVENT_MAP: Record<number, string | undefined>;
   COOP_UNIFORM_MAP: Record<
     number,
@@ -62,22 +61,6 @@ export const SPLATNET3_STATINK_MAP: {
     DECUPLE: "10x",
     DRAGON: "100x",
     DOUBLE_DRAGON: "333x",
-  },
-  COOP_BOSS_MAP: {
-    4: "bakudan",
-    5: "katapad",
-    6: "teppan",
-    7: "hebi",
-    8: "tower",
-    9: "mogura",
-    10: "koumori",
-    11: "hashira",
-    12: "diver",
-    13: "tekkyu",
-    14: "nabebuta",
-    15: "kin_shake",
-    17: "grill",
-    20: "doro_shake",
   },
   COOP_EVENT_MAP: {
     1: "rush",

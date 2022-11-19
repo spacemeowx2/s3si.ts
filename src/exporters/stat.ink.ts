@@ -97,9 +97,9 @@ class StatInkAPI {
       url: "https://stat.ink/api/v3/salmon",
       headers: {
         ...this.requestHeaders(),
-        "Content-Type": "application/json",
+        "Content-Type": "application/x-msgpack",
       },
-      body: JSON.stringify(body),
+      body: msgpack.encode(body),
     });
 
     const json: StatInkPostResponse = await resp.json().catch(() => ({}));
@@ -546,7 +546,7 @@ export class StatInkExporter implements GameExporter {
     const bosses = Object.fromEntries(
       enemyResults.map((
         i,
-      ) => [SPLATNET3_STATINK_MAP.COOP_BOSS_MAP[b64Number(i.enemy.id)], {
+      ) => [b64Number(i.enemy.id), {
         appearances: i.popCount,
         defeated: i.teamDefeatCount,
         defeated_by_me: i.defeatCount,
