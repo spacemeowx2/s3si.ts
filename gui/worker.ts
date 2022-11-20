@@ -1,4 +1,3 @@
-import { loginManually } from "../src/iksm.ts";
 import { Command, WorkerChannel } from "./ipc.ts";
 
 const channel = new WorkerChannel<Command>();

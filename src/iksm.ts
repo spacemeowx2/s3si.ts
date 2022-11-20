@@ -8,6 +8,10 @@ import {
 import { APIError } from "./APIError.ts";
 import { Env, Fetcher } from "./env.ts";
 
+export async function loginSteps({ }: Env) {
+
+}
+
 export async function loginManually(
   { newFetcher, prompts: { promptLogin } }: Env,
 ): Promise<string> {
