@@ -6,6 +6,7 @@
     "lint": "deno lint",
     "run": "deno run -A"
   },
+  "importMap": "./import_map.json",
   "fmt": {
     "files": {
       "exclude": [

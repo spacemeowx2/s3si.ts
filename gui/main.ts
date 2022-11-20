@@ -28,7 +28,9 @@ async function main() {
     type: "module",
   });
   const channel = new WorkerChannel<Command>(worker);
-  const { url } = await channel.recvType("loaded");
+  await channel.recvType("workerLoaded");
+  channel.send({ type: "startWorker", isDev: true });
+  const { url } = await channel.recvType("serverReady");
 
   const webview = new Webview();
   webview.init(PAGE_INIT);

@@ -1,11 +1,19 @@
+/// <reference no-default-lib="true" />
+/// <reference lib="dom" />
+/// <reference lib="dom.iterable" />
+/// <reference lib="dom.asynciterable" />
+/// <reference lib="deno.ns" />
 import { io } from "../deps.ts";
 import { writeAll } from "./deps.ts";
 
 export type Command = {
-  type: "loaded";
+  type: "serverReady";
   url: string;
 } | {
-  type: "test";
+  type: "startWorker";
+  isDev: boolean;
+} | {
+  type: "workerLoaded";
 };
 
 export class WorkerChannel<T extends { type: string }> {
@@ -24,7 +32,6 @@ export class WorkerChannel<T extends { type: string }> {
     if (worker) {
       worker.addEventListener("message", callback);
     } else {
-      // @ts-ignore this is right
       self.addEventListener("message", callback);
     }
   }
@@ -51,7 +58,6 @@ export class WorkerChannel<T extends { type: string }> {
     if (this.worker) {
       this.worker.postMessage(data);
     } else {
-      // @ts-ignore this is right
       self.postMessage(data);
     }
   }
