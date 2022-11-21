@@ -27,7 +27,7 @@ async function main() {
   });
   const channel = new WorkerChannel<Command>(worker);
   await channel.recvType("workerLoaded");
-  channel.send({ type: "startWorker", isDev: true });
+  channel.send({ type: "startWorker", isDev: false });
   const { url } = await channel.recvType("serverReady");
 
   const webview = new Webview();
