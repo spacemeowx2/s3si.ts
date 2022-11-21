@@ -92,9 +92,10 @@ const { uid } = parseHistoryDetailId(id);
 console.log("Fetching gears...");
 const data = await splatnet.getGears();
 const timestamp = Math.floor(new Date().getTime() / 1000);
+const filename = `./geardata_${timestamp}.json`;
 
 await Deno.writeTextFile(
-  `./geardata_${timestamp}.json`,
+  filename,
   JSON.stringify({
     ...encryptKey(uid),
     timestamp,
@@ -104,4 +105,4 @@ await Deno.writeTextFile(
   }),
 );
 
-console.log("Done");
+console.log(`Write file: ${filename}`);
