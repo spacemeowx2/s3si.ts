@@ -5,6 +5,7 @@ feat: update `WEB_VIEW_VERSION` constant
 ## 0.1.21
 
 refactor: use `Env::newFetcher` instead of `fetch`
+
 fix: error after stat ink key prompt
 
 ## 0.1.20
@@ -31,7 +32,8 @@ fix: RankTracker broken when token expires
 
 ## 0.1.15
 
-fix: rank point change is not uploaded at first challenge ([#11](https://github.com/spacemeowx2/s3si.ts/issues/11))
+fix: rank point change is not uploaded at first challenge
+([#11](https://github.com/spacemeowx2/s3si.ts/issues/11))
 
 ## 0.1.14
 
@@ -49,7 +51,8 @@ feat: add rank tracker
 
 ## 0.1.11
 
-feat: use s3s' namespace. (see https://github.com/frozenpandaman/s3s/issues/65 for detail)
+feat: use s3s' namespace. (see https://github.com/frozenpandaman/s3s/issues/65
+for detail)
 
 refactor: remove `_bid` in exported file
 
