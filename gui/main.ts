@@ -41,6 +41,9 @@ async function main() {
   });
 
   webview.run();
+  // on macOS, the webview close will terminate the process, so the code below
+  // will never be executed.
+
   worker.terminate();
 }
 
