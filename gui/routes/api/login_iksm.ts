@@ -2,7 +2,7 @@ import { HandlerContext, Handlers } from "$fresh/server.ts";
 import { DEFAULT_ENV } from "../../../src/env.ts";
 import { loginManually } from "../../../src/iksm.ts";
 
-let waiting: Awaited<ReturnType<typeof login>> | undefined;
+export let waiting: Awaited<ReturnType<typeof login>> | undefined;
 
 function login() {
   const result: {

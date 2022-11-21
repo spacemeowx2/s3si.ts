@@ -8,7 +8,9 @@ import * as $1 from "./routes/api/joke.ts";
 import * as $2 from "./routes/api/login_iksm.ts";
 import * as $3 from "./routes/index.tsx";
 import * as $4 from "./routes/login.tsx";
+import * as $5 from "./routes/login_callback.tsx";
 import * as $$0 from "./islands/Counter.tsx";
+import * as $$1 from "./islands/RedirectLogin.tsx";
 
 const manifest = {
   routes: {
@@ -17,9 +19,11 @@ const manifest = {
     "./routes/api/login_iksm.ts": $2,
     "./routes/index.tsx": $3,
     "./routes/login.tsx": $4,
+    "./routes/login_callback.tsx": $5,
   },
   islands: {
     "./islands/Counter.tsx": $$0,
+    "./islands/RedirectLogin.tsx": $$1,
   },
   baseUrl: import.meta.url,
   config,

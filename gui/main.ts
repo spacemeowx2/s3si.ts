@@ -1,16 +1,14 @@
 import { Webview } from "./deps.ts";
 import { Command, WorkerChannel } from "./ipc.ts";
 
-const PAGE_INIT = `
+const pageInit = (url: string) => `
 function onSelectUserClick(e) {
     const element = document.getElementById('authorize-switch-approval-link');
     if (!element) {
         return;
     }
     e.preventDefault();
-    if (onLogin) {
-        onLogin(element.href);
-    }
+    window.location.href = '${url}/login_callback?url=' + encodeURIComponent(element.href)
 }
 function detectAndInject() {
     const element = document.getElementById('authorize-switch-approval-link');
@@ -33,12 +31,8 @@ async function main() {
   const { url } = await channel.recvType("serverReady");
 
   const webview = new Webview();
-  webview.init(PAGE_INIT);
+  webview.init(pageInit(url));
   webview.navigate(url);
-
-  webview.bind("onLogin", (url: string) => {
-    console.log(url);
-  });
 
   webview.run();
   // on macOS, the webview close will terminate the process, so the code below
