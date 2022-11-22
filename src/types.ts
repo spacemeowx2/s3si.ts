@@ -284,17 +284,12 @@ export type CoopHistoryDetail = {
   jobBonus: null | number;
 };
 
-export type GameExporter<
-  T extends {
-    // type is seful when you implement more than one GameExporter on the same class
-    type: string;
-  } = Game,
-> = {
+export type GameExporter = {
   name: string;
   notExported: (
-    { type, list }: { type: T["type"]; list: string[] },
+    { type, list }: { type: Game["type"]; list: string[] },
   ) => Promise<string[]>;
-  exportGame: (game: T) => Promise<{ url?: string }>;
+  exportGame: (game: Game) => Promise<{ url?: string }>;
 };
 
 export type BankaraBattleHistories = {
