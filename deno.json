@@ -4,9 +4,9 @@
     "fmt": "deno fmt",
     "fmt:check": "deno fmt --check",
     "lint": "deno lint",
-    "run": "deno run -A"
+    "run": "deno run -A",
+    "gui": "deno run -A --unstable ./gui/main.ts"
   },
-  "importMap": "./import_map.json",
   "fmt": {
     "files": {
       "exclude": [
@@ -17,5 +17,10 @@
         "profile.json"
       ]
     }
+  },
+  "importMap": "./import_map.json",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "jsxImportSource": "preact"
   }
 }
