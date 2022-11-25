@@ -486,8 +486,9 @@ export class StatInkExporter implements GameExporter {
       splashtag_title: player.byname,
       uniform:
         SPLATNET3_STATINK_MAP.COOP_UNIFORM_MAP[b64Number(player.uniform.id)],
-      special:
-        SPLATNET3_STATINK_MAP.COOP_SPECIAL_MAP[b64Number(specialWeapon.id)],
+      special: specialWeapon
+        ? SPLATNET3_STATINK_MAP.COOP_SPECIAL_MAP[b64Number(specialWeapon.id)]
+        : undefined,
       weapons: await Promise.all(weapons.map((w) => this.mapCoopWeapon(w))),
       golden_eggs: goldenDeliverCount,
       golden_assist: goldenAssistCount,
@@ -495,7 +496,7 @@ export class StatInkExporter implements GameExporter {
       rescue: rescueCount,
       rescued: rescuedCount,
       defeat_boss: defeatEnemyCount,
-      disconnected: "no",
+      disconnected: specialWeapon ? "no" : "yes",
     };
   }
   mapKing(id?: string) {

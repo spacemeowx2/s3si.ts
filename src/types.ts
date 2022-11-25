@@ -210,7 +210,7 @@ export type CoopHistoryPlayerResult = {
     isMyself: boolean;
   };
   weapons: { name: string }[];
-  specialWeapon: {
+  specialWeapon: null | {
     name: string;
     id: string;
   };
@@ -446,7 +446,7 @@ export type StatInkCoopPlayer = {
   number: string;
   splashtag_title: string | null;
   uniform?: "orange" | "green" | "yellow" | "pink" | "blue" | "black" | "white";
-  special: string;
+  special?: string;
   weapons: string[];
   golden_eggs: number;
   golden_assist: number;
