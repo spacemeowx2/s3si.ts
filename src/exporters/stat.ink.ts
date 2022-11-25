@@ -554,7 +554,6 @@ export class StatInkExporter implements GameExporter {
     );
 
     const result: StatInkCoopPostBody = {
-      test: "yes",
       uuid: await gameId(detail.id),
       private: groupInfo?.mode === "PRIVATE_CUSTOM" ? "yes" : "no",
       big_run: "no",
