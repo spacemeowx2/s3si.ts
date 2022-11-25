@@ -1,3 +1,9 @@
+## 0.1.28
+
+fix: allow random weapon
+
+feat: save pathname of image in file exporter
+
 ## 0.1.27
 
 fix: export error when disconnected

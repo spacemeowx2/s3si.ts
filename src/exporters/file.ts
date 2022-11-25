@@ -1,7 +1,7 @@
 import { CoopInfo, GameExporter, VsInfo } from "../types.ts";
 import { path } from "../../deps.ts";
 import { NSOAPP_VERSION, S3SI_VERSION } from "../constant.ts";
-import { parseHistoryDetailId } from "../utils.ts";
+import { parseHistoryDetailId, urlSimplify } from "../utils.ts";
 
 export type FileExporterType = {
   type: "VS" | "COOP";
@@ -15,9 +15,11 @@ export type FileExporterType = {
  * Don't save url in exported file
  */
 function replacer(key: string, value: unknown): unknown {
-  return ["url", "maskImageUrl", "overlayImageUrl"].includes(key)
-    ? undefined
-    : value;
+  if (!["url", "maskImageUrl", "overlayImageUrl"].includes(key)) {
+    return value;
+  }
+
+  return typeof value === "string" ? urlSimplify(value) : undefined;
 }
 
 /**

@@ -10,6 +10,7 @@ import {
   CoopInfo,
   Game,
   GameExporter,
+  Image,
   PlayerGear,
   StatInkAbility,
   StatInkCoopPlayer,
@@ -456,13 +457,23 @@ export class StatInkExporter implements GameExporter {
 
     return result;
   }
-  async mapCoopWeapon({ name }: { name: string }): Promise<string> {
+  isRandomWeapon(image: Image | null): boolean {
+    return (image?.url.includes(
+      "473fffb2442075078d8bb7125744905abdeae651b6a5b7453ae295582e45f7d1",
+    )) ?? false;
+  }
+  async mapCoopWeapon(
+    { name, image }: { name: string; image: Image | null },
+  ): Promise<string | null> {
     const weaponMap = await this.api.getWeapon();
     const weapon =
       weaponMap.find((i) => Object.values(i.name).includes(name))?.key ??
         KEY_DICT.get(name);
 
     if (!weapon) {
+      if (this.isRandomWeapon(image)) {
+        return null;
+      }
       throw new Error(`Weapon not found: ${name}`);
     }
 

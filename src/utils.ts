@@ -163,3 +163,16 @@ export function b64Number(id: string): number {
 export function nonNullable<T>(v: T | null | undefined): v is T {
   return v !== null && v !== undefined;
 }
+
+/**
+ * Only preserve the pathname of the URL
+ * @param url A url
+ */
+export function urlSimplify(url: string): { pathname: string } | string {
+  try {
+    const { pathname } = new URL(url);
+    return { pathname };
+  } catch (_e) {
+    return url;
+  }
+}
