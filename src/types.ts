@@ -66,6 +66,26 @@ export type HistoryGroups<T> = {
     };
   }[];
 };
+export type CoopHistoryGroup = {
+  startTime: null | string;
+  endTime: null | string;
+  highestResult: null | {
+    grade: {
+      id: string;
+    };
+    gradePoint: number;
+    jobScore: number;
+  };
+  mode: "PRIVATE_CUSTOM" | "REGULAR";
+  rule: "REGULAR";
+
+  historyDetails: {
+    nodes: CoopListNode[];
+  };
+};
+export type CoopHistoryGroups = {
+  nodes: CoopHistoryGroup[];
+};
 export type PlayerGear = {
   name: string;
   primaryGearPower: {
@@ -138,6 +158,7 @@ export type VsInfo = {
 export type CoopInfo = {
   type: "CoopInfo";
   listNode: null | CoopListNode;
+  groupInfo: null | Omit<CoopHistoryGroup, "historyDetails">;
   detail: CoopHistoryDetail;
 };
 export type Game = VsInfo | CoopInfo;
@@ -176,8 +197,91 @@ export type VsHistoryDetail = {
   awards: { name: string; rank: string }[];
   duration: number;
 };
+
+export type CoopHistoryPlayerResult = {
+  player: {
+    byname: string | null;
+    name: string;
+    nameId: string;
+    uniform: {
+      name: string;
+      id: string;
+    };
+    isMyself: boolean;
+  };
+  weapons: { name: string }[];
+  specialWeapon: {
+    name: string;
+    id: string;
+  };
+  defeatEnemyCount: number;
+  deliverCount: number;
+  goldenAssistCount: number;
+  goldenDeliverCount: number;
+  rescueCount: number;
+  rescuedCount: number;
+};
+
 export type CoopHistoryDetail = {
   id: string;
+  afterGrade: null | {
+    name: string;
+    id: string;
+  };
+  rule: "REGULAR";
+  myResult: CoopHistoryPlayerResult;
+  memberResults: CoopHistoryPlayerResult[];
+  bossResult: null | {
+    hasDefeatBoss: boolean;
+    boss: {
+      name: string;
+      id: string;
+    };
+  };
+  enemyResults: {
+    defeatCount: number;
+    teamDefeatCount: number;
+    popCount: number;
+    enemy: {
+      name: string;
+      id: string;
+    };
+  }[];
+  waveResults: {
+    waveNumber: number;
+    waterLevel: 0 | 1 | 2;
+    eventWave: null | {
+      name: string;
+      id: string;
+    };
+    deliverNorm: number;
+    goldenPopCount: number;
+    teamDeliverCount: number;
+    specialWeapons: {
+      id: string;
+      name: string;
+    }[];
+  }[];
+  resultWave: number;
+  playedTime: string;
+  coopStage: {
+    name: string;
+    id: string;
+  };
+  dangerRate: number;
+  scenarioCode: null;
+  smellMeter: null | number;
+  weapons: { name: string }[];
+  afterGradePoint: null | number;
+  scale: null | {
+    gold: number;
+    silver: number;
+    bronze: number;
+  };
+  jobPoint: null | number;
+  jobScore: null | number;
+  jobRate: null | number;
+  jobBonus: null | number;
 };
 
 export type GameExporter<
@@ -239,7 +343,7 @@ export type RespMap = {
   };
   [Queries.CoopHistoryQuery]: {
     coopResult: {
-      historyGroups: HistoryGroups<CoopListNode>;
+      historyGroups: CoopHistoryGroups;
     };
   };
   [Queries.CoopHistoryDetailQuery]: {
@@ -281,6 +385,11 @@ export type StatInkAbility = {
   primary_only: boolean;
 }[];
 
+export type StatInkWeapon = {
+  key: string;
+  name: Record<string, string>;
+}[];
+
 export type StatInkGear = {
   primary_ability: string;
   secondary_abilities: (string | null)[];
@@ -320,6 +429,81 @@ export type StatInkStage = {
     iso8601: string;
   };
 }[];
+
+export type StatInkCoopWave = {
+  tide: "low" | "normal" | "high";
+  // https://stat.ink/api-info/salmon-event3
+  event?: string;
+  golden_quota: number;
+  golden_delivered: number;
+  golden_appearances: number;
+  special_uses?: Record<string, number>;
+};
+
+export type StatInkCoopPlayer = {
+  me: "yes" | "no";
+  name: string;
+  number: string;
+  splashtag_title: string | null;
+  uniform?: "orange" | "green" | "yellow" | "pink" | "blue" | "black" | "white";
+  special: string;
+  weapons: string[];
+  golden_eggs: number;
+  golden_assist: number;
+  power_eggs: number;
+  rescue: number;
+  rescued: number;
+  defeat_boss: number;
+  disconnected: "yes" | "no";
+};
+
+export type StatInkCoopBoss = {
+  appearances: number;
+  defeated: number;
+  defeated_by_me: number;
+};
+
+export type StatInkCoopPostBody = {
+  test?: "yes" | "no";
+  uuid: string;
+  private: "yes" | "no";
+  big_run: "no";
+  stage: string;
+  // [0, 333]
+  danger_rate: number;
+  // [0, 3]
+  clear_waves: number;
+  fail_reason?: null | "wipe_out" | "time_limit";
+  king_salmonid?: string;
+  clear_extra: "yes" | "no";
+  title_before?: string;
+  // [0, 999]
+  title_exp_before?: number;
+  title_after?: string;
+  // [0, 999]
+  title_exp_after: null | number;
+  golden_eggs: number;
+  power_eggs: number;
+  gold_scale?: null | number;
+  silver_scale?: null | number;
+  bronze_scale?: null | number;
+  job_point: null | number;
+  job_score: null | number;
+  job_rate: null | number;
+  job_bonus: null | number;
+  waves: StatInkCoopWave[];
+  players: StatInkCoopPlayer[];
+  bosses: Record<string, StatInkCoopBoss>;
+  note?: string;
+  private_note?: string;
+  link_url?: string;
+  agent: string;
+  agent_version: string;
+  agent_variables: Record<string, string>;
+  automated: "yes";
+  start_at: number;
+  end_at?: number;
+};
 
 export type StatInkPostBody = {
   test?: "yes" | "no";

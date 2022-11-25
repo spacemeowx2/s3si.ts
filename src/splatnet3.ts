@@ -8,7 +8,6 @@ import { APIError } from "./APIError.ts";
 import {
   BattleListType,
   GraphQLResponse,
-  HistoryGroups,
   Queries,
   RespMap,
   VarsMap,
@@ -227,7 +226,15 @@ export class Splatnet3 {
 }
 
 function getIdsFromGroups<T extends { id: string }>(
-  { historyGroups }: { historyGroups: HistoryGroups<T> },
+  { historyGroups }: {
+    historyGroups: {
+      nodes: {
+        historyDetails: {
+          nodes: T[];
+        };
+      }[];
+    };
+  },
 ) {
   return historyGroups.nodes.flatMap((i) => i.historyDetails.nodes).map((i) =>
     i.id
