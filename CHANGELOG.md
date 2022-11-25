@@ -1,3 +1,8 @@
+## 0.1.24
+
+fix: missing coop weapons
+([#27](https://github.com/spacemeowx2/s3si.ts/issues/27))
+
 ## 0.1.23
 
 feat: add salmon run export to stat.ink
