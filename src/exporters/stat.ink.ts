@@ -536,6 +536,7 @@ export class StatInkExporter implements GameExporter {
       scale,
       playedTime,
       enemyResults,
+      smellMeter,
     } = detail;
 
     const startedAt = Math.floor(new Date(playedTime).getTime() / 1000);
@@ -552,6 +553,9 @@ export class StatInkExporter implements GameExporter {
         defeated_by_me: i.defeatCount,
       }]),
     );
+    const clear_waves =
+      detail.waveResults.filter((i) => i.waveNumber < 4).length -
+      1 + (resultWave === 0 ? 1 : 0);
 
     const result: StatInkCoopPostBody = {
       uuid: await gameId(detail.id),
@@ -559,9 +563,9 @@ export class StatInkExporter implements GameExporter {
       big_run: "no",
       stage: b64Number(detail.coopStage.id).toString(),
       danger_rate: dangerRate * 100,
-      clear_waves: detail.waveResults.filter((i) => i.waveNumber < 4).length -
-        1 + (resultWave === 0 ? 1 : 0),
+      clear_waves,
       fail_reason: null,
+      king_smell: smellMeter,
       king_salmonid: this.mapKing(detail.bossResult?.boss.id),
       clear_extra: bossResult?.hasDefeatBoss ? "yes" : "no",
       title_after: detail.afterGrade

@@ -1,3 +1,8 @@
+## 0.1.25
+
+fix: missing king_smell
+([#28](https://github.com/spacemeowx2/s3si.ts/issues/28))
+
 ## 0.1.24
 
 fix: missing coop weapons

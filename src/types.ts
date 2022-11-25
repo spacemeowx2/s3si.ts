@@ -474,6 +474,7 @@ export type StatInkCoopPostBody = {
   // [0, 3]
   clear_waves: number;
   fail_reason?: null | "wipe_out" | "time_limit";
+  king_smell?: number | null;
   king_salmonid?: string;
   clear_extra: "yes" | "no";
   title_before?: string;
