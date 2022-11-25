@@ -1,3 +1,7 @@
+## 0.1.27
+
+fix: export error when disconnected
+
 ## 0.1.26
 
 fix: missing title_before

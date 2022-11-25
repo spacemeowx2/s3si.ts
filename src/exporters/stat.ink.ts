@@ -565,9 +565,15 @@ export class StatInkExporter implements GameExporter {
       ? b64Number(detail.afterGrade.id).toString()
       : undefined;
     const title_exp_after = detail.afterGradePoint;
-    const clear_waves =
-      detail.waveResults.filter((i) => i.waveNumber < 4).length -
-      1 + (resultWave === 0 ? 1 : 0);
+
+    let clear_waves: number;
+    if (detail.waveResults.length > 0) {
+      // when cleared, resultWave === 0, so we need to add 1.
+      clear_waves = detail.waveResults.filter((i) => i.waveNumber < 4).length -
+        1 + (resultWave === 0 ? 1 : 0);
+    } else {
+      clear_waves = 0;
+    }
 
     let title_before = undefined;
     let title_exp_before = undefined;
