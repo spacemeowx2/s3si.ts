@@ -1,3 +1,7 @@
+## 0.1.28
+
+fix: allow random weapon
+
 ## 0.1.27
 
 fix: export error when disconnected
