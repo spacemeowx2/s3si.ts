@@ -28,9 +28,16 @@ import {
 } from "../types.ts";
 import { msgpack, Mutex } from "../../deps.ts";
 import { APIError } from "../APIError.ts";
-import { b64Number, gameId, s3siGameId } from "../utils.ts";
+import { b64Number, gameId, nonNullable, s3siGameId } from "../utils.ts";
 import { Env } from "../env.ts";
 import { KEY_DICT } from "../dict/stat.ink.ts";
+
+const COOP_POINT_MAP: Record<number, number | undefined> = {
+  0: -20,
+  1: -10,
+  2: 0,
+  3: 20,
+};
 
 class StatInkAPI {
   FETCH_LOCK = new Mutex();
@@ -553,9 +560,31 @@ export class StatInkExporter implements GameExporter {
         defeated_by_me: i.defeatCount,
       }]),
     );
+    const title_after = detail.afterGrade
+      ? b64Number(detail.afterGrade.id).toString()
+      : undefined;
+    const title_exp_after = detail.afterGradePoint;
     const clear_waves =
       detail.waveResults.filter((i) => i.waveNumber < 4).length -
       1 + (resultWave === 0 ? 1 : 0);
+
+    let title_before = undefined;
+    let title_exp_before = undefined;
+    const expDiff = COOP_POINT_MAP[clear_waves];
+
+    if (nonNullable(title_exp_after) && nonNullable(expDiff)) {
+      if (title_exp_after === 40 && expDiff === 20) {
+        // 20 -> 40 or ?(rank up) -> 40
+      } else if (title_exp_after === 40 && expDiff < 0 && title_after !== "8") {
+        // 60,50 -> 40 or ?(rank down) to 40
+      } else if (title_exp_after === 999 && expDiff !== 0) {
+        // 980,990 -> 999
+        title_before = title_after;
+      } else {
+        title_before = title_after;
+        title_exp_before = title_exp_after - expDiff;
+      }
+    }
 
     const result: StatInkCoopPostBody = {
       uuid: await gameId(detail.id),
@@ -568,10 +597,10 @@ export class StatInkExporter implements GameExporter {
       king_smell: smellMeter,
       king_salmonid: this.mapKing(detail.bossResult?.boss.id),
       clear_extra: bossResult?.hasDefeatBoss ? "yes" : "no",
-      title_after: detail.afterGrade
-        ? b64Number(detail.afterGrade.id).toString()
-        : undefined,
-      title_exp_after: detail.afterGradePoint,
+      title_before,
+      title_exp_before,
+      title_after,
+      title_exp_after,
       golden_eggs,
       power_eggs,
       gold_scale: scale?.gold,

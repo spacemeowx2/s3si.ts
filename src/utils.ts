@@ -159,3 +159,7 @@ export function b64Number(id: string): number {
   const [_, num] = text.split("-");
   return parseInt(num);
 }
+
+export function nonNullable<T>(v: T | null | undefined): v is T {
+  return v !== null && v !== undefined;
+}

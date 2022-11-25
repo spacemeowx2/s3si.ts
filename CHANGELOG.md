@@ -1,3 +1,8 @@
+## 0.1.26
+
+fix: missing title_before
+([#28](https://github.com/spacemeowx2/s3si.ts/issues/28))
+
 ## 0.1.25
 
 fix: missing king_smell
