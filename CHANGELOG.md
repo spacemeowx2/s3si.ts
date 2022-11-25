@@ -1,3 +1,9 @@
+## 0.1.23
+
+feat: add salmon run export to stat.ink
+
+feat: update `WEB_VIEW_VERSION` constant
+
 ## 0.1.22
 
 feat: update `WEB_VIEW_VERSION` constant
