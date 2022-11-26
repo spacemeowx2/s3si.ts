@@ -44,8 +44,14 @@ async function exportType(
     } catch (e) {
       console.log("Failed to export game", e);
       // try to re-export using cached data
-      const cachedDetail = await gameFetcher.fetch(type, detail.detail.id);
-      const { url } = await statInkExporter.exportGame(cachedDetail);
+      const cachedDetail =
+        (await gameFetcher.fetch(type, detail.detail.id)).detail;
+      const { detail: _, ...rest } = detail;
+      // @ts-ignore the type must be the same
+      const { url } = await statInkExporter.exportGame({
+        ...rest,
+        detail: cachedDetail,
+      });
       resultUrl = url;
     }
     exported += 1;

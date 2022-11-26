@@ -101,7 +101,7 @@ export class GameFetcher {
     });
   }
   async getCoopMetaById(id: string): Promise<Omit<CoopInfo, "detail">> {
-    const coopHistory = await this.getCoopHistory();
+    const coopHistory = this._splatnet ? await this.getCoopHistory() : [];
     const group = coopHistory.find((i) =>
       i.historyDetails.nodes.some((i) => i.id === id)
     );
@@ -126,7 +126,7 @@ export class GameFetcher {
   }
   async getBattleMetaById(id: string): Promise<Omit<VsInfo, "detail">> {
     const gid = await gameId(id);
-    const bankaraHistory = await this.getBankaraHistory();
+    const bankaraHistory = this._splatnet ? await this.getBankaraHistory() : [];
     const gameIdMap = new Map<BattleListNode, string>();
 
     for (const i of bankaraHistory) {
