@@ -31,7 +31,7 @@ export type VarsMap = {
 };
 
 export type Image = {
-  url: string;
+  url?: string;
   width?: number;
   height?: number;
 };
