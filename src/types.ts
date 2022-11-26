@@ -106,18 +106,23 @@ export type PlayerGear = {
     id: string;
   };
 };
+export type PlayerWeapon = {
+  id: string;
+  name: string;
+  image: Image;
+  subWeapon: {
+    id: string;
+    name: string;
+    image: Image;
+  };
+};
 export type VsPlayer = {
   id: string;
   nameId: string | null;
   name: string;
   isMyself: boolean;
   byname: string;
-  weapon: {
-    id: string;
-    subWeapon: {
-      id: string;
-    };
-  };
+  weapon: PlayerWeapon;
   species: "INKLING" | "OCTOLING";
   result: {
     kill: number;
@@ -422,12 +427,38 @@ export type RespMap = {
       udemaeMax: string;
       winCountTotal: number;
       paintPointTotal: number;
-      battleNumTotal: number;
 
       xMatchMaxAr: XRank;
       xMatchMaxCl: XRank;
       xMatchMaxGl: XRank;
       xMatchMaxLf: XRank;
+      frequentlyUsedWeapons: Pick<PlayerWeapon, "id" | "name" | "image">[];
+      badges: { id: string }[];
+      recentBadges: Badge[];
+      allBadges: Badge[];
+      weaponHistory: {
+        nodes: {
+          seasonName: string;
+          isMonthly: boolean;
+          startTime: string;
+          endTime: string;
+          weaponCategories: {
+            weaponCategory: {
+              id: string;
+              name: string;
+              category: string;
+            };
+            utilRatio: number;
+            weapons: (WeaponWithRatio & {
+              weaponCategory: {
+                category: string;
+                id: string;
+              };
+            })[];
+          }[];
+          weapons: WeaponWithRatio[];
+        }[];
+      };
     } | null;
   };
   [Queries.ConfigureAnalyticsQuery]: {
@@ -443,6 +474,20 @@ export type RespMap = {
       xMatchMaxLf: SimpleXRank;
     } | null;
   };
+};
+export type WeaponWithRatio = {
+  weapon: {
+    name: string;
+    image: Image;
+    weaponId: number;
+    id: string;
+  };
+  utilRatio: number;
+};
+export type Badge = {
+  id: string;
+  description: string;
+  image: Image;
 };
 export type HistoryGear = Pick<
   PlayerGear,
