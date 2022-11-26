@@ -18,15 +18,15 @@ import { RankTracker } from "./RankTracker.ts";
  * Fetch game and cache it. It also fetches bankara match challenge info.
  */
 export class GameFetcher {
-  splatnet: Splatnet3;
-  cache: Cache;
-  rankTracker: RankTracker;
+  private splatnet: Splatnet3;
+  private cache: Cache;
+  private rankTracker: RankTracker;
 
-  lock: Record<string, Mutex | undefined> = {};
-  bankaraLock = new Mutex();
-  bankaraHistory?: HistoryGroups<BattleListNode>["nodes"];
-  coopLock = new Mutex();
-  coopHistory?: CoopHistoryGroups["nodes"];
+  private lock: Record<string, Mutex | undefined> = {};
+  private bankaraLock = new Mutex();
+  private bankaraHistory?: HistoryGroups<BattleListNode>["nodes"];
+  private coopLock = new Mutex();
+  private coopHistory?: CoopHistoryGroups["nodes"];
 
   constructor(
     { cache = new MemoryCache(), splatnet, state }: {
@@ -175,7 +175,7 @@ export class GameFetcher {
       rankBeforeState: before ?? null,
     };
   }
-  cacheDetail<T>(
+  private cacheDetail<T>(
     id: string,
     getter: () => Promise<T>,
   ): Promise<T> {
@@ -204,7 +204,7 @@ export class GameFetcher {
         throw new Error(`Unknown game type: ${type}`);
     }
   }
-  async fetchBattle(id: string): Promise<VsInfo> {
+  private async fetchBattle(id: string): Promise<VsInfo> {
     const detail = await this.cacheDetail(
       id,
       () => this.splatnet.getBattleDetail(id).then((r) => r.vsHistoryDetail),
@@ -218,7 +218,7 @@ export class GameFetcher {
 
     return game;
   }
-  async fetchCoop(id: string): Promise<CoopInfo> {
+  private async fetchCoop(id: string): Promise<CoopInfo> {
     const detail = await this.cacheDetail(
       id,
       () => this.splatnet.getCoopDetail(id).then((r) => r.coopHistoryDetail),

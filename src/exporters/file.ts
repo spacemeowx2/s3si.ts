@@ -1,4 +1,4 @@
-import { CoopInfo, GameExporter, VsInfo } from "../types.ts";
+import { CoopInfo, Game, GameExporter, VsInfo } from "../types.ts";
 import { path } from "../../deps.ts";
 import { NSOAPP_VERSION, S3SI_VERSION } from "../constant.ts";
 import { parseHistoryDetailId, urlSimplify } from "../utils.ts";
@@ -37,7 +37,53 @@ export class FileExporter implements GameExporter {
 
     return `${uid}_${timestamp}Z.json`;
   }
-  async exportGame(info: VsInfo | CoopInfo) {
+  /**
+   * Get all exported files
+   */
+  async exportedGames(
+    { uid, type }: { uid: string; type: Game["type"] },
+  ): Promise<{ id: string; getContent: () => Promise<Game> }[]> {
+    const out: { id: string; filepath: string; timestamp: string }[] = [];
+
+    for await (const entry of Deno.readDir(this.exportPath)) {
+      const filename = entry.name;
+      const [fileUid, timestamp] = filename.split("_", 2);
+      if (!entry.isFile || fileUid !== uid) {
+        continue;
+      }
+
+      const filepath = path.join(this.exportPath, filename);
+      const content = await Deno.readTextFile(filepath);
+      const body = JSON.parse(content) as FileExporterType;
+
+      if (body.type === "VS" && type === "VsInfo") {
+        out.push({
+          id: body.data.detail.id,
+          filepath,
+          timestamp,
+        });
+      } else if (body.type === "COOP" && type === "CoopInfo") {
+        out.push({
+          id: body.data.detail.id,
+          filepath,
+          timestamp,
+        });
+      }
+    }
+
+    return out.sort((a, b) => b.timestamp.localeCompare(a.timestamp)).map((
+      { id, filepath },
+    ) => ({
+      id,
+      getContent: async () => {
+        const content = await Deno.readTextFile(filepath);
+        const body = JSON.parse(content) as FileExporterType;
+
+        return body.data;
+      },
+    }));
+  }
+  async exportGame(info: Game) {
     await Deno.mkdir(this.exportPath, { recursive: true });
 
     const filename = this.getFilenameById(info.detail.id);
