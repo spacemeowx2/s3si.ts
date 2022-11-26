@@ -10,6 +10,7 @@ import {
   GraphQLResponse,
   Queries,
   RespMap,
+  Summary,
   VarsMap,
 } from "./types.ts";
 import { DEFAULT_ENV, Env } from "./env.ts";
@@ -222,6 +223,19 @@ export class Splatnet3 {
     );
 
     return resp;
+  }
+
+  async getSummary(): Promise<Summary> {
+    const ConfigureAnalyticsQuery = await this.request(
+      Queries.ConfigureAnalyticsQuery,
+    );
+    const HistoryRecordQuery = await this.request(Queries.HistoryRecordQuery);
+    const CoopHistoryQuery = await this.request(Queries.CoopHistoryQuery);
+    return {
+      ConfigureAnalyticsQuery,
+      HistoryRecordQuery,
+      CoopHistoryQuery,
+    };
   }
 }
 

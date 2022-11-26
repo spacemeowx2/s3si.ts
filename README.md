@@ -24,6 +24,7 @@ Options:
     --monitor, -m                Monitor mode
     --skip-mode <mode>, -s       Skip mode (default: null)
                                  ("vs", "coop")
+    --with-summary               Include summary in the output
     --help                       Show this help message and exit`,
 ```
 

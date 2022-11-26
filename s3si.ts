@@ -5,7 +5,7 @@ import { flags } from "./deps.ts";
 const parseArgs = (args: string[]) => {
   const parsed = flags.parse(args, {
     string: ["profilePath", "exporter", "skipMode"],
-    boolean: ["help", "noProgress", "monitor"],
+    boolean: ["help", "noProgress", "monitor", "withSummary"],
     alias: {
       "help": "h",
       "profilePath": ["p", "profile-path"],
@@ -13,6 +13,7 @@ const parseArgs = (args: string[]) => {
       "noProgress": ["n", "no-progress"],
       "monitor": ["m"],
       "skipMode": ["s", "skip-mode"],
+      "withSummary": "with-summary",
     },
   });
   return parsed;
@@ -32,6 +33,7 @@ Options:
     --monitor, -m                Monitor mode
     --skip-mode <mode>, -s       Skip mode (default: null)
                                  ("vs", "coop")
+    --with-summary               Include summary in the output
     --help                       Show this help message and exit`,
   );
   Deno.exit(0);

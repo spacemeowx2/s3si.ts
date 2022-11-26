@@ -15,6 +15,7 @@ export type Opts = {
   exporter: string;
   noProgress: boolean;
   monitor: boolean;
+  withSummary: boolean;
   skipMode?: string;
   cache?: Cache;
   stateBackend?: StateBackend;
@@ -26,6 +27,7 @@ export const DEFAULT_OPTS: Opts = {
   exporter: "stat.ink",
   noProgress: false,
   monitor: false,
+  withSummary: false,
   env: DEFAULT_ENV,
 };
 
@@ -157,7 +159,7 @@ export class App {
     const skipMode = this.getSkipMode();
     const errors: unknown[] = [];
 
-    if (skipMode.includes("vs")) {
+    if (skipMode.includes("vs") || exporters.length === 0) {
       this.env.logger.log("Skip exporting VS games.");
     } else {
       this.env.logger.log("Fetching battle list...");
@@ -211,7 +213,7 @@ export class App {
 
     stats = initStats();
 
-    if (skipMode.includes("coop")) {
+    if (skipMode.includes("coop") || exporters.length === 0) {
       this.env.logger.log("Skip exporting coop games.");
     } else {
       this.env.logger.log("Fetching coop battle list...");
@@ -251,6 +253,39 @@ export class App {
       endBar();
 
       this.printStats(stats);
+      if (errors.length > 0) {
+        throw errors[0];
+      }
+    }
+
+    const summaryExporters = exporters.filter((e) => e.exportSummary);
+    if (!this.opts.withSummary || summaryExporters.length === 0) {
+      this.env.logger.log("Skip exporting summary.");
+    } else {
+      this.env.logger.log("Fetching summary...");
+      const summary = await splatnet.getSummary();
+
+      await Promise.all(
+        summaryExporters.map((e) =>
+          showError(
+            this.env,
+            e.exportSummary!(summary),
+          ).then((result) => {
+            if (result.status === "success") {
+              this.env.logger.log(`Exported summary to ${result.url}`);
+            } else if (result.status === "skip") {
+              this.env.logger.log(`Skipped exporting summary to ${e.name}`);
+            } else {
+              const _never: never = result;
+            }
+          })
+            .catch((err) => {
+              errors.push(err);
+              this.env.logger.error(`\nFailed to export to ${e.name}:`, err);
+            })
+        ),
+      );
+
       if (errors.length > 0) {
         throw errors[0];
       }
