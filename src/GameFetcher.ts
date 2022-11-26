@@ -16,9 +16,10 @@ import { RankTracker } from "./RankTracker.ts";
 
 /**
  * Fetch game and cache it. It also fetches bankara match challenge info.
+ * if splatnet is not given, it will use cache only
  */
 export class GameFetcher {
-  private splatnet: Splatnet3;
+  private _splatnet?: Splatnet3;
   private cache: Cache;
   private rankTracker: RankTracker;
 
@@ -30,14 +31,20 @@ export class GameFetcher {
 
   constructor(
     { cache = new MemoryCache(), splatnet, state }: {
-      splatnet: Splatnet3;
+      splatnet?: Splatnet3;
       state: State;
       cache?: Cache;
     },
   ) {
-    this.splatnet = splatnet;
+    this._splatnet = splatnet;
     this.cache = cache;
     this.rankTracker = new RankTracker(state.rankState);
+  }
+  private get splatnet() {
+    if (!this._splatnet) {
+      throw new Error("splatnet is not set");
+    }
+    return this._splatnet;
   }
   private getLock(id: string): Mutex {
     let cur = this.lock[id];

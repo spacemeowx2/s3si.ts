@@ -3,9 +3,11 @@
  * Make sure you have already logged in.
  */
 import { flags } from "../deps.ts";
+import { FileCache } from "../src/cache.ts";
 import { DEFAULT_ENV } from "../src/env.ts";
 import { FileExporter } from "../src/exporters/file.ts";
 import { StatInkExporter } from "../src/exporters/stat.ink.ts";
+import { GameFetcher } from "../src/GameFetcher.ts";
 import { loginManually } from "../src/iksm.ts";
 import { Splatnet3 } from "../src/splatnet3.ts";
 import { FileStateBackend, Profile } from "../src/state.ts";
@@ -13,9 +15,10 @@ import { Game } from "../src/types.ts";
 import { parseHistoryDetailId } from "../src/utils.ts";
 
 async function exportType(
-  { statInkExporter, fileExporter, type }: {
+  { statInkExporter, fileExporter, type, gameFetcher }: {
     statInkExporter: StatInkExporter;
     fileExporter: FileExporter;
+    gameFetcher: GameFetcher;
     type: Game["type"];
   },
 ) {
@@ -34,10 +37,20 @@ async function exportType(
   let exported = 0;
   for (const { getContent } of workQueue) {
     const detail = await getContent();
-    const { url } = await statInkExporter.exportGame(detail);
+    let resultUrl: string | undefined;
+    try {
+      const { url } = await statInkExporter.exportGame(detail);
+      resultUrl = url;
+    } catch (e) {
+      console.log("Failed to export game", e);
+      // try to re-export using cached data
+      const cachedDetail = await gameFetcher.fetch(type, detail.detail.id);
+      const { url } = await statInkExporter.exportGame(cachedDetail);
+      resultUrl = url;
+    }
     exported += 1;
-    if (url) {
-      console.log(`Exported ${url} (${exported}/${workQueue.length})`);
+    if (resultUrl) {
+      console.log(`Exported ${resultUrl} (${exported}/${workQueue.length})`);
     }
   }
 }
@@ -70,6 +83,11 @@ if (opts.help) {
 const env = DEFAULT_ENV;
 const stateBackend = new FileStateBackend(opts.profilePath ?? "./profile.json");
 const profile = new Profile({ stateBackend, env });
+// for cache
+const gameFetcher = new GameFetcher({
+  cache: new FileCache(profile.state.cacheDir),
+  state: profile.state,
+});
 await profile.readState();
 
 if (!profile.state.loginState?.sessionToken) {
@@ -108,9 +126,19 @@ const statInkExporter = new StatInkExporter({
 const type = (opts.type ?? "coop").replace("all", "vs,coop");
 
 if (type.includes("vs")) {
-  await exportType({ type: "VsInfo", fileExporter, statInkExporter });
+  await exportType({
+    type: "VsInfo",
+    fileExporter,
+    statInkExporter,
+    gameFetcher,
+  });
 }
 
 if (type.includes("coop")) {
-  await exportType({ type: "CoopInfo", fileExporter, statInkExporter });
+  await exportType({
+    type: "CoopInfo",
+    fileExporter,
+    statInkExporter,
+    gameFetcher,
+  });
 }
