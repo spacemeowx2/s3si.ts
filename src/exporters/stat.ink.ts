@@ -458,7 +458,7 @@ export class StatInkExporter implements GameExporter {
     return result;
   }
   isRandomWeapon(image: Image | null): boolean {
-    return (image?.url.includes(
+    return (image?.url?.includes(
       "473fffb2442075078d8bb7125744905abdeae651b6a5b7453ae295582e45f7d1",
     )) ?? false;
   }
