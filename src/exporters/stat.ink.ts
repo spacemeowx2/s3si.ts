@@ -604,6 +604,15 @@ export class StatInkExporter implements GameExporter {
       }
     }
 
+    let fail_reason: StatInkCoopPostBody["fail_reason"] = null;
+    // failed
+    if (clear_waves !== 3 && detail.waveResults.length > 0) {
+      const lastWave = detail.waveResults[detail.waveResults.length - 1];
+      if (lastWave.teamDeliverCount >= lastWave.deliverNorm) {
+        fail_reason = "wipe_out";
+      }
+    }
+
     const result: StatInkCoopPostBody = {
       uuid: await gameId(detail.id),
       private: groupInfo?.mode === "PRIVATE_CUSTOM" ? "yes" : "no",
@@ -611,7 +620,7 @@ export class StatInkExporter implements GameExporter {
       stage: b64Number(detail.coopStage.id).toString(),
       danger_rate: dangerRate * 100,
       clear_waves,
-      fail_reason: null,
+      fail_reason,
       king_smell: smellMeter,
       king_salmonid: this.mapKing(detail.bossResult?.boss.id),
       clear_extra: bossResult?.hasDefeatBoss ? "yes" : "no",

@@ -1,3 +1,7 @@
+## 0.1.29
+
+feat: add fail_reason for salmon run
+
 ## 0.1.28
 
 fix: allow random weapon
