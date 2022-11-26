@@ -83,12 +83,13 @@ if (opts.help) {
 const env = DEFAULT_ENV;
 const stateBackend = new FileStateBackend(opts.profilePath ?? "./profile.json");
 const profile = new Profile({ stateBackend, env });
+await profile.readState();
+
 // for cache
 const gameFetcher = new GameFetcher({
   cache: new FileCache(profile.state.cacheDir),
   state: profile.state,
 });
-await profile.readState();
 
 if (!profile.state.loginState?.sessionToken) {
   const sessionToken = await loginManually(env);
