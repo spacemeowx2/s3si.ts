@@ -29,7 +29,13 @@ import {
 } from "../types.ts";
 import { msgpack, Mutex } from "../../deps.ts";
 import { APIError } from "../APIError.ts";
-import { b64Number, gameId, nonNullable, s3siGameId } from "../utils.ts";
+import {
+  b64Number,
+  gameId,
+  nonNullable,
+  s3siGameId,
+  urlSimplify,
+} from "../utils.ts";
 import { Env } from "../env.ts";
 import { KEY_DICT } from "../dict/stat.ink.ts";
 
@@ -458,9 +464,17 @@ export class StatInkExporter implements GameExporter {
     return result;
   }
   isRandomWeapon(image: Image | null): boolean {
-    return (image?.url?.includes(
-      "473fffb2442075078d8bb7125744905abdeae651b6a5b7453ae295582e45f7d1",
-    )) ?? false;
+    const RANDOM_WEAPON_FILENAME =
+      "473fffb2442075078d8bb7125744905abdeae651b6a5b7453ae295582e45f7d1";
+    // file exporter will replace url to { pathname: string } | string
+    const url = image?.url as ReturnType<typeof urlSimplify> | undefined | null;
+    if (typeof url === "string") {
+      return url.includes(RANDOM_WEAPON_FILENAME);
+    } else if (url === undefined || url === null) {
+      return false;
+    } else {
+      return url.pathname.includes(RANDOM_WEAPON_FILENAME);
+    }
   }
   async mapCoopWeapon(
     { name, image }: { name: string; image: Image | null },
