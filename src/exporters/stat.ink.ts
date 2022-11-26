@@ -47,6 +47,7 @@ const COOP_POINT_MAP: Record<number, number | undefined> = {
 };
 
 class StatInkAPI {
+  statInk = "https://stat.ink";
   FETCH_LOCK = new Mutex();
   cache: Record<string, unknown> = {};
 
@@ -67,8 +68,8 @@ class StatInkAPI {
     const fetch = this.env.newFetcher();
     return await (await fetch.get({
       url: type === "VsInfo"
-        ? "https://stat.ink/api/v3/s3s/uuid-list"
-        : "https://stat.ink/api/v3/salmon/uuid-list",
+        ? `${this.statInk}/api/v3/s3s/uuid-list`
+        : `${this.statInk}/api/v3/salmon/uuid-list`,
       headers: this.requestHeaders(),
     })).json();
   }
@@ -76,7 +77,7 @@ class StatInkAPI {
   async postBattle(body: StatInkPostBody) {
     const fetch = this.env.newFetcher();
     const resp = await fetch.post({
-      url: "https://stat.ink/api/v3/battle",
+      url: `${this.statInk}/api/v3/battle`,
       headers: {
         ...this.requestHeaders(),
         "Content-Type": "application/x-msgpack",
@@ -108,7 +109,7 @@ class StatInkAPI {
   async postCoop(body: StatInkCoopPostBody) {
     const fetch = this.env.newFetcher();
     const resp = await fetch.post({
-      url: "https://stat.ink/api/v3/salmon",
+      url: `${this.statInk}/api/v3/salmon`,
       headers: {
         ...this.requestHeaders(),
         "Content-Type": "application/x-msgpack",
@@ -156,12 +157,16 @@ class StatInkAPI {
     }
   }
 
+  getSalmonWeapon = () =>
+    this._getCached<StatInkWeapon>(
+      `${this.statInk}/api/v3/salmon/weapon?full=1`,
+    );
   getWeapon = () =>
-    this._getCached<StatInkWeapon>("https://stat.ink/api/v3/weapon?full=1");
+    this._getCached<StatInkWeapon>(`${this.statInk}/api/v3/weapon?full=1`);
   getAbility = () =>
-    this._getCached<StatInkAbility>("https://stat.ink/api/v3/ability?full=1");
+    this._getCached<StatInkAbility>(`${this.statInk}/api/v3/ability?full=1`);
   getStage = () =>
-    this._getCached<StatInkStage>("https://stat.ink/api/v3/stage");
+    this._getCached<StatInkStage>(`${this.statInk}/api/v3/stage`);
 }
 
 export type NameDict = {
@@ -479,7 +484,7 @@ export class StatInkExporter implements GameExporter {
   async mapCoopWeapon(
     { name, image }: { name: string; image: Image | null },
   ): Promise<string | null> {
-    const weaponMap = await this.api.getWeapon();
+    const weaponMap = await this.api.getSalmonWeapon();
     const weapon =
       weaponMap.find((i) => Object.values(i.name).includes(name))?.key ??
         KEY_DICT.get(name);
