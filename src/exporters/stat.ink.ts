@@ -8,6 +8,7 @@ import {
   CoopHistoryDetail,
   CoopHistoryPlayerResult,
   CoopInfo,
+  ExportResult,
   Game,
   GameExporter,
   Image,
@@ -231,10 +232,13 @@ export class StatInkExporter implements GameExporter {
   isTriColor({ vsMode }: VsHistoryDetail): boolean {
     return vsMode.mode === "FEST" && b64Number(vsMode.id) === 8;
   }
-  async exportGame(game: VsInfo | CoopInfo) {
+  async exportGame(game: Game): Promise<ExportResult> {
     if (game.type === "VsInfo" && this.isTriColor(game.detail)) {
       // TODO: support tri-color fest
-      return {};
+      return {
+        status: "skip",
+        reason: "Tri-color fest is not supported",
+      };
     }
 
     if (game.type === "VsInfo") {
@@ -242,6 +246,7 @@ export class StatInkExporter implements GameExporter {
       const { url } = await this.api.postBattle(body);
 
       return {
+        status: "success",
         url,
       };
     } else {
@@ -249,6 +254,7 @@ export class StatInkExporter implements GameExporter {
       const { url } = await this.api.postCoop(body);
 
       return {
+        status: "success",
         url,
       };
     }

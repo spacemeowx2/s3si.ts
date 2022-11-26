@@ -35,6 +35,29 @@ type Progress = {
   total: number;
 };
 
+class StepProgress {
+  currentUrl?: string;
+  total: number;
+  exported: number;
+  done: number;
+  skipped: Record<string, number>;
+
+  constructor() {
+    this.total = 1;
+    this.exported = 0;
+    this.done = 0;
+    this.skipped = {};
+  }
+}
+
+function progress({ total, currentUrl, done }: StepProgress): Progress {
+  return {
+    total,
+    currentUrl,
+    current: done,
+  };
+}
+
 export class App {
   profile: Profile;
   env: Env;
@@ -128,7 +151,7 @@ export class App {
     const exporters = await this.getExporters();
     const initStats = () =>
       Object.fromEntries(
-        exporters.map((e) => [e.name, 0]),
+        exporters.map((e) => [e.name, new StepProgress()]),
       );
     let stats = initStats();
     const skipMode = this.getSkipMode();
@@ -158,14 +181,11 @@ export class App {
               fetcher,
               exporter: e,
               gameList,
-              onStep: (progress) => {
-                redraw(e.name, progress);
-                stats[e.name] = progress.current;
+              stepProgress: stats[e.name],
+              onStep: () => {
+                redraw(e.name, progress(stats[e.name]));
               },
-            })
-              .then((count) => {
-                stats[e.name] = count;
-              }),
+            }),
           )
             .catch((err) => {
               errors.push(err);
@@ -215,14 +235,11 @@ export class App {
               fetcher,
               exporter: e,
               gameList: coopBattleList,
-              onStep: (progress) => {
-                stats[e.name] = progress.current;
-                redraw(e.name, progress);
+              stepProgress: stats[e.name],
+              onStep: () => {
+                redraw(e.name, progress(stats[e.name]));
               },
-            })
-              .then((count) => {
-                stats[e.name] = count;
-              }),
+            }),
           )
             .catch((err) => {
               errors.push(err);
@@ -295,20 +312,17 @@ export class App {
     fetcher,
     exporter,
     gameList,
+    stepProgress,
     onStep,
   }: {
     type: Game["type"];
     exporter: GameExporter;
     fetcher: GameFetcher;
     gameList: string[];
-    onStep: (progress: Progress) => void;
-  }) {
-    let exported = 0;
-
-    onStep?.({
-      current: 0,
-      total: 1,
-    });
+    stepProgress: StepProgress;
+    onStep: () => void;
+  }): Promise<StepProgress> {
+    onStep?.();
 
     const workQueue = [
       ...await exporter.notExported({
@@ -320,39 +334,56 @@ export class App {
 
     const step = async (id: string) => {
       const detail = await fetcher.fetch(type, id);
-      const { url } = await exporter.exportGame(detail);
-      exported += 1;
-      onStep?.({
-        currentUrl: url,
-        current: exported,
-        total: workQueue.length,
-      });
+      const result = await exporter.exportGame(detail);
+
+      stepProgress.done += 1;
+      stepProgress.currentUrl = undefined;
+
+      if (result.status === "success") {
+        stepProgress.exported += 1;
+        stepProgress.currentUrl = result.url;
+      } else if (result.status === "skip") {
+        const { skipped } = stepProgress;
+        skipped[result.reason] = (skipped[result.reason] ?? 0) + 1;
+      } else {
+        const _never: never = result;
+      }
+
+      onStep?.();
     };
 
     if (workQueue.length > 0) {
-      onStep?.({
-        current: exported,
-        total: workQueue.length,
-      });
+      stepProgress.total = workQueue.length;
+      onStep?.();
       for (const battle of workQueue) {
         await step(battle);
       }
     } else {
-      onStep?.({
-        current: 1,
-        total: 1,
-      });
+      stepProgress.done = 1;
+      onStep?.();
     }
 
-    return exported;
+    return stepProgress;
   }
-  printStats(stats: Record<string, number>) {
+  printStats(stats: Record<string, StepProgress>) {
     this.env.logger.log(
       `Exported ${
         Object.entries(stats)
-          .map(([name, count]) => `${name}: ${count}`)
+          .map(([name, { exported }]) => `${name}: ${exported}`)
           .join(", ")
       }`,
     );
+    if (Object.values(stats).some((i) => Object.keys(i.skipped).length > 0)) {
+      this.env.logger.log(
+        `Skipped ${
+          Object.entries(stats)
+            .map(([name, { skipped }]) =>
+              Object.entries(skipped).map(([reason, count]) =>
+                `${name}: ${reason} (${count})`
+              ).join(", ")
+            )
+        }`,
+      );
+    }
   }
 }

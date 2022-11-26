@@ -296,12 +296,27 @@ export type CoopHistoryDetail = {
   jobBonus: null | number;
 };
 
+export type ExportResult = {
+  status: "success";
+  url?: string;
+} | {
+  status: "skip";
+  reason: string;
+};
+
+export type SummaryFetcher = {
+  fetchSummary<T extends (typeof Queries)[keyof typeof SummaryEnum]>(
+    type: T,
+  ): Promise<RespMap[T]>;
+};
+
 export type GameExporter = {
   name: string;
   notExported: (
     { type, list }: { type: Game["type"]; list: string[] },
   ) => Promise<string[]>;
-  exportGame: (game: Game) => Promise<{ url?: string }>;
+  exportGame: (game: Game) => Promise<ExportResult>;
+  exportSummary?: (fetcher: SummaryFetcher) => Promise<ExportResult>;
 };
 
 export type BankaraBattleHistories = {
@@ -737,7 +752,7 @@ export type RankParam = {
 };
 
 export enum SummaryEnum {
-  ConfigureAnalyticsQuery,
-  HistoryRecordQuery,
-  CoopHistoryQuery,
+  ConfigureAnalyticsQuery = Queries.ConfigureAnalyticsQuery,
+  HistoryRecordQuery = Queries.HistoryRecordQuery,
+  CoopHistoryQuery = Queries.CoopHistoryQuery,
 }
