@@ -310,13 +310,19 @@ export type SummaryFetcher = {
   ): Promise<RespMap[T]>;
 };
 
+export type Summary = {
+  ConfigureAnalyticsQuery: RespMap[Queries.ConfigureAnalyticsQuery];
+  HistoryRecordQuery: RespMap[Queries.HistoryRecordQuery];
+  CoopHistoryQuery: RespMap[Queries.CoopHistoryQuery];
+};
+
 export type GameExporter = {
   name: string;
   notExported: (
     { type, list }: { type: Game["type"]; list: string[] },
   ) => Promise<string[]>;
   exportGame: (game: Game) => Promise<ExportResult>;
-  exportSummary?: (fetcher: SummaryFetcher) => Promise<ExportResult>;
+  exportSummary?: (summary: Summary) => Promise<ExportResult>;
 };
 
 export type BankaraBattleHistories = {
