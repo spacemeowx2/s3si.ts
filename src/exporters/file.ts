@@ -1,4 +1,10 @@
-import { CoopInfo, Game, GameExporter, VsInfo } from "../types.ts";
+import {
+  CoopInfo,
+  ExportResult,
+  Game,
+  GameExporter,
+  VsInfo,
+} from "../types.ts";
 import { path } from "../../deps.ts";
 import { NSOAPP_VERSION, S3SI_VERSION } from "../constant.ts";
 import { parseHistoryDetailId, urlSimplify } from "../utils.ts";
@@ -83,7 +89,7 @@ export class FileExporter implements GameExporter {
       },
     }));
   }
-  async exportGame(info: Game) {
+  async exportGame(info: Game): Promise<ExportResult> {
     await Deno.mkdir(this.exportPath, { recursive: true });
 
     const filename = this.getFilenameById(info.detail.id);
@@ -103,6 +109,7 @@ export class FileExporter implements GameExporter {
     );
 
     return {
+      status: "success",
       url: filepath,
     };
   }
