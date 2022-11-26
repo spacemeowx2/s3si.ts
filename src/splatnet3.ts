@@ -15,6 +15,7 @@ import {
 } from "./types.ts";
 import { DEFAULT_ENV, Env } from "./env.ts";
 import { getBulletToken, getGToken } from "./iksm.ts";
+import { parseHistoryDetailId } from "./utils.ts";
 
 export class Splatnet3 {
   protected profile: Profile;
@@ -231,7 +232,22 @@ export class Splatnet3 {
     );
     const HistoryRecordQuery = await this.request(Queries.HistoryRecordQuery);
     const CoopHistoryQuery = await this.request(Queries.CoopHistoryQuery);
+    const getFirstBattleId = async () => {
+      const latest = await this.request(Queries.LatestBattleHistoriesQuery);
+      const id = latest?.latestBattleHistories?.historyGroups?.nodes?.[0]
+        ?.historyDetails?.nodes?.[0]?.id;
+      return id;
+    };
+
+    const id = CoopHistoryQuery?.coopResult?.historyGroups?.nodes?.[0]
+      ?.historyDetails?.nodes?.[0]?.id ?? await getFirstBattleId();
+    if (!id) {
+      throw new Error("No battle id found");
+    }
+    const { uid } = parseHistoryDetailId(id);
+
     return {
+      uid,
       ConfigureAnalyticsQuery,
       HistoryRecordQuery,
       CoopHistoryQuery,
