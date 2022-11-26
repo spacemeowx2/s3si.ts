@@ -3,19 +3,31 @@ import {
   ExportResult,
   Game,
   GameExporter,
+  Summary,
   VsInfo,
 } from "../types.ts";
 import { path } from "../../deps.ts";
 import { NSOAPP_VERSION, S3SI_VERSION } from "../constant.ts";
 import { parseHistoryDetailId, urlSimplify } from "../utils.ts";
 
-export type FileExporterType = {
-  type: "VS" | "COOP";
+export type FileExporterTypeCommon = {
   nsoVersion: string;
   s3siVersion: string;
   exportTime: string;
-  data: VsInfo | CoopInfo;
 };
+
+export type FileExporterType =
+  & ({
+    type: "VS";
+    data: VsInfo;
+  } | {
+    type: "COOP";
+    data: CoopInfo;
+  } | {
+    type: "SUMMARY";
+    data: Summary;
+  })
+  & FileExporterTypeCommon;
 
 /**
  * Don't save url in exported file
@@ -62,6 +74,9 @@ export class FileExporter implements GameExporter {
       const content = await Deno.readTextFile(filepath);
       const body = JSON.parse(content) as FileExporterType;
 
+      if (body.type === "SUMMARY") {
+        continue;
+      }
       if (body.type === "VS" && type === "VsInfo") {
         out.push({
           id: body.data.detail.id,
@@ -85,9 +100,34 @@ export class FileExporter implements GameExporter {
         const content = await Deno.readTextFile(filepath);
         const body = JSON.parse(content) as FileExporterType;
 
-        return body.data;
+        // summary is excluded
+        return body.data as Game;
       },
     }));
+  }
+  async exportSummary(summary: Summary): Promise<ExportResult> {
+    const filename = `${summary.uid}_summary.json`;
+    const filepath = path.join(this.exportPath, filename);
+
+    const body: FileExporterType = {
+      type: "SUMMARY",
+      nsoVersion: NSOAPP_VERSION,
+      s3siVersion: S3SI_VERSION,
+      exportTime: new Date().toISOString(),
+      data: summary,
+    };
+
+    await Deno.writeTextFile(
+      filepath,
+      JSON.stringify({
+        body,
+      }),
+    );
+
+    return {
+      status: "success",
+      url: filepath,
+    };
   }
   async exportGame(info: Game): Promise<ExportResult> {
     await Deno.mkdir(this.exportPath, { recursive: true });
@@ -95,12 +135,23 @@ export class FileExporter implements GameExporter {
     const filename = this.getFilenameById(info.detail.id);
     const filepath = path.join(this.exportPath, filename);
 
-    const body: FileExporterType = {
-      type: info.type === "VsInfo" ? "VS" : "COOP",
+    const common: FileExporterTypeCommon = {
       nsoVersion: NSOAPP_VERSION,
       s3siVersion: S3SI_VERSION,
       exportTime: new Date().toISOString(),
-      data: info,
+    };
+    const dataType = info.type === "VsInfo"
+      ? {
+        type: "VS" as const,
+        data: info,
+      }
+      : {
+        type: "COOP" as const,
+        data: info,
+      };
+    const body: FileExporterType = {
+      ...common,
+      ...dataType,
     };
 
     await Deno.writeTextFile(

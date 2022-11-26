@@ -39,8 +39,8 @@ async function exportType(
     const detail = await getContent();
     let resultUrl: string | undefined;
     try {
-      const { url } = await statInkExporter.exportGame(detail);
-      resultUrl = url;
+      const result = await statInkExporter.exportGame(detail);
+      resultUrl = result.status === "success" ? result.url : undefined;
     } catch (e) {
       console.log("Failed to export game", e);
       // try to re-export using cached data

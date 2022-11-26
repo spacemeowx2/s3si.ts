@@ -311,6 +311,7 @@ export type SummaryFetcher = {
 };
 
 export type Summary = {
+  uid: string;
   ConfigureAnalyticsQuery: RespMap[Queries.ConfigureAnalyticsQuery];
   HistoryRecordQuery: RespMap[Queries.HistoryRecordQuery];
   CoopHistoryQuery: RespMap[Queries.CoopHistoryQuery];
