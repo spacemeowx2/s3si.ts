@@ -1,3 +1,7 @@
+## 0.1.30
+
+feat: use /api/v3/salmon/weapon
+
 ## 0.1.29
 
 feat: add fail_reason for salmon run
