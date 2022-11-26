@@ -37,7 +37,6 @@ import {
   urlSimplify,
 } from "../utils.ts";
 import { Env } from "../env.ts";
-import { KEY_DICT } from "../dict/stat.ink.ts";
 
 const COOP_POINT_MAP: Record<number, number | undefined> = {
   0: -20,
@@ -485,9 +484,8 @@ export class StatInkExporter implements GameExporter {
     { name, image }: { name: string; image: Image | null },
   ): Promise<string | null> {
     const weaponMap = await this.api.getSalmonWeapon();
-    const weapon =
-      weaponMap.find((i) => Object.values(i.name).includes(name))?.key ??
-        KEY_DICT.get(name);
+    const weapon = weaponMap.find((i) => Object.values(i.name).includes(name))
+      ?.key;
 
     if (!weapon) {
       if (this.isRandomWeapon(image)) {
