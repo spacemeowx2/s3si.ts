@@ -12,6 +12,8 @@ export enum Queries {
   myOutfitCommonDataFilteringConditionQuery =
     "d02ab22c9dccc440076055c8baa0fa7a",
   myOutfitCommonDataEquipmentsQuery = "d29cd0c2b5e6bac90dd5b817914832f8",
+  HistoryRecordQuery = "9d4ef9fba3f84d6933bb1f6f436f7200",
+  ConfigureAnalyticsQuery = "f8ae00773cc412a50dd41a6d9a159ddd",
 }
 export type VarsMap = {
   [Queries.HomeQuery]: [];
@@ -28,6 +30,8 @@ export type VarsMap = {
   }];
   [Queries.myOutfitCommonDataFilteringConditionQuery]: [];
   [Queries.myOutfitCommonDataEquipmentsQuery]: [];
+  [Queries.HistoryRecordQuery]: [];
+  [Queries.ConfigureAnalyticsQuery]: [];
 };
 
 export type Image = {
@@ -88,11 +92,14 @@ export type CoopHistoryGroups = {
 };
 export type PlayerGear = {
   name: string;
+  image: Image;
   primaryGearPower: {
     name: string;
+    image: Image;
   };
   additionalGearPowers: {
     name: string;
+    image: Image;
   }[];
   brand: {
     name: string;
@@ -337,6 +344,31 @@ export type RespMap = {
     vsHistoryDetail: VsHistoryDetail;
   };
   [Queries.CoopHistoryQuery]: {
+    regularAverageClearWave: number | null;
+    regularGrade: {
+      id: string;
+      name: string;
+    } | null;
+    regularGradePoint: number | null;
+    monthlyGear: {
+      __typename: string;
+      name: string;
+      image: Image;
+    } | null;
+    scale: {
+      gold: number;
+      silver: number;
+      bronze: number;
+    } | null;
+    pointCard: {
+      defeatBossCount: number;
+      deliverCount: number;
+      goldenDeliverCount: number;
+      playCount: number;
+      rescueCount: number;
+      regularPoint: number;
+      totalPoint: number;
+    } | null;
     coopResult: {
       historyGroups: CoopHistoryGroups;
     };
@@ -357,6 +389,85 @@ export type RespMap = {
     clothingGears: unknown[];
     shoesGears: unknown[];
   };
+  [Queries.HistoryRecordQuery]: {
+    currentPlayer: {
+      name: string | null;
+      byname: string | null;
+      nameId: string | null;
+      nameplate: Nameplate;
+      weapon: {
+        id: string;
+        name: string;
+        subWeapon: {
+          id: string;
+          name: string;
+          image: Image;
+        };
+        specialWeapon: {
+          id: string;
+          name: string;
+          image: Image;
+        };
+      };
+      headGear: PlayerGear;
+      clothingGear: PlayerGear;
+      shoesGear: PlayerGear;
+      userIcon: Image;
+    };
+    playHistory: {
+      currentTime: string;
+      gameStartTime: string;
+      rank: number;
+      udemae: string;
+      udemaeMax: string;
+      winCountTotal: number;
+      paintPointTotal: number;
+      battleNumTotal: number;
+
+      xMatchMaxAr: XRank;
+      xMatchMaxCl: XRank;
+      xMatchMaxGl: XRank;
+      xMatchMaxLf: XRank;
+    } | null;
+  };
+  [Queries.ConfigureAnalyticsQuery]: {
+    playHistory: {
+      udemaeMax: string;
+      paintPointTotal: number;
+      gameStartTime: string;
+      battleNumTotal: number;
+
+      xMatchMaxAr: SimpleXRank;
+      xMatchMaxCl: SimpleXRank;
+      xMatchMaxGl: SimpleXRank;
+      xMatchMaxLf: SimpleXRank;
+    } | null;
+  };
+};
+export type HistoryGear = Pick<
+  PlayerGear,
+  "name" | "primaryGearPower" | "additionalGearPowers" | "image"
+>;
+
+export type Nameplate = {
+  badges: {
+    id: string;
+    image: Image;
+  }[];
+  background: {
+    textColor: { r: number; g: number; b: number; a: number };
+    image: Image;
+    id: string;
+  };
+};
+export type SimpleXRank = {
+  rank: null;
+};
+export type XRank = {
+  power: null;
+  rank: null;
+  rankUpdateSeasonName: null;
+  powerUpdateTime: null;
 };
 export type GraphQLResponse<T> = {
   data: T;
@@ -579,3 +690,9 @@ export type RankParam = {
   charge: number;
   promotion?: boolean;
 };
+
+export enum SummaryEnum {
+  ConfigureAnalyticsQuery,
+  HistoryRecordQuery,
+  CoopHistoryQuery,
+}
