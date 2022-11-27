@@ -1,3 +1,8 @@
+## 0.1.31
+
+fix: coop weapon map failed due to a dot
+([#33](https://github.com/spacemeowx2/s3si.ts/issues/33))
+
 ## 0.1.30
 
 feat: use /api/v3/salmon/weapon
