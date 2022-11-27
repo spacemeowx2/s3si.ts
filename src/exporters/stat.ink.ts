@@ -156,6 +156,42 @@ class StatInkAPI {
     }
   }
 
+  // Splatnet returns `14式竹筒槍‧甲`, and stat.ink returns `14式竹筒槍·甲`.
+  // Maybe a typo of splatnet?
+  private _getAliasName(name: string): string[] {
+    const STAT_INK_DOT = "·";
+    const SPLATNET_DOT = "‧";
+
+    if (name.includes(STAT_INK_DOT)) {
+      return [name, name.replaceAll(STAT_INK_DOT, SPLATNET_DOT)];
+    } else {
+      return [name];
+    }
+  }
+
+  _salmonWeaponMap = new Map<string, string>();
+  async getSalmonWeaponMap() {
+    if (this._salmonWeaponMap.size === 0) {
+      const weapons = await this.getSalmonWeapon();
+      for (const weapon of weapons) {
+        for (
+          const name of Object.values(weapon.name).flatMap((n) =>
+            this._getAliasName(n)
+          )
+        ) {
+          const prevKey = this._salmonWeaponMap.get(name);
+          if (prevKey !== undefined && prevKey !== weapon.key) {
+            console.warn(`Duplicate weapon name: ${name}`);
+          }
+          this._salmonWeaponMap.set(name, weapon.key);
+        }
+      }
+      if (this._salmonWeaponMap.size === 0) {
+        throw new Error("Failed to get salmon weapon map");
+      }
+    }
+    return this._salmonWeaponMap;
+  }
   getSalmonWeapon = () =>
     this._getCached<StatInkWeapon>(
       `${this.statInk}/api/v3/salmon/weapon?full=1`,
@@ -483,9 +519,8 @@ export class StatInkExporter implements GameExporter {
   async mapCoopWeapon(
     { name, image }: { name: string; image: Image | null },
   ): Promise<string | null> {
-    const weaponMap = await this.api.getSalmonWeapon();
-    const weapon = weaponMap.find((i) => Object.values(i.name).includes(name))
-      ?.key;
+    const weaponMap = await this.api.getSalmonWeaponMap();
+    const weapon = weaponMap.get(name);
 
     if (!weapon) {
       if (this.isRandomWeapon(image)) {
