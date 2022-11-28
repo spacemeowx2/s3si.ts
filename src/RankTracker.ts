@@ -331,6 +331,7 @@ export class RankTracker {
       return;
     }
 
+    this.state = curState;
     const deltaList = generateDeltaList(curState, flatten);
 
     if (!deltaList) {

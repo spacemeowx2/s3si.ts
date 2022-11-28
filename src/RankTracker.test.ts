@@ -132,10 +132,24 @@ Deno.test("RankTracker autotrack after promotion", async () => {
     },
   }]);
 
+  const gameId1 = await gameId(genId(1));
   assertEquals(finalState, {
-    gameId: await gameId(genId(1)),
+    gameId: gameId1,
     rank: "A-",
     rankPoint: 200,
+  });
+
+  assertEquals(await tracker.getRankStateById(genId(1)), {
+    before: {
+      gameId: await gameId(genId(0)),
+      rank: "B+",
+      rankPoint: -1,
+    },
+    after: {
+      gameId: gameId1,
+      rank: "A-",
+      rankPoint: 200,
+    },
   });
 });
 
