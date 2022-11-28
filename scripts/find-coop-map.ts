@@ -21,6 +21,8 @@ const bosses = new Map<number, string>();
 for (const file of files) {
   try {
     const content: FileExporterType = JSON.parse(await Deno.readTextFile(file));
+    if (content.type === "SUMMARY") continue;
+
     const { data } = content;
     if (data.type === "CoopInfo") {
       const eventIds = data.detail.waveResults.map((i) => i.eventWave).filter(
