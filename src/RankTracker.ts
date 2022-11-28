@@ -251,6 +251,11 @@ export class RankTracker {
 
     let cur = this.state;
     let before = cur;
+
+    // there is no delta for first game
+    if (cur.gameId === gid) {
+      return;
+    }
     while (cur.gameId !== gid) {
       const delta = this.deltaMap.get(cur.gameId);
       if (!delta) {

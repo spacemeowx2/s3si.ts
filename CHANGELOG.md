@@ -1,3 +1,8 @@
+## 0.1.33
+
+fix: RankTracker::getRankStateById (fix
+[#36](https://github.com/spacemeowx2/s3si.ts/issues/36))
+
 ## 0.1.32
 
 fix: auto promotion will miss point tracking duration an export

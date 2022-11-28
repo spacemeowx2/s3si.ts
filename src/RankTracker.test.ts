@@ -153,6 +153,67 @@ Deno.test("RankTracker autotrack after promotion", async () => {
   });
 });
 
+Deno.test("RankTracker issue #36", async () => {
+  const tracker = new TestRankTracker(undefined);
+  assertEquals(tracker.testGet(), {
+    state: undefined,
+    deltaMap: new Map(),
+  });
+
+  const finalState = await tracker.updateState([{
+    bankaraMatchChallenge: {
+      winCount: 3,
+      loseCount: 0,
+      maxWinCount: 3,
+      maxLoseCount: 3,
+      state: "SUCCEEDED",
+      isPromo: true,
+      isUdemaeUp: true,
+      udemaeAfter: "S+20",
+      earnedUdemaePoint: null,
+    },
+    historyDetails: {
+      nodes: [{
+        id: genId(1),
+        udemae: "S+19",
+        judgement: "WIN",
+        bankaraMatch: {
+          earnedUdemaePoint: null,
+        },
+      }, {
+        id: genId(0),
+        udemae: "S+19",
+        judgement: "WIN",
+        bankaraMatch: {
+          earnedUdemaePoint: null,
+        },
+      }],
+    },
+  }]);
+
+  const gameId1 = await gameId(genId(1));
+  assertEquals(finalState, {
+    gameId: gameId1,
+    rank: "S+20",
+    rankPoint: 300,
+  });
+
+  assertEquals(await tracker.getRankStateById(genId(0)), undefined);
+
+  assertEquals(await tracker.getRankStateById(genId(1)), {
+    before: {
+      gameId: await gameId(genId(0)),
+      rank: "S+19",
+      rankPoint: -1,
+    },
+    after: {
+      gameId: gameId1,
+      rank: "S+20",
+      rankPoint: 300,
+    },
+  });
+});
+
 Deno.test("RankTracker tracks promotion, ignoring INPROGRESS", async () => {
   const INIT_STATE = {
     gameId: await gameId(genId(0)),
