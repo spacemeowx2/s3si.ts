@@ -1,3 +1,7 @@
+## 0.1.32
+
+fix: auto promotion will miss point tracking duration an export
+
 ## 0.1.31
 
 fix: coop weapon map failed due to a dot
