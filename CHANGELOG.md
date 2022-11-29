@@ -1,3 +1,8 @@
+## 0.1.36
+
+fix: map special weapon by url
+([#42](https://github.com/spacemeowx2/s3si.ts/issues/42))
+
 ## 0.1.35
 
 feat: update Queries and `WEB_VIEW_VERSION` to match the latest version of the
