@@ -51,8 +51,10 @@ async function getWebViewVer(): Promise<string> {
   const mainJSBody = await (await fetch(SPLATNET3_URL + mainJS)).text();
 
   const revision = /"([0-9a-f]{40})"/.exec(mainJSBody)?.[1];
-  const version = /revision_info_not_set.*?="(\d+\.\d+\.\d+)/.exec(mainJSBody)
-    ?.[1];
+  const version = /revision_info_not_set.*?=("|`)(\d+\.\d+\.\d+)-/.exec(
+    mainJSBody,
+  )
+    ?.[2];
 
   if (!version || !revision) {
     throw new Error("No version and revision found");
