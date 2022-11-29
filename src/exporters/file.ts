@@ -119,9 +119,7 @@ export class FileExporter implements GameExporter {
 
     await Deno.writeTextFile(
       filepath,
-      JSON.stringify({
-        body,
-      }),
+      JSON.stringify(body),
     );
 
     return {
