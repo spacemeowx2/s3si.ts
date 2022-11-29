@@ -12,7 +12,7 @@ export enum Queries {
   myOutfitCommonDataFilteringConditionQuery =
     "d02ab22c9dccc440076055c8baa0fa7a",
   myOutfitCommonDataEquipmentsQuery = "d29cd0c2b5e6bac90dd5b817914832f8",
-  HistoryRecordQuery = "9d4ef9fba3f84d6933bb1f6f436f7200",
+  HistoryRecordQuery = "32b6771f94083d8f04848109b7300af5",
   ConfigureAnalyticsQuery = "f8ae00773cc412a50dd41a6d9a159ddd",
 }
 export type VarsMap = {
@@ -224,7 +224,6 @@ export type CoopHistoryPlayerResult = {
   weapons: { name: string; image: Image | null }[];
   specialWeapon: null | {
     name: string;
-    id: string;
   };
   defeatEnemyCount: number;
   deliverCount: number;
@@ -270,7 +269,6 @@ export type CoopHistoryDetail = {
     goldenPopCount: number;
     teamDeliverCount: number;
     specialWeapons: {
-      id: string;
       name: string;
     }[];
   }[];
@@ -559,6 +557,12 @@ export type StatInkAbility = {
 }[];
 
 export type StatInkWeapon = {
+  key: string;
+  name: Record<string, string>;
+}[];
+
+// TODO: Change when the API is released
+export type StatInkSpecialWeapon = {
   key: string;
   name: Record<string, string>;
 }[];

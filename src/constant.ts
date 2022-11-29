@@ -37,7 +37,6 @@ export const SPLATNET3_STATINK_MAP: {
     | "white"
     | undefined
   >;
-  COOP_SPECIAL_MAP: Record<number, string>;
   WATER_LEVEL_MAP: Record<0 | 1 | 2, "low" | "normal" | "high">;
 } = {
   RULE: {
@@ -80,15 +79,6 @@ export const SPLATNET3_STATINK_MAP: {
     5: "blue",
     6: "black",
     7: "white",
-  },
-  COOP_SPECIAL_MAP: {
-    20006: "nicedama",
-    20007: "hopsonar",
-    20009: "megaphone51",
-    20010: "jetpack",
-    20012: "kanitank",
-    20013: "sameride",
-    20014: "tripletornado",
   },
   WATER_LEVEL_MAP: {
     0: "low",
