@@ -22,6 +22,7 @@ import {
   StatInkPlayer,
   StatInkPostBody,
   StatInkPostResponse,
+  StatInkSpecialWeapon,
   StatInkStage,
   StatInkUuidList,
   StatInkWeapon,
@@ -182,6 +183,29 @@ class StatInkAPI {
     }
   }
 
+  _specialMap = new Map<string, string>();
+  async getSpecialMap() {
+    if (this._specialMap.size === 0) {
+      const specials = await this.getSpecial();
+      for (const special of specials) {
+        for (
+          const name of Object.values(special.name).flatMap((n) =>
+            this._getAliasName(n)
+          )
+        ) {
+          const prevKey = this._specialMap.get(name);
+          if (prevKey !== undefined && prevKey !== special.key) {
+            console.warn(`Duplicate weapon name: ${name}`);
+          }
+          this._specialMap.set(name, special.key);
+        }
+      }
+      if (this._specialMap.size === 0) {
+        throw new Error("Failed to get salmon weapon map");
+      }
+    }
+    return this._specialMap;
+  }
   _salmonWeaponMap = new Map<string, string>();
   async getSalmonWeaponMap() {
     if (this._salmonWeaponMap.size === 0) {
@@ -205,6 +229,10 @@ class StatInkAPI {
     }
     return this._salmonWeaponMap;
   }
+  getSpecial = (): Promise<StatInkSpecialWeapon> => {
+    // TODO: fix this after stat.ink supports special API
+    throw new Error("Not implemented");
+  };
   getSalmonWeapon = () =>
     this._getCached<StatInkWeapon>(
       `${this.statInk}/api/v3/salmon/weapon?full=1`,
@@ -262,13 +290,18 @@ export class StatInkExporter implements GameExporter {
         url,
       };
     } else {
-      const body = await this.mapCoop(game);
-      const { url } = await this.api.postCoop(body);
-
       return {
-        status: "success",
-        url,
+        status: "skip",
+        reason:
+          "Can not export Salmon Run for now. See https://github.com/spacemeowx2/s3si.ts/issues/42",
       };
+      // const body = await this.mapCoop(game);
+      // const { url } = await this.api.postCoop(body);
+
+      // return {
+      //   status: "success",
+      //   url,
+      // };
     }
   }
   async notExported(
@@ -559,6 +592,16 @@ export class StatInkExporter implements GameExporter {
 
     return weapon;
   }
+  async mapSpecial(name: string): Promise<string> {
+    const specialMap = await this.api.getSpecialMap();
+    const special = specialMap.get(name);
+
+    if (!special) {
+      throw new Error(`Special not found: ${name}`);
+    }
+
+    return special;
+  }
   async mapCoopPlayer({
     player,
     weapons,
@@ -578,7 +621,7 @@ export class StatInkExporter implements GameExporter {
       uniform:
         SPLATNET3_STATINK_MAP.COOP_UNIFORM_MAP[b64Number(player.uniform.id)],
       special: specialWeapon
-        ? SPLATNET3_STATINK_MAP.COOP_SPECIAL_MAP[b64Number(specialWeapon.id)]
+        ? await this.mapSpecial(specialWeapon.name)
         : undefined,
       weapons: await Promise.all(weapons.map((w) => this.mapCoopWeapon(w))),
       golden_eggs: goldenDeliverCount,
@@ -598,18 +641,18 @@ export class StatInkExporter implements GameExporter {
 
     return nid;
   }
-  mapWave(wave: CoopHistoryDetail["waveResults"]["0"]): StatInkCoopWave {
+  async mapWave(
+    wave: CoopHistoryDetail["waveResults"]["0"],
+  ): Promise<StatInkCoopWave> {
     const event = wave.eventWave
       ? SPLATNET3_STATINK_MAP.COOP_EVENT_MAP[b64Number(wave.eventWave.id)]
       : undefined;
-    const special_uses = wave.specialWeapons.reduce((p, { id }) => {
-      const key = SPLATNET3_STATINK_MAP.COOP_SPECIAL_MAP[b64Number(id)];
-
-      return {
-        ...p,
-        [key]: (p[key] ?? 0) + 1,
-      };
-    }, {} as Record<string, number | undefined>) as Record<string, number>;
+    const special_uses = (await Promise.all(
+      wave.specialWeapons.map((w) => this.mapSpecial(w.name)),
+    )).reduce((p, key) => ({
+      ...p,
+      [key]: (p[key] ?? 0) + 1,
+    }), {} as Record<string, number | undefined>) as Record<string, number>;
 
     return {
       tide: SPLATNET3_STATINK_MAP.WATER_LEVEL_MAP[wave.waterLevel],
@@ -717,7 +760,7 @@ export class StatInkExporter implements GameExporter {
       job_score: detail.jobScore,
       job_rate: detail.jobRate,
       job_bonus: detail.jobBonus,
-      waves: detail.waveResults.map((w) => this.mapWave(w)),
+      waves: await Promise.all(detail.waveResults.map((w) => this.mapWave(w))),
       players: await Promise.all([
         this.mapCoopPlayer(myResult),
         ...memberResults.map((p) => this.mapCoopPlayer(p)),

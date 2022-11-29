@@ -1,9 +1,9 @@
 import type { StatInkPostBody, VsHistoryDetail } from "./types.ts";
 
 export const AGENT_NAME = "s3si.ts";
-export const S3SI_VERSION = "0.1.34";
+export const S3SI_VERSION = "0.1.35";
 export const NSOAPP_VERSION = "2.3.1";
-export const WEB_VIEW_VERSION = "1.0.0-433ec0e8";
+export const WEB_VIEW_VERSION = "2.0.0-8a061f6c";
 export const S3SI_LINK = "https://github.com/spacemeowx2/s3si.ts";
 
 export const USERAGENT = `${AGENT_NAME}/${S3SI_VERSION} (${S3SI_LINK})`;
@@ -37,7 +37,6 @@ export const SPLATNET3_STATINK_MAP: {
     | "white"
     | undefined
   >;
-  COOP_SPECIAL_MAP: Record<number, string>;
   WATER_LEVEL_MAP: Record<0 | 1 | 2, "low" | "normal" | "high">;
 } = {
   RULE: {
@@ -80,15 +79,6 @@ export const SPLATNET3_STATINK_MAP: {
     5: "blue",
     6: "black",
     7: "white",
-  },
-  COOP_SPECIAL_MAP: {
-    20006: "nicedama",
-    20007: "hopsonar",
-    20009: "megaphone51",
-    20010: "jetpack",
-    20012: "kanitank",
-    20013: "sameride",
-    20014: "tripletornado",
   },
   WATER_LEVEL_MAP: {
     0: "low",
