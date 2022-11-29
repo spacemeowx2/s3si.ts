@@ -552,6 +552,13 @@ export enum BattleListType {
   Coop,
 }
 
+export type StatInkUuidList = {
+  status: number;
+  code: number;
+  name: string;
+  message: string;
+} | string[];
+
 export type StatInkAbility = {
   key: string;
   name: Record<string, string>;
