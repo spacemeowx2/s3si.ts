@@ -1,3 +1,7 @@
+## 0.1.34
+
+feat: add `--with-summary` to export summary data to file
+
 ## 0.1.33
 
 fix: RankTracker::getRankStateById (fix
