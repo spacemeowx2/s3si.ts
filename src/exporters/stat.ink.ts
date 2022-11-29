@@ -23,6 +23,7 @@ import {
   StatInkPostBody,
   StatInkPostResponse,
   StatInkStage,
+  StatInkUuidList,
   StatInkWeapon,
   VsHistoryDetail,
   VsInfo,
@@ -66,12 +67,23 @@ class StatInkAPI {
 
   async uuidList(type: Game["type"]): Promise<string[]> {
     const fetch = this.env.newFetcher();
-    return await (await fetch.get({
+    const response = await fetch.get({
       url: type === "VsInfo"
         ? `${this.statInk}/api/v3/s3s/uuid-list`
         : `${this.statInk}/api/v3/salmon/uuid-list`,
       headers: this.requestHeaders(),
-    })).json();
+    });
+    const uuidResult: StatInkUuidList = await response.json();
+
+    if (!Array.isArray(uuidResult)) {
+      throw new APIError({
+        response,
+        json: uuidResult,
+        message: uuidResult.message,
+      });
+    }
+
+    return uuidResult;
   }
 
   async postBattle(body: StatInkPostBody) {
