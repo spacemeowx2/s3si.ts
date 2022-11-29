@@ -258,6 +258,11 @@ export class StatInkExporter implements GameExporter {
   ): Promise<string[]> {
     const uuid = await this.api.uuidList(type);
 
+    if (uuid.constructor.name !== "Array") {
+      console.error("Failed to get uuid list", uuid);
+      throw new Error("Failed to get uuid list");
+    }
+
     const out: string[] = [];
 
     for (const id of list) {
