@@ -290,18 +290,13 @@ export class StatInkExporter implements GameExporter {
         url,
       };
     } else {
-      return {
-        status: "skip",
-        reason:
-          "Can not export Salmon Run for now. See https://github.com/spacemeowx2/s3si.ts/issues/42",
-      };
-      // const body = await this.mapCoop(game);
-      // const { url } = await this.api.postCoop(body);
+      const body = await this.mapCoop(game);
+      const { url } = await this.api.postCoop(body);
 
-      // return {
-      //   status: "success",
-      //   url,
-      // };
+      return {
+        status: "success",
+        url,
+      };
     }
   }
   async notExported(
@@ -592,15 +587,20 @@ export class StatInkExporter implements GameExporter {
 
     return weapon;
   }
-  async mapSpecial(name: string): Promise<string> {
-    const specialMap = await this.api.getSpecialMap();
-    const special = specialMap.get(name);
+  mapSpecial({ name, image }: {
+    image: Image;
+    name: string;
+  }): Promise<string> {
+    const { url } = image;
+    const imageName = typeof url === "object" ? url.pathname : url ?? "";
+    const hash = /\/(\w+)_0\.\w+/.exec(imageName)?.[1] ?? "";
+    const special = SPLATNET3_STATINK_MAP.COOP_SPECIAL_MAP[hash];
 
     if (!special) {
-      throw new Error(`Special not found: ${name}`);
+      throw new Error(`Special not found: ${name} (${imageName})`);
     }
 
-    return special;
+    return Promise.resolve(special);
   }
   async mapCoopPlayer({
     player,
@@ -620,9 +620,7 @@ export class StatInkExporter implements GameExporter {
       splashtag_title: player.byname,
       uniform:
         SPLATNET3_STATINK_MAP.COOP_UNIFORM_MAP[b64Number(player.uniform.id)],
-      special: specialWeapon
-        ? await this.mapSpecial(specialWeapon.name)
-        : undefined,
+      special: specialWeapon ? await this.mapSpecial(specialWeapon) : undefined,
       weapons: await Promise.all(weapons.map((w) => this.mapCoopWeapon(w))),
       golden_eggs: goldenDeliverCount,
       golden_assist: goldenAssistCount,
@@ -648,7 +646,7 @@ export class StatInkExporter implements GameExporter {
       ? SPLATNET3_STATINK_MAP.COOP_EVENT_MAP[b64Number(wave.eventWave.id)]
       : undefined;
     const special_uses = (await Promise.all(
-      wave.specialWeapons.map((w) => this.mapSpecial(w.name)),
+      wave.specialWeapons.map((w) => this.mapSpecial(w)),
     )).reduce((p, key) => ({
       ...p,
       [key]: (p[key] ?? 0) + 1,

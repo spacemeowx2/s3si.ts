@@ -35,7 +35,7 @@ export type VarsMap = {
 };
 
 export type Image = {
-  url?: string;
+  url?: string | { pathname: string };
   width?: number;
   height?: number;
 };
@@ -223,6 +223,7 @@ export type CoopHistoryPlayerResult = {
   };
   weapons: { name: string; image: Image | null }[];
   specialWeapon: null | {
+    image: Image;
     name: string;
   };
   defeatEnemyCount: number;
@@ -269,6 +270,7 @@ export type CoopHistoryDetail = {
     goldenPopCount: number;
     teamDeliverCount: number;
     specialWeapons: {
+      image: Image;
       name: string;
     }[];
   }[];
