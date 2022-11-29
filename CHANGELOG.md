@@ -1,3 +1,11 @@
+## 0.1.35
+
+feat: update Queries and `WEB_VIEW_VERSION` to match the latest version of the
+NSO.
+
+feat: disable Salmon Run export for now.
+([#42](https://github.com/spacemeowx2/s3si.ts/issues/42))
+
 ## 0.1.34
 
 feat: add `--with-summary` to export summary data to file
