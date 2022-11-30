@@ -1,3 +1,12 @@
+## 0.1.37
+
+feat: avoid duplicate with s3s' upload
+([#45](https://github.com/spacemeowx2/s3si.ts/issues/45))
+
+fix: isMySelf is removed
+
+feat(delete-coop): add delete count
+
 ## 0.1.36
 
 fix: map special weapon by url
