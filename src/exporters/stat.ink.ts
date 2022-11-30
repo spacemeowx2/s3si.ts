@@ -36,6 +36,7 @@ import {
   b64Number,
   gameId,
   nonNullable,
+  s3sCoopGameId,
   s3siGameId,
   urlSimplify,
 } from "../utils.ts";
@@ -309,8 +310,12 @@ export class StatInkExporter implements GameExporter {
     for (const id of list) {
       const s3sId = await gameId(id);
       const s3siId = await s3siGameId(id);
+      const s3sCoopId = await s3sCoopGameId(id);
 
-      if (!uuid.includes(s3sId) && !uuid.includes(s3siId)) {
+      if (
+        !uuid.includes(s3sId) && !uuid.includes(s3siId) &&
+        !uuid.includes(s3sCoopId)
+      ) {
         out.push(id);
       }
     }

@@ -1,6 +1,9 @@
 import { base64 } from "../deps.ts";
 import { assertEquals } from "../dev_deps.ts";
-import { gameId } from "./utils.ts";
+import { gameId, s3sCoopGameId } from "./utils.ts";
+
+const COOP_ID =
+  `CoopHistoryDetail-u-asdf:20220101T012345_12345678-abcd-1234-5678-0123456789ab`;
 
 Deno.test("gameId", async () => {
   assertEquals(
@@ -13,11 +16,12 @@ Deno.test("gameId", async () => {
   );
 
   assertEquals(
-    await gameId(
-      base64.encode(
-        `"CoopHistoryDetail-u-asdf:20220101T012345_12345678-abcd-1234-5678-0123456789ab`,
-      ),
-    ),
-    "175af427-e83b-5bac-b02c-9539cc1fd684",
+    await gameId(base64.encode(COOP_ID)),
+    "58329d62-737d-5b43-ac22-e35e6e44b077",
   );
+});
+
+Deno.test("s3sCoopGameId", async () => {
+  const S3S_COOP_UUID = "be4435b1-0ac5-577b-81bb-766585bec028";
+  assertEquals(await s3sCoopGameId(base64.encode(COOP_ID)), S3S_COOP_UUID);
 });
