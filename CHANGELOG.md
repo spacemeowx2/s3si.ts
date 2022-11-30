@@ -1,3 +1,8 @@
+## 0.1.38
+
+fix: upgrade between Profreshional +n
+([#45](https://github.com/spacemeowx2/s3si.ts/issues/45))
+
 ## 0.1.37
 
 feat: avoid duplicate with s3s' upload

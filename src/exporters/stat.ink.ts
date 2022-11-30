@@ -712,11 +712,14 @@ export class StatInkExporter implements GameExporter {
       clear_waves = 0;
     }
 
-    let title_before = undefined;
-    let title_exp_before = undefined;
+    let title_before: string | undefined = undefined;
+    let title_exp_before: number | undefined = undefined;
     const expDiff = COOP_POINT_MAP[clear_waves];
 
-    if (nonNullable(title_exp_after) && nonNullable(expDiff)) {
+    if (
+      nonNullable(title_after) && nonNullable(title_exp_after) &&
+      nonNullable(expDiff)
+    ) {
       if (title_exp_after === 40 && expDiff === 20) {
         // 20 -> 40 or ?(rank up) -> 40
       } else if (title_exp_after === 40 && expDiff < 0 && title_after !== "8") {
@@ -725,8 +728,12 @@ export class StatInkExporter implements GameExporter {
         // 980,990 -> 999
         title_before = title_after;
       } else {
-        title_before = title_after;
-        title_exp_before = title_exp_after - expDiff;
+        if (title_exp_after - expDiff >= 0) {
+          title_before = title_after;
+          title_exp_before = title_exp_after - expDiff;
+        } else {
+          title_before = (parseInt(title_after) - 1).toString();
+        }
       }
     }
 
