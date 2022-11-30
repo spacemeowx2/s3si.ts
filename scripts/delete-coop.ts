@@ -4,7 +4,7 @@ import { readline } from "../src/utils.ts";
 const [key, ...params] = Deno.args;
 if (!key || params.length === 0) {
   console.log("Usage: delete-coop.ts <key> <uuid> <uuid...>");
-  console.log("   or: delete-coop.ts <key> @<stat.ink's id>");
+  console.log("   or: delete-coop.ts <key> @<stat.ink's id> <count>");
   console.log(
     "       You can find your id at here: https://stat.ink/@YOUR_ID_HERE",
   );
@@ -12,9 +12,10 @@ if (!key || params.length === 0) {
 }
 
 let deleted = 0;
-if (params.length === 1 && params[0].startsWith("@")) {
-  const [uid] = params;
-  console.warn("This script will delete all your coop battles.");
+if (params.length === 2 && params[0].startsWith("@")) {
+  const [uid, countStr] = params;
+  const count = parseInt(countStr);
+  console.warn(`This script will delete your first ${count} coop battles.`);
   console.warn("Are you sure? (y/N)");
   const answer = await readline({
     skipEmpty: false,
@@ -27,13 +28,14 @@ if (params.length === 1 && params[0].startsWith("@")) {
     const res = await (await fetch(`https://stat.ink/${uid}/salmon3`)).text();
     const re = /href="\/@\w+\/salmon3\/([0-9a-fA-F-]{36})/g;
     const matches = [...res.matchAll(re)].map((m) => m[1]);
+    const toDelete = matches.slice(0, count - deleted);
 
-    if (matches.length === 0) {
+    if (toDelete.length === 0) {
       break;
     }
 
-    await deleteUuids(matches);
-    deleted += matches.length;
+    await deleteUuids(toDelete);
+    deleted += toDelete.length;
   }
 } else {
   await deleteUuids(params);
