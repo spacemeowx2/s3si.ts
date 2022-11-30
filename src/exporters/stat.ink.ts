@@ -602,7 +602,7 @@ export class StatInkExporter implements GameExporter {
 
     return Promise.resolve(special);
   }
-  async mapCoopPlayer({
+  async mapCoopPlayer(isMyself: boolean, {
     player,
     weapons,
     specialWeapon,
@@ -614,7 +614,7 @@ export class StatInkExporter implements GameExporter {
     rescuedCount,
   }: CoopHistoryPlayerResult): Promise<StatInkCoopPlayer> {
     return {
-      me: player.isMyself ? "yes" : "no",
+      me: isMyself ? "yes" : "no",
       name: player.name,
       number: player.nameId,
       splashtag_title: player.byname,
@@ -760,8 +760,8 @@ export class StatInkExporter implements GameExporter {
       job_bonus: detail.jobBonus,
       waves: await Promise.all(detail.waveResults.map((w) => this.mapWave(w))),
       players: await Promise.all([
-        this.mapCoopPlayer(myResult),
-        ...memberResults.map((p) => this.mapCoopPlayer(p)),
+        this.mapCoopPlayer(true, myResult),
+        ...memberResults.map((p) => this.mapCoopPlayer(false, p)),
       ]),
       bosses,
       agent: AGENT_NAME,

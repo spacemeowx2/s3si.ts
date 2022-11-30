@@ -219,7 +219,6 @@ export type CoopHistoryPlayerResult = {
       name: string;
       id: string;
     };
-    isMyself: boolean;
   };
   weapons: { name: string; image: Image | null }[];
   specialWeapon: null | {
