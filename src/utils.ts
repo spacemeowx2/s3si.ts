@@ -116,6 +116,18 @@ export function s3siGameId(id: string) {
 }
 
 /**
+ * https://github.com/spacemeowx2/s3si.ts/issues/45
+ *
+ * @param id id of CoopHistoryDetail
+ * @returns uuid used in stat.ink
+ */
+export function s3sCoopGameId(id: string) {
+  const fullId = base64.decode(id);
+  const tsUuid = fullId.slice(fullId.length - 52, fullId.length);
+  return uuid.v5.generate(COOP_NAMESPACE, tsUuid);
+}
+
+/**
  * @param id VsHistoryDetail id or CoopHistoryDetail id
  */
 export function parseHistoryDetailId(id: string) {
