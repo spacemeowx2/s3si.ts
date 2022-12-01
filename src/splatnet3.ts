@@ -196,6 +196,10 @@ export class Splatnet3 {
     return resp;
   }
 
+  async getXBattleHistories() {
+    return await this.request(Queries.XBattleHistoriesQuery);
+  }
+
   async getCoopHistories() {
     const resp = await this.request(Queries.CoopHistoryQuery);
 
