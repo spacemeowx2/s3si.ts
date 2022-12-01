@@ -1,3 +1,7 @@
+## 0.1.39
+
+feat: update `WEB_VIEW_VERSION` and `NSOAPP_VERSION`
+
 ## 0.1.38
 
 fix: upgrade between Profreshional +n
