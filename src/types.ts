@@ -5,6 +5,7 @@ export enum Queries {
   LatestBattleHistoriesQuery = "4f5f26e64bca394b45345a65a2f383bd",
   RegularBattleHistoriesQuery = "d5b795d09e67ce153e622a184b7e7dfa",
   BankaraBattleHistoriesQuery = "de4754588109b77dbcb90fbe44b612ee",
+  XBattleHistoriesQuery = "45c74fefb45a49073207229ca65f0a62",
   PrivateBattleHistoriesQuery = "1d6ed57dc8b801863126ad4f351dfb9a",
   VsHistoryDetailQuery = "291295ad311b99a6288fc95a5c4cb2d2",
   CoopHistoryQuery = "6ed02537e4a65bbb5e7f4f23092f6154",
@@ -20,6 +21,7 @@ export type VarsMap = {
   [Queries.LatestBattleHistoriesQuery]: [];
   [Queries.RegularBattleHistoriesQuery]: [];
   [Queries.BankaraBattleHistoriesQuery]: [];
+  [Queries.XBattleHistoriesQuery]: [];
   [Queries.PrivateBattleHistoriesQuery]: [];
   [Queries.VsHistoryDetailQuery]: [{
     vsResultId: string;
@@ -50,6 +52,21 @@ export type BankaraMatchChallenge = {
   udemaeAfter: string | null;
   earnedUdemaePoint: number | null;
 };
+export type XMatchMeasurement = {
+  state: "COMPLETED" | "INPROGRESS";
+  xPowerAfter: null | number;
+  isInitial: boolean;
+  winCount: number;
+  loseCount: number;
+  maxInitialBattleCount: number;
+  maxWinCount: number;
+  maxLoseCount: number;
+  vsRule: {
+    name: string;
+    rule: string;
+    id: string;
+  };
+};
 export type BattleListNode = {
   id: string;
   udemae: string;
@@ -61,15 +78,18 @@ export type BattleListNode = {
 export type CoopListNode = {
   id: string;
 };
-export type HistoryGroups<T> = {
-  nodes: {
-    bankaraMatchChallenge: null | BankaraMatchChallenge;
+export type HistoryGroupItem<T> = {
+  bankaraMatchChallenge: null | BankaraMatchChallenge;
+  xMatchMeasurement: null | XMatchMeasurement;
 
-    historyDetails: {
-      nodes: T[];
-    };
-  }[];
+  historyDetails: {
+    nodes: T[];
+  };
 };
+export type Nodes<T> = {
+  nodes: T[];
+};
+export type HistoryGroups<T> = Nodes<HistoryGroupItem<T>>;
 export type CoopHistoryGroup = {
   startTime: null | string;
   endTime: null | string;
@@ -159,6 +179,7 @@ export type ChallengeProgress = {
 // With challenge info
 export type VsInfo = {
   type: "VsInfo";
+  groupInfo: null | Omit<HistoryGroupItem<BattleListNode>, "historyDetails">;
   listNode: null | BattleListNode;
   bankaraMatchChallenge: null | BankaraMatchChallenge;
   challengeProgress: null | ChallengeProgress;
@@ -174,6 +195,7 @@ export type CoopInfo = {
   detail: CoopHistoryDetail;
 };
 export type Game = VsInfo | CoopInfo;
+export type VsMode = "REGULAR" | "BANKARA" | "PRIVATE" | "FEST" | "X_MATCH";
 export type VsHistoryDetail = {
   id: string;
   vsRule: {
@@ -183,12 +205,15 @@ export type VsHistoryDetail = {
   };
   vsMode: {
     id: string;
-    mode: "REGULAR" | "BANKARA" | "PRIVATE" | "FEST";
+    mode: VsMode;
   };
   vsStage: {
     id: string;
     name: string;
     image: Image;
+  };
+  xMatch: null | {
+    lastXPower: null | number;
   };
   playedTime: string; // 2021-01-01T00:00:00Z
 
@@ -331,6 +356,12 @@ export type BankaraBattleHistories = {
   };
 };
 
+export type XBattleHistories = {
+  xBattleHistories: {
+    historyGroups: HistoryGroups<BattleListNode>;
+  };
+};
+
 export type RespMap = {
   [Queries.HomeQuery]: {
     currentPlayer: {
@@ -361,6 +392,7 @@ export type RespMap = {
     };
   };
   [Queries.BankaraBattleHistoriesQuery]: BankaraBattleHistories;
+  [Queries.XBattleHistoriesQuery]: XBattleHistories;
   [Queries.PrivateBattleHistoriesQuery]: {
     privateBattleHistories: {
       historyGroups: HistoryGroups<BattleListNode>;
@@ -698,6 +730,7 @@ export type StatInkPostBody = {
     | "regular"
     | "bankara_challenge"
     | "bankara_open"
+    | "xmatch"
     | "splatfest_challenge"
     | "splatfest_open"
     | "private";
@@ -732,6 +765,8 @@ export type StatInkPostBody = {
   rank_up_battle?: "yes" | "no"; // Set "yes" if now "Rank-up Battle" mode.
   challenge_win?: number; // Win count for Anarchy (Series) If rank_up_battle is truthy("yes"), the value range is limited to [0, 3].
   challenge_lose?: number;
+  x_power_before?: number;
+  x_power_after?: number;
   fest_power?: number; // Splatfest Power (Pro)
   fest_dragon?:
     | "10x"

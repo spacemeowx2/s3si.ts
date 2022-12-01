@@ -348,6 +348,8 @@ export class StatInkExporter implements GameExporter {
       } else if (modeId === 8) {
         throw new Error("Tri-color battle is not supported");
       }
+    } else if (vsMode === "X_MATCH") {
+      return "xmatch";
     }
 
     throw new TypeError(`Unknown vsMode ${vsMode}`);

@@ -7,8 +7,9 @@ import {
   CoopHistoryGroups,
   CoopInfo,
   Game,
-  HistoryGroups,
+  HistoryGroupItem,
   VsInfo,
+  VsMode,
 } from "./types.ts";
 import { Cache, MemoryCache } from "./cache.ts";
 import { gameId } from "./utils.ts";
@@ -25,9 +26,11 @@ export class GameFetcher {
 
   private lock: Record<string, Mutex | undefined> = {};
   private bankaraLock = new Mutex();
-  private bankaraHistory?: HistoryGroups<BattleListNode>["nodes"];
+  private bankaraHistory?: HistoryGroupItem<BattleListNode>[];
   private coopLock = new Mutex();
   private coopHistory?: CoopHistoryGroups["nodes"];
+  private xMatchLock = new Mutex();
+  private xMatchHistory?: HistoryGroupItem<BattleListNode>[];
 
   constructor(
     { cache = new MemoryCache(), splatnet, state }: {
@@ -72,7 +75,27 @@ export class GameFetcher {
     return this.rankTracker.getRankStateById(id);
   }
 
+  getXMatchHistory() {
+    if (!this._splatnet) {
+      return [];
+    }
+    return this.xMatchLock.use(async () => {
+      if (this.xMatchHistory) {
+        return this.xMatchHistory;
+      }
+
+      const { xBattleHistories: { historyGroups } } = await this.splatnet
+        .getXBattleHistories();
+
+      this.xMatchHistory = historyGroups.nodes;
+
+      return this.xMatchHistory;
+    });
+  }
   getBankaraHistory() {
+    if (!this._splatnet) {
+      return [];
+    }
     return this.bankaraLock.use(async () => {
       if (this.bankaraHistory) {
         return this.bankaraHistory;
@@ -87,6 +110,9 @@ export class GameFetcher {
     });
   }
   getCoopHistory() {
+    if (!this._splatnet) {
+      return [];
+    }
     return this.coopLock.use(async () => {
       if (this.coopHistory) {
         return this.coopHistory;
@@ -124,20 +150,33 @@ export class GameFetcher {
       groupInfo,
     };
   }
-  async getBattleMetaById(id: string): Promise<Omit<VsInfo, "detail">> {
+  async getBattleMetaById(
+    id: string,
+    vsMode: VsMode,
+  ): Promise<Omit<VsInfo, "detail">> {
     const gid = await gameId(id);
-    const bankaraHistory = this._splatnet ? await this.getBankaraHistory() : [];
+
     const gameIdMap = new Map<BattleListNode, string>();
+    let group: HistoryGroupItem<BattleListNode> | null = null;
+    let listNode: BattleListNode | null = null;
 
-    for (const i of bankaraHistory) {
-      for (const j of i.historyDetails.nodes) {
-        gameIdMap.set(j, await gameId(j.id));
+    if (vsMode === "BANKARA" || vsMode === "X_MATCH") {
+      const bankaraHistory = vsMode === "BANKARA"
+        ? await this.getBankaraHistory()
+        : await this.getXMatchHistory();
+
+      for (const i of bankaraHistory) {
+        for (const j of i.historyDetails.nodes) {
+          gameIdMap.set(j, await gameId(j.id));
+        }
       }
-    }
 
-    const group = bankaraHistory.find((i) =>
-      i.historyDetails.nodes.some((i) => gameIdMap.get(i) === gid)
-    );
+      group = bankaraHistory.find((i) =>
+        i.historyDetails.nodes.some((i) =>
+          gameIdMap.get(i) === gid
+        )
+      ) ?? null;
+    }
 
     if (!group) {
       return {
@@ -147,19 +186,21 @@ export class GameFetcher {
         listNode: null,
         rankState: null,
         rankBeforeState: null,
+        groupInfo: null,
       };
     }
 
-    const { bankaraMatchChallenge } = group;
-    const listNode =
-      group.historyDetails.nodes.find((i) => gameIdMap.get(i) === gid) ??
-        null;
-    const index = group.historyDetails.nodes.indexOf(listNode!);
+    const { bankaraMatchChallenge, xMatchMeasurement } = group;
+    const { historyDetails, ...groupInfo } = group;
+    listNode = historyDetails.nodes.find((i) => gameIdMap.get(i) === gid) ??
+      null;
+    const index = historyDetails.nodes.indexOf(listNode!);
 
     let challengeProgress: null | ChallengeProgress = null;
-    if (bankaraMatchChallenge) {
-      const pastBattles = group.historyDetails.nodes.slice(0, index);
-      const { winCount, loseCount } = bankaraMatchChallenge;
+    const challengeOrMeasurement = bankaraMatchChallenge || xMatchMeasurement;
+    if (challengeOrMeasurement) {
+      const pastBattles = historyDetails.nodes.slice(0, index);
+      const { winCount, loseCount } = challengeOrMeasurement;
       challengeProgress = {
         index,
         winCount: winCount -
@@ -171,7 +212,8 @@ export class GameFetcher {
       };
     }
 
-    const { before, after } = await this.rankTracker.getRankStateById(id) ?? {};
+    const { before, after } = await this.rankTracker.getRankStateById(id) ??
+      {};
 
     return {
       type: "VsInfo",
@@ -180,6 +222,7 @@ export class GameFetcher {
       challengeProgress,
       rankState: after ?? null,
       rankBeforeState: before ?? null,
+      groupInfo,
     };
   }
   private cacheDetail<T>(
@@ -216,7 +259,7 @@ export class GameFetcher {
       id,
       () => this.splatnet.getBattleDetail(id).then((r) => r.vsHistoryDetail),
     );
-    const metadata = await this.getBattleMetaById(id);
+    const metadata = await this.getBattleMetaById(id, detail.vsMode.mode);
 
     const game: VsInfo = {
       ...metadata,
