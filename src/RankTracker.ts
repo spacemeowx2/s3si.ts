@@ -15,7 +15,7 @@ const splusParams = () => {
     const item: RankParam = {
       rank: `S+${i}`,
       pointRange: [300 + level * 350, 300 + (level + 1) * 350],
-      charge: 160,
+      charge: 180,
     };
     if (level === 9) {
       item.promotion = true;
@@ -26,7 +26,7 @@ const splusParams = () => {
   out.push({
     rank: "S+50",
     pointRange: [0, 9999],
-    charge: 160,
+    charge: 180,
   });
 
   return out;
@@ -61,20 +61,20 @@ export const RANK_PARAMS: RankParam[] = [{
 }, {
   rank: "A-",
   pointRange: [200, 500],
-  charge: 100,
+  charge: 110,
 }, {
   rank: "A",
   pointRange: [500, 800],
-  charge: 110,
+  charge: 120,
 }, {
   rank: "A+",
   pointRange: [800, 1100],
-  charge: 120,
+  charge: 130,
   promotion: true,
 }, {
   rank: "S",
   pointRange: [300, 1000],
-  charge: 150,
+  charge: 170,
   promotion: true,
 }, ...splusParams()];
 
