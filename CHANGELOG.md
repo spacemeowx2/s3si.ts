@@ -1,3 +1,7 @@
+## 0.2.0
+
+feat: add X match support
+
 ## 0.1.39
 
 feat: update `WEB_VIEW_VERSION` and `NSOAPP_VERSION`
