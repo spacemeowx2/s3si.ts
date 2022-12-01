@@ -424,6 +424,7 @@ export class StatInkExporter implements GameExporter {
   };
   async mapBattle(
     {
+      groupInfo,
       challengeProgress,
       bankaraMatchChallenge,
       listNode,
@@ -511,7 +512,7 @@ export class StatInkExporter implements GameExporter {
     result.our_team_count = myTeam?.result?.score ?? undefined;
     result.their_team_count = otherTeams?.[0]?.result?.score ?? undefined;
     result.rank_exp_change = bankaraMatch?.earnedUdemaePoint ?? undefined;
-    if (listNode) {
+    if (listNode?.udemae) {
       [result.rank_before, result.rank_before_s_plus] = parseUdemae(
         listNode.udemae,
       );
@@ -529,9 +530,23 @@ export class StatInkExporter implements GameExporter {
         result.rank_after = result.rank_before;
         result.rank_after_s_plus = result.rank_before_s_plus;
       }
+    }
 
+    if (challengeProgress) {
       result.challenge_win = challengeProgress.winCount;
       result.challenge_lose = challengeProgress.loseCount;
+    }
+
+    if (vsDetail.xMatch) {
+      result.x_power_before = result.x_power_after = vsDetail.xMatch.lastXPower;
+
+      if (
+        groupInfo?.xMatchMeasurement &&
+        groupInfo?.xMatchMeasurement.state === "COMPLETED" &&
+        challengeProgress?.index === 0
+      ) {
+        result.x_power_after = groupInfo.xMatchMeasurement.xPowerAfter;
+      }
     }
 
     if (rankBeforeState && rankState) {
