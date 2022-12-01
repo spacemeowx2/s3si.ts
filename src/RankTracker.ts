@@ -220,6 +220,9 @@ function generateDeltaList(
 
 function getRankState(i: FlattenItem): RankState {
   const rank = i.detail.udemae;
+  if (!rank) {
+    throw new Error("rank must be defined");
+  }
   const param = RANK_PARAMS.find((i) => i.rank === rank);
 
   if (!param) {

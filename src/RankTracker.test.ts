@@ -61,6 +61,7 @@ Deno.test("RankTracker don't promo after failed challenge", async () => {
   });
 
   const finalState = await tracker.updateState([{
+    xMatchMeasurement: null,
     bankaraMatchChallenge: {
       winCount: 0,
       loseCount: 3,
@@ -102,6 +103,7 @@ Deno.test("RankTracker autotrack after promotion", async () => {
   });
 
   const finalState = await tracker.updateState([{
+    xMatchMeasurement: null,
     bankaraMatchChallenge: {
       winCount: 3,
       loseCount: 0,
@@ -161,6 +163,7 @@ Deno.test("RankTracker issue #36", async () => {
   });
 
   const finalState = await tracker.updateState([{
+    xMatchMeasurement: null,
     bankaraMatchChallenge: {
       winCount: 3,
       loseCount: 0,
@@ -228,6 +231,7 @@ Deno.test("RankTracker tracks promotion, ignoring INPROGRESS", async () => {
   });
 
   const finalState = await tracker.updateState([{
+    xMatchMeasurement: null,
     bankaraMatchChallenge: {
       winCount: 2,
       loseCount: 0,
@@ -279,6 +283,7 @@ Deno.test("RankTracker tracks promotion", async () => {
   });
 
   const finalState = await tracker.updateState([{
+    xMatchMeasurement: null,
     bankaraMatchChallenge: {
       winCount: 3,
       loseCount: 0,
@@ -331,6 +336,7 @@ Deno.test("RankTracker tracks challenge charge", async () => {
   });
 
   const finalState = await tracker.updateState([{
+    xMatchMeasurement: null,
     bankaraMatchChallenge: {
       winCount: 1,
       loseCount: 0,
@@ -355,6 +361,7 @@ Deno.test("RankTracker tracks challenge charge", async () => {
       ],
     },
   }, {
+    xMatchMeasurement: null,
     bankaraMatchChallenge: null,
     historyDetails: {
       nodes: genOpenWins({
@@ -382,6 +389,7 @@ Deno.test("RankTracker", async () => {
   });
 
   const finalState = await tracker.updateState([{
+    xMatchMeasurement: null,
     bankaraMatchChallenge: null,
     historyDetails: {
       nodes: [...genOpenWins({
@@ -418,6 +426,7 @@ Deno.test("RankTracker", async () => {
 
   // history goes too far
   const finalState2 = await tracker.updateState([{
+    xMatchMeasurement: null,
     bankaraMatchChallenge: null,
     historyDetails: {
       nodes: [...genOpenWins({
@@ -430,6 +439,7 @@ Deno.test("RankTracker", async () => {
   assertEquals(finalState2, undefined);
 
   await tracker.updateState([{
+    xMatchMeasurement: null,
     bankaraMatchChallenge: null,
     historyDetails: {
       nodes: [...genOpenWins({
