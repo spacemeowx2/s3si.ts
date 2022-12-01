@@ -69,7 +69,7 @@ export type XMatchMeasurement = {
 };
 export type BattleListNode = {
   id: string;
-  udemae: string;
+  udemae?: string;
   judgement: "LOSE" | "WIN" | "DEEMED_LOSE" | "EXEMPTED_LOSE" | "DRAW";
   bankaraMatch: null | {
     earnedUdemaePoint: null | number;
@@ -765,8 +765,8 @@ export type StatInkPostBody = {
   rank_up_battle?: "yes" | "no"; // Set "yes" if now "Rank-up Battle" mode.
   challenge_win?: number; // Win count for Anarchy (Series) If rank_up_battle is truthy("yes"), the value range is limited to [0, 3].
   challenge_lose?: number;
-  x_power_before?: number;
-  x_power_after?: number;
+  x_power_before?: number | null;
+  x_power_after?: number | null;
   fest_power?: number; // Splatfest Power (Pro)
   fest_dragon?:
     | "10x"
