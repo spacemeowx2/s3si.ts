@@ -601,12 +601,6 @@ export type StatInkWeapon = {
   name: Record<string, string>;
 }[];
 
-// TODO: Change when the API is released
-export type StatInkSpecialWeapon = {
-  key: string;
-  name: Record<string, string>;
-}[];
-
 export type StatInkGear = {
   primary_ability: string;
   secondary_abilities: (string | null)[];
