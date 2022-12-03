@@ -81,6 +81,7 @@ export const RANK_PARAMS: RankParam[] = [{
 type Delta = {
   beforeGameId: string;
   gameId: string;
+  timestamp: number;
   rankAfter?: string;
   rankPoint: number;
   isPromotion: boolean;
@@ -91,7 +92,14 @@ type Delta = {
 // TODO: auto rank up using rank params and delta.
 function addRank(state: RankState, delta: Delta): RankState {
   const { rank, rankPoint } = state;
-  const { gameId, rankAfter, isPromotion, isRankUp, isChallengeFirst } = delta;
+  const {
+    gameId,
+    timestamp,
+    rankAfter,
+    isPromotion,
+    isRankUp,
+    isChallengeFirst,
+  } = delta;
 
   const rankIndex = RANK_PARAMS.findIndex((r) => r.rank === rank);
 
@@ -104,6 +112,7 @@ function addRank(state: RankState, delta: Delta): RankState {
   if (isChallengeFirst) {
     return {
       gameId,
+      timestamp,
       rank,
       rankPoint: rankPoint - rankParam.charge,
     };
@@ -112,6 +121,7 @@ function addRank(state: RankState, delta: Delta): RankState {
   // S+50 is the highest rank
   if (rankIndex === RANK_PARAMS.length - 1) {
     return {
+      timestamp,
       gameId,
       rank,
       rankPoint: Math.min(rankPoint + delta.rankPoint, rankParam.pointRange[1]),
@@ -123,6 +133,7 @@ function addRank(state: RankState, delta: Delta): RankState {
 
     return {
       gameId,
+      timestamp,
       rank: nextRankParam.rank,
       rankPoint: nextRankParam.pointRange[0],
     };
@@ -130,6 +141,7 @@ function addRank(state: RankState, delta: Delta): RankState {
 
   return {
     gameId,
+    timestamp,
     rank: rankAfter ?? rank,
     rankPoint: rankPoint + delta.rankPoint,
   };
@@ -147,6 +159,7 @@ const battleTime = (id: string) => {
 };
 
 type FlattenItem = {
+  id: string;
   gameId: string;
   time: Date;
   bankaraMatchChallenge: BankaraMatchChallenge | null;
@@ -177,6 +190,7 @@ function generateDeltaList(
     let delta: Delta = {
       beforeGameId,
       gameId: i.gameId,
+      timestamp: Math.floor(i.time.getTime() / 1000),
       rankPoint: 0,
       isPromotion: false,
       isRankUp: false,
@@ -230,6 +244,7 @@ function getRankState(i: FlattenItem): RankState {
   }
   return {
     gameId: i.gameId,
+    timestamp: Math.floor(i.time.getTime() / 1000),
     rank,
     rankPoint: -1,
   };
@@ -287,6 +302,7 @@ export class RankTracker {
         .flatMap(
           ({ historyDetails, bankaraMatchChallenge }) => {
             return historyDetails.nodes.map((j, index) => ({
+              id: j.id,
               time: battleTime(j.id),
               gameId: gameId(j.id),
               bankaraMatchChallenge,
