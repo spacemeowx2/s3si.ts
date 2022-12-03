@@ -60,6 +60,7 @@
     "https://deno.land/x/msgpack@v1.4/utils/stream.ts": "1315e29af5c1a40d97bfa6f1c4f7f73d26067b912236f56851981f2f049500b8",
     "https://deno.land/x/msgpack@v1.4/utils/typedArrays.ts": "bb819c2f28cf7f85ed50b2e57f108462715555cc61ce315e8134cf1eef2ae662",
     "https://deno.land/x/msgpack@v1.4/utils/utf8.ts": "93183055a7a41986080eeb711e83d553e7c8b121642da4379a5adf253b7beefd",
+    "https://deno.land/x/murmurhash@v1.0.0/mod.ts": "13fd2c5534dfd22ffbfcd4255ea13e47a2f2b99e9c90a83dc43e814a0e278829",
     "https://deno.land/x/progress@v1.2.8/deps.ts": "e0abdc972a0c152508b28ced5ae9c4be26a5773f0aa4a3caa72371c84d2e28a2",
     "https://deno.land/x/progress@v1.2.8/mod.ts": "5ef7c7ff079d71effed5055666af81cc58a566bc98e2df8473526bd6457976c5",
     "https://deno.land/x/progress@v1.2.8/multi.ts": "392553552243204539d83ee53cadda990db20b1b421520411318ff9bd0320646",
