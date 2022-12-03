@@ -22,7 +22,6 @@ import {
   StatInkPlayer,
   StatInkPostBody,
   StatInkPostResponse,
-  StatInkSpecialWeapon,
   StatInkStage,
   StatInkUuidList,
   StatInkWeapon,
@@ -48,6 +47,18 @@ const COOP_POINT_MAP: Record<number, number | undefined> = {
   2: 0,
   3: 20,
 };
+
+async function checkResponse(resp: Response) {
+  // 200~299
+  if (Math.floor(resp.status / 100) !== 2) {
+    const json = await resp.json().catch(() => undefined);
+    throw new APIError({
+      response: resp,
+      json,
+      message: "Failed to fetch data from stat.ink",
+    });
+  }
+}
 
 class StatInkAPI {
   statInk = "https://stat.ink";
@@ -75,6 +86,8 @@ class StatInkAPI {
         : `${this.statInk}/api/v3/salmon/uuid-list`,
       headers: this.requestHeaders(),
     });
+    await checkResponse(response);
+
     const uuidResult: StatInkUuidList = await response.json();
 
     if (!Array.isArray(uuidResult)) {
@@ -163,6 +176,7 @@ class StatInkAPI {
         url,
         headers: this.requestHeaders(),
       });
+      await checkResponse(resp);
       const json = await resp.json();
       this.cache[url] = json;
       return json;
@@ -184,29 +198,6 @@ class StatInkAPI {
     }
   }
 
-  _specialMap = new Map<string, string>();
-  async getSpecialMap() {
-    if (this._specialMap.size === 0) {
-      const specials = await this.getSpecial();
-      for (const special of specials) {
-        for (
-          const name of Object.values(special.name).flatMap((n) =>
-            this._getAliasName(n)
-          )
-        ) {
-          const prevKey = this._specialMap.get(name);
-          if (prevKey !== undefined && prevKey !== special.key) {
-            console.warn(`Duplicate weapon name: ${name}`);
-          }
-          this._specialMap.set(name, special.key);
-        }
-      }
-      if (this._specialMap.size === 0) {
-        throw new Error("Failed to get salmon weapon map");
-      }
-    }
-    return this._specialMap;
-  }
   _salmonWeaponMap = new Map<string, string>();
   async getSalmonWeaponMap() {
     if (this._salmonWeaponMap.size === 0) {
@@ -230,10 +221,6 @@ class StatInkAPI {
     }
     return this._salmonWeaponMap;
   }
-  getSpecial = (): Promise<StatInkSpecialWeapon> => {
-    // TODO: fix this after stat.ink supports special API
-    throw new Error("Not implemented");
-  };
   getSalmonWeapon = () =>
     this._getCached<StatInkWeapon>(
       `${this.statInk}/api/v3/salmon/weapon?full=1`,
