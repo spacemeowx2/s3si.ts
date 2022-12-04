@@ -139,6 +139,7 @@ Deno.test("RankTracker autotrack after promotion", async () => {
     gameId: gameId1,
     rank: "A-",
     rankPoint: 200,
+    timestamp: 1640995201,
   });
 
   assertEquals(await tracker.getRankStateById(genId(1)), {
@@ -146,11 +147,13 @@ Deno.test("RankTracker autotrack after promotion", async () => {
       gameId: await gameId(genId(0)),
       rank: "B+",
       rankPoint: -1,
+      timestamp: 1640995200,
     },
     after: {
       gameId: gameId1,
       rank: "A-",
       rankPoint: 200,
+      timestamp: 1640995201,
     },
   });
 });
@@ -199,6 +202,7 @@ Deno.test("RankTracker issue #36", async () => {
     gameId: gameId1,
     rank: "S+20",
     rankPoint: 300,
+    timestamp: 1640995201,
   });
 
   assertEquals(await tracker.getRankStateById(genId(0)), undefined);
@@ -208,11 +212,13 @@ Deno.test("RankTracker issue #36", async () => {
       gameId: await gameId(genId(0)),
       rank: "S+19",
       rankPoint: -1,
+      timestamp: 1640995200,
     },
     after: {
       gameId: gameId1,
       rank: "S+20",
       rankPoint: 300,
+      timestamp: 1640995201,
     },
   });
 });
@@ -222,6 +228,7 @@ Deno.test("RankTracker tracks promotion, ignoring INPROGRESS", async () => {
     gameId: await gameId(genId(0)),
     rank: "B+",
     rankPoint: 850,
+    timestamp: 1640995201,
   };
 
   const tracker = new TestRankTracker(INIT_STATE);
@@ -266,6 +273,7 @@ Deno.test("RankTracker tracks promotion, ignoring INPROGRESS", async () => {
     gameId: await gameId(genId(1)),
     rank: "B+",
     rankPoint: 850,
+    timestamp: 1640995201,
   });
 });
 
@@ -325,6 +333,7 @@ Deno.test("RankTracker tracks promotion", async () => {
     gameId: await gameId(genId(2)),
     rank: "A-",
     rankPoint: 200,
+    timestamp: 1640995202,
   });
 });
 
@@ -378,6 +387,7 @@ Deno.test("RankTracker tracks challenge charge", async () => {
     gameId: await gameId(genId(2)),
     rank: "B-",
     rankPoint: 45,
+    timestamp: 1640995202,
   });
 });
 
@@ -406,18 +416,21 @@ Deno.test("RankTracker", async () => {
     gameId: await gameId(genId(18)),
     rank: "B-",
     rankPoint: 244,
+    timestamp: 1640995218,
   });
 
   assertEquals((await tracker.getRankStateById(genId(1)))?.after, {
     gameId: await gameId(genId(1)),
     rank: "B-",
     rankPoint: 108,
+    timestamp: 1640995201,
   });
 
   assertEquals((await tracker.getRankStateById(genId(17)))?.after, {
     gameId: await gameId(genId(17)),
     rank: "B-",
     rankPoint: 236,
+    timestamp: 1640995217,
   });
 
   tracker.setState(finalState);
@@ -454,5 +467,6 @@ Deno.test("RankTracker", async () => {
     gameId: await gameId(genId(29)),
     rank: "B-",
     rankPoint: 332,
+    timestamp: 1640995229,
   });
 });
