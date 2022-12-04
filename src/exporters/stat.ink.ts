@@ -776,7 +776,7 @@ export class StatInkExporter implements GameExporter {
     const result: StatInkCoopPostBody = {
       uuid: await gameId(detail.id),
       private: groupInfo?.mode === "PRIVATE_CUSTOM" ? "yes" : "no",
-      big_run: "no",
+      big_run: detail.rule === "BIG_RUN" ? "yes" : "no",
       stage: b64Number(detail.coopStage.id).toString(),
       danger_rate: dangerRate * 100,
       clear_waves,
