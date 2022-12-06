@@ -568,17 +568,18 @@ export class StatInkExporter implements GameExporter {
 
     return result;
   }
-  isRandomWeapon(image: Image | null): boolean {
-    const RANDOM_WEAPON_FILENAME =
+  isRandom(image: Image | null): boolean {
+    // question mark
+    const RANDOM_FILENAME =
       "473fffb2442075078d8bb7125744905abdeae651b6a5b7453ae295582e45f7d1";
     // file exporter will replace url to { pathname: string } | string
     const url = image?.url as ReturnType<typeof urlSimplify> | undefined | null;
     if (typeof url === "string") {
-      return url.includes(RANDOM_WEAPON_FILENAME);
+      return url.includes(RANDOM_FILENAME);
     } else if (url === undefined || url === null) {
       return false;
     } else {
-      return url.pathname.includes(RANDOM_WEAPON_FILENAME);
+      return url.pathname.includes(RANDOM_FILENAME);
     }
   }
   async mapCoopWeapon(
@@ -588,7 +589,7 @@ export class StatInkExporter implements GameExporter {
     const weapon = weaponMap.get(name);
 
     if (!weapon) {
-      if (this.isRandomWeapon(image)) {
+      if (this.isRandom(image)) {
         return null;
       }
       throw new Error(`Weapon not found: ${name}`);
@@ -599,13 +600,16 @@ export class StatInkExporter implements GameExporter {
   mapSpecial({ name, image }: {
     image: Image;
     name: string;
-  }): Promise<string> {
+  }): Promise<string | undefined> {
     const { url } = image;
     const imageName = typeof url === "object" ? url.pathname : url ?? "";
     const hash = /\/(\w+)_0\.\w+/.exec(imageName)?.[1] ?? "";
     const special = SPLATNET3_STATINK_MAP.COOP_SPECIAL_MAP[hash];
 
     if (!special) {
+      if (this.isRandom(image)) {
+        return Promise.resolve(undefined);
+      }
       throw new Error(`Special not found: ${name} (${imageName})`);
     }
 
@@ -622,6 +626,14 @@ export class StatInkExporter implements GameExporter {
     rescueCount,
     rescuedCount,
   }: CoopHistoryPlayerResult): Promise<StatInkCoopPlayer> {
+    const disconnected = [
+      goldenDeliverCount,
+      deliverCount,
+      rescueCount,
+      rescuedCount,
+      defeatEnemyCount,
+    ].every((v) => v === 0) || !specialWeapon;
+
     return {
       me: isMyself ? "yes" : "no",
       name: player.name,
@@ -637,7 +649,7 @@ export class StatInkExporter implements GameExporter {
       rescue: rescueCount,
       rescued: rescuedCount,
       defeat_boss: defeatEnemyCount,
-      disconnected: specialWeapon ? "no" : "yes",
+      disconnected: disconnected ? "yes" : "no",
     };
   }
   mapKing(id?: string) {
@@ -656,10 +668,12 @@ export class StatInkExporter implements GameExporter {
       : undefined;
     const special_uses = (await Promise.all(
       wave.specialWeapons.map((w) => this.mapSpecial(w)),
-    )).reduce((p, key) => ({
-      ...p,
-      [key]: (p[key] ?? 0) + 1,
-    }), {} as Record<string, number | undefined>) as Record<string, number>;
+    ))
+      .flatMap((key) => key ? [key] : [])
+      .reduce((p, key) => ({
+        ...p,
+        [key]: (p[key] ?? 0) + 1,
+      }), {} as Record<string, number | undefined>) as Record<string, number>;
 
     return {
       tide: SPLATNET3_STATINK_MAP.WATER_LEVEL_MAP[wave.waterLevel],
