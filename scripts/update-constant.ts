@@ -73,7 +73,7 @@ async function getNSOVer(): Promise<string> {
     throw new Error("No version found");
   }
 
-  return ver;
+  return ver.trim();
 }
 
 let content = await Deno.readTextFile(CONSTANT_PATH);

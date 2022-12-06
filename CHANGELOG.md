@@ -1,3 +1,9 @@
+## 0.2.1
+
+fix: detect random special
+
+feat: added timestamp to RankState
+
 ## 0.2.0
 
 feat: add X match support
