@@ -1,8 +1,8 @@
 import type { StatInkPostBody, VsHistoryDetail } from "./types.ts";
 
 export const AGENT_NAME = "s3si.ts";
-export const S3SI_VERSION = "0.2.0";
-export const NSOAPP_VERSION = " 2.4.0";
+export const S3SI_VERSION = "0.2.1";
+export const NSOAPP_VERSION = "2.4.0";
 export const WEB_VIEW_VERSION = "2.0.0-18810d39";
 export const S3SI_LINK = "https://github.com/spacemeowx2/s3si.ts";
 
