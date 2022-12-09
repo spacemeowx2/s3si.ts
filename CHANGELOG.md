@@ -1,3 +1,7 @@
+## 0.2.2
+
+feat: tracks salmon run grade by group info
+
 ## 0.2.1
 
 fix: detect random special
