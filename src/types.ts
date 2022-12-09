@@ -106,7 +106,7 @@ export type CoopHistoryGroup = {
     jobScore: number;
   };
   mode: "PRIVATE_CUSTOM" | "REGULAR";
-  rule: "REGULAR";
+  rule: "REGULAR" | "BIG_RUN";
 
   historyDetails: {
     nodes: CoopListNode[];
@@ -276,7 +276,7 @@ export type CoopHistoryDetail = {
     name: string;
     id: string;
   };
-  rule: "REGULAR";
+  rule: "REGULAR" | "BIG_RUN";
   myResult: CoopHistoryPlayerResult;
   memberResults: CoopHistoryPlayerResult[];
   bossResult: null | {
@@ -690,7 +690,7 @@ export type StatInkCoopPostBody = {
   test?: "yes" | "no";
   uuid: string;
   private: "yes" | "no";
-  big_run: "no";
+  big_run: "yes" | "no";
   stage: string;
   // [0, 333]
   danger_rate: number;

@@ -278,6 +278,14 @@ export class StatInkExporter implements GameExporter {
         url,
       };
     } else {
+      if (game.detail.rule !== "REGULAR") {
+        return {
+          status: "skip",
+          reason:
+            `This salmon run rule is not supported yet: ${game.detail.rule}`,
+        };
+      }
+
       const body = await this.mapCoop(game);
       const { url } = await this.api.postCoop(body);
 
@@ -776,7 +784,7 @@ export class StatInkExporter implements GameExporter {
     const result: StatInkCoopPostBody = {
       uuid: await gameId(detail.id),
       private: groupInfo?.mode === "PRIVATE_CUSTOM" ? "yes" : "no",
-      big_run: "no",
+      big_run: detail.rule === "BIG_RUN" ? "yes" : "no",
       stage: b64Number(detail.coopStage.id).toString(),
       danger_rate: dangerRate * 100,
       clear_waves,
