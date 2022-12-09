@@ -77,6 +77,11 @@ export type BattleListNode = {
 };
 export type CoopListNode = {
   id: string;
+  afterGrade: null | {
+    "name": string;
+    "id": string;
+  };
+  afterGradePoint: null | number;
 };
 export type HistoryGroupItem<T> = {
   bankaraMatchChallenge: null | BankaraMatchChallenge;
@@ -193,6 +198,13 @@ export type CoopInfo = {
   listNode: null | CoopListNode;
   groupInfo: null | Omit<CoopHistoryGroup, "historyDetails">;
   detail: CoopHistoryDetail;
+  gradeBefore: null | {
+    grade: {
+      name: string;
+      id: string;
+    };
+    gradePoint: number;
+  };
 };
 export type Game = VsInfo | CoopInfo;
 export type VsMode = "REGULAR" | "BANKARA" | "PRIVATE" | "FEST" | "X_MATCH";
