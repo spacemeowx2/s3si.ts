@@ -137,17 +137,30 @@ export class GameFetcher {
         type: "CoopInfo",
         listNode: null,
         groupInfo: null,
+        gradeBefore: null,
       };
     }
 
     const { historyDetails, ...groupInfo } = group;
-    const listNode = historyDetails.nodes.find((i) => i.id === id) ??
+    const listNodeIdx = historyDetails.nodes.findIndex((i) => i.id === id) ??
       null;
+    const listNode = listNodeIdx !== null
+      ? historyDetails.nodes[listNodeIdx]
+      : null;
+    const listNodeBefore = listNodeIdx !== null
+      ? (historyDetails.nodes[listNodeIdx + 1] ?? null)
+      : null;
 
     return {
       type: "CoopInfo",
       listNode,
       groupInfo,
+      gradeBefore: listNodeBefore?.afterGrade && listNodeBefore.afterGradePoint
+        ? {
+          grade: listNodeBefore.afterGrade,
+          gradePoint: listNodeBefore.afterGradePoint,
+        }
+        : null,
     };
   }
   async getBattleMetaById(

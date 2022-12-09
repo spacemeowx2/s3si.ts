@@ -686,6 +686,7 @@ export class StatInkExporter implements GameExporter {
   }
   async mapCoop(
     {
+      gradeBefore,
       groupInfo,
       detail,
     }: CoopInfo,
@@ -732,25 +733,33 @@ export class StatInkExporter implements GameExporter {
 
     let title_before: string | undefined = undefined;
     let title_exp_before: number | undefined = undefined;
-    const expDiff = COOP_POINT_MAP[clear_waves];
 
-    if (
-      nonNullable(title_after) && nonNullable(title_exp_after) &&
-      nonNullable(expDiff)
-    ) {
-      if (title_exp_after === 40 && expDiff === 20) {
-        // 20 -> 40 or ?(rank up) -> 40
-      } else if (title_exp_after === 40 && expDiff < 0 && title_after !== "8") {
-        // 60,50 -> 40 or ?(rank down) to 40
-      } else if (title_exp_after === 999 && expDiff !== 0) {
-        // 980,990 -> 999
-        title_before = title_after;
-      } else {
-        if (title_exp_after - expDiff >= 0) {
+    if (gradeBefore) {
+      title_before = b64Number(gradeBefore.grade.id).toString();
+      title_exp_before = gradeBefore.gradePoint;
+    } else {
+      const expDiff = COOP_POINT_MAP[clear_waves];
+
+      if (
+        nonNullable(title_after) && nonNullable(title_exp_after) &&
+        nonNullable(expDiff)
+      ) {
+        if (title_exp_after === 40 && expDiff === 20) {
+          // 20 -> 40 or ?(rank up) -> 40
+        } else if (
+          title_exp_after === 40 && expDiff < 0 && title_after !== "8"
+        ) {
+          // 60,50 -> 40 or ?(rank down) to 40
+        } else if (title_exp_after === 999 && expDiff !== 0) {
+          // 980,990 -> 999
           title_before = title_after;
-          title_exp_before = title_exp_after - expDiff;
         } else {
-          title_before = (parseInt(title_after) - 1).toString();
+          if (title_exp_after - expDiff >= 0) {
+            title_before = title_after;
+            title_exp_before = title_exp_after - expDiff;
+          } else {
+            title_before = (parseInt(title_after) - 1).toString();
+          }
         }
       }
     }
