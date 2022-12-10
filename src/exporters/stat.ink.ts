@@ -701,11 +701,14 @@ export class StatInkExporter implements GameExporter {
       playedTime,
       enemyResults,
       smellMeter,
+      waveResults,
     } = detail;
 
     const startedAt = Math.floor(new Date(playedTime).getTime() / 1000);
-    const golden_eggs = myResult.goldenDeliverCount +
-      memberResults.reduce((acc, i) => acc + i.goldenDeliverCount, 0);
+    const golden_eggs = waveResults.reduce(
+      (prev, i) => prev + i.teamDeliverCount,
+      0,
+    );
     const power_eggs = myResult.deliverCount +
       memberResults.reduce((p, i) => p + i.deliverCount, 0);
     const bosses = Object.fromEntries(
@@ -723,9 +726,9 @@ export class StatInkExporter implements GameExporter {
     const title_exp_after = detail.afterGradePoint;
 
     let clear_waves: number;
-    if (detail.waveResults.length > 0) {
+    if (waveResults.length > 0) {
       // when cleared, resultWave === 0, so we need to add 1.
-      clear_waves = detail.waveResults.filter((i) => i.waveNumber < 4).length -
+      clear_waves = waveResults.filter((i) => i.waveNumber < 4).length -
         1 + (resultWave === 0 ? 1 : 0);
     } else {
       clear_waves = 0;
@@ -766,8 +769,8 @@ export class StatInkExporter implements GameExporter {
 
     let fail_reason: StatInkCoopPostBody["fail_reason"] = null;
     // failed
-    if (clear_waves !== 3 && detail.waveResults.length > 0) {
-      const lastWave = detail.waveResults[detail.waveResults.length - 1];
+    if (clear_waves !== 3 && waveResults.length > 0) {
+      const lastWave = waveResults[waveResults.length - 1];
       if (lastWave.teamDeliverCount >= lastWave.deliverNorm) {
         fail_reason = "wipe_out";
       }
@@ -797,7 +800,7 @@ export class StatInkExporter implements GameExporter {
       job_score: detail.jobScore,
       job_rate: detail.jobRate,
       job_bonus: detail.jobBonus,
-      waves: await Promise.all(detail.waveResults.map((w) => this.mapWave(w))),
+      waves: await Promise.all(waveResults.map((w) => this.mapWave(w))),
       players: await Promise.all([
         this.mapCoopPlayer(true, myResult),
         ...memberResults.map((p) => this.mapCoopPlayer(false, p)),
