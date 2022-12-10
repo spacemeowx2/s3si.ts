@@ -278,14 +278,6 @@ export class StatInkExporter implements GameExporter {
         url,
       };
     } else {
-      if (game.detail.rule !== "REGULAR") {
-        return {
-          status: "skip",
-          reason:
-            `This salmon run rule is not supported yet: ${game.detail.rule}`,
-        };
-      }
-
       const body = await this.mapCoop(game);
       const { url } = await this.api.postCoop(body);
 

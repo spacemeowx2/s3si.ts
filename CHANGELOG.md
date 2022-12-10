@@ -1,3 +1,7 @@
+## 0.2.3
+
+feat: support big run
+
 ## 0.2.2
 
 feat: tracks salmon run grade by group info
