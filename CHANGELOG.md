@@ -1,3 +1,7 @@
+## 0.2.4
+
+fix: wrong golden eggs (https://github.com/fetus-hina/stat.ink/issues/1167)
+
 ## 0.2.3
 
 feat: support big run
