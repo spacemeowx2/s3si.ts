@@ -453,7 +453,7 @@ export default {
           },
         },
         dangerRate: { type: "float64" },
-        scenarioCode: { type: "string", nullable: true },
+        scenarioCode: { nullable: true },
         smellMeter: { type: "uint32", nullable: true },
         weapons: {
           elements: {
