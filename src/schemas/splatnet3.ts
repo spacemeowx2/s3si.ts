@@ -6,7 +6,9 @@ type GetDefinition<T extends keyof typeof SCHEMA["definitions"]> = JTDDataType<{
   definitions: typeof SCHEMA["definitions"];
 }>;
 
-const ajv = new Ajv();
+const ajv = new Ajv({
+  keywords: ["description"],
+});
 
 export type VsHistoryDetail = GetDefinition<"VsHistoryDetail">;
 export type CoopHistoryDetail = GetDefinition<"CoopHistoryDetail">;
