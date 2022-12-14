@@ -5,9 +5,6 @@ import {
   USERAGENT,
 } from "../constant.ts";
 import {
-  Color,
-  CoopHistoryDetail,
-  CoopHistoryPlayerResult,
   CoopInfo,
   ExportResult,
   Game,
@@ -38,7 +35,14 @@ import {
   urlSimplify,
 } from "../utils.ts";
 import { Env } from "../env.ts";
-import { PlayerGear, VsHistoryDetail, VsPlayer } from "../schemas/splatnet3.ts";
+import {
+  Color,
+  CoopHistoryDetail,
+  CoopPlayer,
+  PlayerGear,
+  VsHistoryDetail,
+  VsPlayer,
+} from "../schemas/splatnet3.ts";
 
 const COOP_POINT_MAP: Record<number, number | undefined> = {
   0: -20,
@@ -669,7 +673,7 @@ export class StatInkExporter implements GameExporter {
     goldenDeliverCount,
     rescueCount,
     rescuedCount,
-  }: CoopHistoryPlayerResult): Promise<StatInkCoopPlayer> {
+  }: CoopPlayer): Promise<StatInkCoopPlayer> {
     const disconnected = [
       goldenDeliverCount,
       deliverCount,
@@ -722,9 +726,9 @@ export class StatInkExporter implements GameExporter {
     return {
       tide: SPLATNET3_STATINK_MAP.WATER_LEVEL_MAP[wave.waterLevel],
       event,
-      golden_quota: wave.deliverNorm,
+      golden_quota: wave.deliverNorm!,
       golden_appearances: wave.goldenPopCount,
-      golden_delivered: wave.teamDeliverCount,
+      golden_delivered: wave.teamDeliverCount!,
       special_uses,
     };
   }
@@ -750,7 +754,7 @@ export class StatInkExporter implements GameExporter {
 
     const startedAt = Math.floor(new Date(playedTime).getTime() / 1000);
     const golden_eggs = waveResults.reduce(
-      (prev, i) => prev + i.teamDeliverCount,
+      (prev, i) => prev + (i.teamDeliverCount ?? 0),
       0,
     );
     const power_eggs = myResult.deliverCount +
@@ -815,7 +819,7 @@ export class StatInkExporter implements GameExporter {
     // failed
     if (clear_waves !== 3 && waveResults.length > 0) {
       const lastWave = waveResults[waveResults.length - 1];
-      if (lastWave.teamDeliverCount >= lastWave.deliverNorm) {
+      if (lastWave.teamDeliverCount! >= lastWave.deliverNorm!) {
         fail_reason = "wipe_out";
       }
     }

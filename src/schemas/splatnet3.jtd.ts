@@ -220,6 +220,7 @@ export default {
             ref: "VsPlayer",
           },
         },
+        festTeamName: { type: "string", nullable: true },
         result: {
           properties: {
             paintRatio: { type: "float32", nullable: true },

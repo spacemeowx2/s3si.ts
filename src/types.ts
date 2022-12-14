@@ -1,5 +1,6 @@
 import { RankState } from "./state.ts";
 import {
+  CoopHistoryDetail,
   PlayerGear,
   VsHistoryDetail,
   VsPlayerWeapon,
@@ -152,92 +153,6 @@ export type CoopInfo = {
   };
 };
 export type Game = VsInfo | CoopInfo;
-export type VsMode = "REGULAR" | "BANKARA" | "PRIVATE" | "FEST" | "X_MATCH";
-
-export type CoopHistoryPlayerResult = {
-  player: {
-    byname: string | null;
-    name: string;
-    nameId: string;
-    uniform: {
-      name: string;
-      id: string;
-    };
-  };
-  weapons: { name: string; image: Image | null }[];
-  specialWeapon: null | {
-    image: Image;
-    name: string;
-  };
-  defeatEnemyCount: number;
-  deliverCount: number;
-  goldenAssistCount: number;
-  goldenDeliverCount: number;
-  rescueCount: number;
-  rescuedCount: number;
-};
-
-export type CoopHistoryDetail = {
-  id: string;
-  afterGrade: null | {
-    name: string;
-    id: string;
-  };
-  rule: "REGULAR" | "BIG_RUN";
-  myResult: CoopHistoryPlayerResult;
-  memberResults: CoopHistoryPlayerResult[];
-  bossResult: null | {
-    hasDefeatBoss: boolean;
-    boss: {
-      name: string;
-      id: string;
-    };
-  };
-  enemyResults: {
-    defeatCount: number;
-    teamDefeatCount: number;
-    popCount: number;
-    enemy: {
-      name: string;
-      id: string;
-    };
-  }[];
-  waveResults: {
-    waveNumber: number;
-    waterLevel: 0 | 1 | 2;
-    eventWave: null | {
-      name: string;
-      id: string;
-    };
-    deliverNorm: number;
-    goldenPopCount: number;
-    teamDeliverCount: number;
-    specialWeapons: {
-      image: Image;
-      name: string;
-    }[];
-  }[];
-  resultWave: number;
-  playedTime: string;
-  coopStage: {
-    name: string;
-    id: string;
-  };
-  dangerRate: number;
-  scenarioCode: null;
-  smellMeter: null | number;
-  weapons: { name: string }[];
-  afterGradePoint: null | number;
-  scale: null | {
-    gold: number;
-    silver: number;
-    bronze: number;
-  };
-  jobPoint: null | number;
-  jobScore: null | number;
-  jobRate: null | number;
-  jobBonus: null | number;
-};
 
 export type ExportResult = {
   status: "success";

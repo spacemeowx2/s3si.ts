@@ -39,7 +39,7 @@ export const SPLATNET3_STATINK_MAP: {
     | undefined
   >;
   COOP_SPECIAL_MAP: Record<string, string | undefined>;
-  WATER_LEVEL_MAP: Record<0 | 1 | 2, "low" | "normal" | "high">;
+  WATER_LEVEL_MAP: Record<number, "low" | "normal" | "high">;
 } = {
   RULE: {
     TURF_WAR: "nawabari",

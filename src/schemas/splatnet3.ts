@@ -15,6 +15,9 @@ export type CoopHistoryDetail = GetDefinition<"CoopHistoryDetail">;
 export type VsPlayer = GetDefinition<"VsPlayer">;
 export type PlayerGear = GetDefinition<"PlayerGear">;
 export type VsPlayerWeapon = GetDefinition<"VsPlayerWeapon">;
+export type VsMode = GetDefinition<"VsMode">;
+export type CoopPlayer = GetDefinition<"CoopPlayer">;
+export type Color = GetDefinition<"Color">;
 
 export const validateVsHistoryDetail = ajv.compile<VsHistoryDetail>(
   {

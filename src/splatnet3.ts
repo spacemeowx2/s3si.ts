@@ -16,7 +16,10 @@ import {
 import { DEFAULT_ENV, Env } from "./env.ts";
 import { getBulletToken, getGToken } from "./iksm.ts";
 import { parseHistoryDetailId } from "./utils.ts";
-import { validateVsHistoryDetail } from "./schemas/splatnet3.ts";
+import {
+  validateCoopHistoryDetail,
+  validateVsHistoryDetail,
+} from "./schemas/splatnet3.ts";
 import { SchemaError } from "./schemas/mod.ts";
 
 export class Splatnet3 {
@@ -190,15 +193,25 @@ export class Splatnet3 {
     return resp;
   }
 
-  getCoopDetail(
+  async getCoopDetail(
     id: string,
   ) {
-    return this.request(
+    const resp = await this.request(
       Queries.CoopHistoryDetailQuery,
       {
         coopHistoryDetailId: id,
       },
     );
+    if (!validateCoopHistoryDetail(resp.coopHistoryDetail)) {
+      const errors = validateVsHistoryDetail.errors ?? [];
+      throw new SchemaError({
+        message:
+          "Coop battle detail is not valid, please update s3si.ts to latest version or report this issue.",
+        errors,
+      });
+    }
+
+    return resp;
   }
 
   async getBankaraBattleHistories() {
