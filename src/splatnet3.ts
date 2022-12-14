@@ -16,6 +16,8 @@ import {
 import { DEFAULT_ENV, Env } from "./env.ts";
 import { getBulletToken, getGToken } from "./iksm.ts";
 import { parseHistoryDetailId } from "./utils.ts";
+import { validateVsHistoryDetail } from "./schemas/splatnet3.ts";
+import { SchemaError } from "./schemas/mod.ts";
 
 export class Splatnet3 {
   protected profile: Profile;
@@ -168,15 +170,24 @@ export class Splatnet3 {
     return await this.BATTLE_LIST_TYPE_MAP[battleListType]();
   }
 
-  getBattleDetail(
+  async getBattleDetail(
     id: string,
   ) {
-    return this.request(
+    const resp = await this.request(
       Queries.VsHistoryDetailQuery,
       {
         vsResultId: id,
       },
     );
+    if (!validateVsHistoryDetail(resp.vsHistoryDetail)) {
+      const errors = validateVsHistoryDetail.errors ?? [];
+      throw new SchemaError({
+        message:
+          "Battle detail is not valid, please update s3si.ts to latest version or report this issue.",
+        errors,
+      });
+    }
+    return resp;
   }
 
   getCoopDetail(

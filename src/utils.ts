@@ -7,6 +7,7 @@ import {
 import { base64, uuid } from "../deps.ts";
 import { Env } from "./env.ts";
 import { io } from "../deps.ts";
+import { SchemaError } from "./schemas/mod.ts";
 
 const stdinLines = io.readLines(Deno.stdin);
 export async function readline(
@@ -81,6 +82,12 @@ export async function showError<T>(env: Env, p: Promise<T>): Promise<T> {
         e.response,
         "\nBody: ",
         e.json,
+      );
+    } else if (e instanceof SchemaError) {
+      env.logger.error(
+        `\n\nSchemaError: ${e.message}`,
+        "\nErrors: ",
+        e.errors,
       );
     } else {
       env.logger.error(e);
@@ -186,5 +193,13 @@ export function urlSimplify(url: string): { pathname: string } | string {
     return { pathname };
   } catch (_e) {
     return url;
+  }
+}
+
+export function restoreUrl(url: { pathname: string } | string): string {
+  if (typeof url === "string") {
+    return url;
+  } else {
+    return url.pathname;
   }
 }

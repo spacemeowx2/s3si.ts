@@ -13,7 +13,6 @@ import {
   Game,
   GameExporter,
   Image,
-  PlayerGear,
   StatInkAbility,
   StatInkCoopPlayer,
   StatInkCoopPostBody,
@@ -26,9 +25,7 @@ import {
   StatInkStage,
   StatInkUuidList,
   StatInkWeapon,
-  VsHistoryDetail,
   VsInfo,
-  VsPlayer,
 } from "../types.ts";
 import { msgpack, Mutex } from "../../deps.ts";
 import { APIError } from "../APIError.ts";
@@ -41,6 +38,7 @@ import {
   urlSimplify,
 } from "../utils.ts";
 import { Env } from "../env.ts";
+import { PlayerGear, VsHistoryDetail, VsPlayer } from "../schemas/splatnet3.ts";
 
 const COOP_POINT_MAP: Record<number, number | undefined> = {
   0: -20,

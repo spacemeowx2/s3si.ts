@@ -1,4 +1,9 @@
 import { RankState } from "./state.ts";
+import {
+  PlayerGear,
+  VsHistoryDetail,
+  VsPlayerWeapon,
+} from "./schemas/splatnet3.ts";
 
 export enum Queries {
   HomeQuery = "dba47124d5ec3090c97ba17db5d2f4b3",
@@ -115,77 +120,6 @@ export type CoopHistoryGroup = {
 export type CoopHistoryGroups = {
   nodes: CoopHistoryGroup[];
 };
-export type PlayerGear = {
-  name: string;
-  image: Image;
-  primaryGearPower: {
-    name: string;
-    image: Image;
-  };
-  additionalGearPowers: {
-    name: string;
-    image: Image;
-  }[];
-  brand: {
-    name: string;
-    id: string;
-  };
-};
-export type PlayerWeapon = {
-  id: string;
-  name: string;
-  image: Image;
-  subWeapon: {
-    id: string;
-    name: string;
-    image: Image;
-  };
-};
-export type VsPlayer = {
-  id: string;
-  nameId: string | null;
-  name: string;
-  isMyself: boolean;
-  byname: string;
-  weapon: PlayerWeapon;
-  species: "INKLING" | "OCTOLING";
-  result: {
-    kill: number;
-    death: number;
-    assist: number;
-    special: number;
-    noroshiTry: null | number;
-  } | null;
-  paint: number;
-  crown: boolean;
-
-  headGear: PlayerGear;
-  clothingGear: PlayerGear;
-  shoesGear: PlayerGear;
-};
-export type Color = {
-  a: number;
-  b: number;
-  g: number;
-  r: number;
-};
-export type VsTeam = {
-  players: VsPlayer[];
-  color: Color;
-  tricolorRole: null | "DEFENSE" | "ATTACK1" | "ATTACK2";
-  festTeamName: null | string;
-  result: null | {
-    paintRatio: null | number;
-    score: null | number;
-  };
-};
-export type VsRule =
-  | "TURF_WAR"
-  | "AREA"
-  | "LOFT"
-  | "GOAL"
-  | "CLAM"
-  | "TRI_COLOR";
 
 export type ChallengeProgress = {
   index: number;
@@ -219,44 +153,6 @@ export type CoopInfo = {
 };
 export type Game = VsInfo | CoopInfo;
 export type VsMode = "REGULAR" | "BANKARA" | "PRIVATE" | "FEST" | "X_MATCH";
-export type VsHistoryDetail = {
-  id: string;
-  vsRule: {
-    name: string;
-    id: string;
-    rule: VsRule;
-  };
-  vsMode: {
-    id: string;
-    mode: VsMode;
-  };
-  vsStage: {
-    id: string;
-    name: string;
-    image: Image;
-  };
-  xMatch: null | {
-    lastXPower: null | number;
-  };
-  playedTime: string; // 2021-01-01T00:00:00Z
-
-  bankaraMatch: {
-    earnedUdemaePoint: null | number;
-    mode: "OPEN" | "CHALLENGE";
-  } | null;
-  festMatch: {
-    dragonMatchType: "NORMAL" | "DECUPLE" | "DRAGON" | "DOUBLE_DRAGON";
-    contribution: number;
-    myFestPower: number | null;
-  } | null;
-
-  myTeam: VsTeam;
-  otherTeams: VsTeam[];
-  judgement: "LOSE" | "WIN" | "DEEMED_LOSE" | "EXEMPTED_LOSE" | "DRAW";
-  knockout: null | undefined | "NEITHER" | "WIN" | "LOSE";
-  awards: { name: string; rank: string }[];
-  duration: number;
-};
 
 export type CoopHistoryPlayerResult = {
   player: {
@@ -508,7 +404,7 @@ export type RespMap = {
       xMatchMaxCl: XRank;
       xMatchMaxGl: XRank;
       xMatchMaxLf: XRank;
-      frequentlyUsedWeapons: Pick<PlayerWeapon, "id" | "name" | "image">[];
+      frequentlyUsedWeapons: Pick<VsPlayerWeapon, "id" | "name" | "image">[];
       badges: { id: string }[];
       recentBadges: Badge[];
       allBadges: Badge[];
@@ -567,7 +463,7 @@ export type Badge = {
 };
 export type HistoryGear = Pick<
   PlayerGear,
-  "name" | "primaryGearPower" | "additionalGearPowers" | "image"
+  "name" | "primaryGearPower" | "additionalGearPowers"
 >;
 
 export type Nameplate = {

@@ -1,4 +1,5 @@
-import type { StatInkPostBody, VsHistoryDetail } from "./types.ts";
+import type { StatInkPostBody } from "./types.ts";
+import type { VsHistoryDetail } from "./schemas/splatnet3.ts";
 
 export const AGENT_NAME = "s3si.ts";
 export const S3SI_VERSION = "0.2.6";

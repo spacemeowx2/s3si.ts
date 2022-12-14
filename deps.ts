@@ -16,6 +16,8 @@ export type { DeepReadonly } from "https://deno.land/x/ts_essentials@v9.1.2/mod.
 import Ajv from "https://esm.sh/ajv@8.11.2/dist/jtd?pin=v99";
 export { Ajv };
 export type {
+  ErrorObject,
+  JTDDataType,
   JTDSchemaType,
   SomeJTDSchemaType,
 } from "https://esm.sh/ajv@8.11.2/dist/jtd?pin=v99";
