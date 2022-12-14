@@ -443,7 +443,7 @@ export default {
             },
           },
         },
-        resultWave: { type: "uint32" },
+        resultWave: { type: "int32" },
         playedTime: { type: "timestamp" },
         coopStage: {
           properties: {
