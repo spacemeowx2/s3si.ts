@@ -317,5 +317,16 @@ export default {
       },
       additionalProperties: true,
     },
+    CoopHistoryDetail: {
+      properties: {
+        id: { type: "string" },
+        afterGrade: {
+          properties: {
+            id: { type: "string" },
+            name: { type: "string" },
+          },
+        },
+      },
+    },
   },
 } as const;
