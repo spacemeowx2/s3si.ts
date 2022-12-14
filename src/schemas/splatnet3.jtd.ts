@@ -284,7 +284,7 @@ export default {
             },
             contribution: { type: "uint32" },
             jewel: { type: "uint32" },
-            myFestPower: { type: "uint32", nullable: true },
+            myFestPower: { type: "float64", nullable: true },
           },
           nullable: true,
         },
