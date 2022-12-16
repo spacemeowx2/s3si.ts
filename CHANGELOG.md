@@ -1,3 +1,7 @@
+## 0.2.5
+
+feat: add crown
+
 ## 0.2.4
 
 fix: wrong golden eggs (https://github.com/fetus-hina/stat.ink/issues/1167)

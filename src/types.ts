@@ -156,6 +156,7 @@ export type VsPlayer = {
     special: number;
   } | null;
   paint: number;
+  crown: boolean;
 
   headGear: PlayerGear;
   clothingGear: PlayerGear;
@@ -638,6 +639,7 @@ export type StatInkPlayer = {
   death?: number;
   special?: number;
   gears?: StatInkGears;
+  crown?: "yes" | "no";
   disconnected: "yes" | "no";
 };
 
