@@ -398,6 +398,7 @@ export class StatInkExporter implements GameExporter {
       weapon: b64Number(player.weapon.id).toString(),
       inked: player.paint,
       gears: await this.mapGears(player),
+      crown: player.crown ? "yes" : "no",
       disconnected: player.result ? "no" : "yes",
     };
     if (player.result) {
