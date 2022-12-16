@@ -1,8 +1,10 @@
 import { RankState } from "./state.ts";
 import {
   CoopHistoryDetail,
+  CoopHistoryDetailResponse,
   PlayerGear,
   VsHistoryDetail,
+  VsHistoryDetailResponse,
   VsPlayerWeapon,
 } from "./schemas/splatnet3.ts";
 
@@ -232,9 +234,7 @@ export type RespMap = {
       historyGroups: HistoryGroups<BattleListNode>;
     };
   };
-  [Queries.VsHistoryDetailQuery]: {
-    vsHistoryDetail: VsHistoryDetail;
-  };
+  [Queries.VsHistoryDetailQuery]: VsHistoryDetailResponse;
   [Queries.CoopHistoryQuery]: {
     regularAverageClearWave: number | null;
     regularGrade: {
@@ -265,9 +265,7 @@ export type RespMap = {
       historyGroups: CoopHistoryGroups;
     };
   };
-  [Queries.CoopHistoryDetailQuery]: {
-    coopHistoryDetail: CoopHistoryDetail;
-  };
+  [Queries.CoopHistoryDetailQuery]: CoopHistoryDetailResponse;
   [Queries.myOutfitCommonDataFilteringConditionQuery]: {
     gearPowers: {
       nodes: {

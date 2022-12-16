@@ -17,8 +17,8 @@ import { DEFAULT_ENV, Env } from "./env.ts";
 import { getBulletToken, getGToken } from "./iksm.ts";
 import { parseHistoryDetailId } from "./utils.ts";
 import {
-  validateCoopHistoryDetail,
-  validateVsHistoryDetail,
+  validateCoopHistoryDetailResponse,
+  validateVsHistoryDetailResponse,
 } from "./schemas/splatnet3.ts";
 import { SchemaError } from "./schemas/mod.ts";
 
@@ -182,8 +182,8 @@ export class Splatnet3 {
         vsResultId: id,
       },
     );
-    if (!validateVsHistoryDetail(resp.vsHistoryDetail)) {
-      const errors = validateVsHistoryDetail.errors ?? [];
+    if (!validateVsHistoryDetailResponse(resp.vsHistoryDetail)) {
+      const errors = validateVsHistoryDetailResponse.errors ?? [];
       throw new SchemaError({
         message:
           "Battle detail is not valid, please update s3si.ts to latest version or report this issue.",
@@ -202,8 +202,8 @@ export class Splatnet3 {
         coopHistoryDetailId: id,
       },
     );
-    if (!validateCoopHistoryDetail(resp.coopHistoryDetail)) {
-      const errors = validateVsHistoryDetail.errors ?? [];
+    if (!validateCoopHistoryDetailResponse(resp)) {
+      const errors = validateCoopHistoryDetailResponse.errors ?? [];
       throw new SchemaError({
         message:
           "Coop battle detail is not valid, please update s3si.ts to latest version or report this issue.",

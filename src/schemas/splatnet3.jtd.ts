@@ -223,7 +223,7 @@ export default {
         festTeamName: { type: "string", nullable: true },
         result: {
           properties: {
-            paintRatio: { type: "float32", nullable: true },
+            paintRatio: { type: "float64", nullable: true },
             score: { type: "uint32", nullable: true },
             noroshi: { type: "uint32", nullable: true },
           },
@@ -477,6 +477,16 @@ export default {
         jobBonus: { type: "uint32", nullable: true },
       },
       additionalProperties: true,
+    },
+    VsHistoryDetailResponse: {
+      properties: {
+        vsHistoryDetail: { ref: "VsHistoryDetail" },
+      },
+    },
+    CoopHistoryDetailResponse: {
+      properties: {
+        coopHistoryDetail: { ref: "CoopHistoryDetail" },
+      },
     },
   },
 } as const;
