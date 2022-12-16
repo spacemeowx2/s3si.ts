@@ -37,6 +37,6 @@ for (const game of games) {
       }
     }
   } catch (e) {
-    console.log("Failed to process file", game.id, e);
+    console.log("Failed to process file", game.filepath, e);
   }
 }

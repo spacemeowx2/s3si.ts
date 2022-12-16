@@ -1,16 +1,14 @@
-import { FileExporterType } from "../src/exporters/file.ts";
+import { ExportedGame, FileExporter } from "../src/exporters/file.ts";
 import { b64Number } from "../src/utils.ts";
 
 const dirs = Deno.args;
+const exporters = dirs.map((d) => new FileExporter(d));
 
-const files: string[] = [];
+const games: ExportedGame[] = [];
 
-for (const dir of dirs) {
-  for await (const entry of Deno.readDir(dir)) {
-    if (entry.isFile) {
-      files.push(`${dir}/${entry.name}`);
-    }
-  }
+for (const e of exporters) {
+  games.push(...await e.exportedGames({ type: "VsInfo" }));
+  games.push(...await e.exportedGames({ type: "CoopInfo" }));
 }
 
 const events = new Map<number, string>();
@@ -18,12 +16,9 @@ const uniforms = new Map<number, string>();
 const specials = new Map<string, string>();
 const bosses = new Map<number, string>();
 
-for (const file of files) {
+for (const game of games) {
   try {
-    const content: FileExporterType = JSON.parse(await Deno.readTextFile(file));
-    if (content.type === "SUMMARY") continue;
-
-    const { data } = content;
+    const data = await game.getContent();
     if (data.type === "CoopInfo") {
       const eventIds = data.detail.waveResults.map((i) => i.eventWave).filter(
         Boolean,
@@ -46,8 +41,8 @@ for (const file of files) {
           i.specialWeapons
         )
       ) {
-        if (typeof url === "object") {
-          const hash = /\/(\w+)_0\.\w+/.exec(url.pathname)?.[1];
+        if (typeof url === "string") {
+          const hash = /\/(\w+)_0\.\w+/.exec(url)?.[1];
           if (!hash) continue;
           specials.set(hash, name);
         }
@@ -58,7 +53,7 @@ for (const file of files) {
       }
     }
   } catch (e) {
-    console.log("Failed to process file", file, e);
+    console.log("Failed to process file", game.filepath, e);
   }
 }
 
