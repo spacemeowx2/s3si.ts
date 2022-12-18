@@ -399,6 +399,7 @@ export class StatInkExporter implements GameExporter {
       result.assist = player.result.assist;
       result.kill = result.kill_or_assist - result.assist;
       result.death = player.result.death;
+      result.signal = player.result.noroshiTry ?? undefined;
       result.special = player.result.special;
     }
     return result;
@@ -469,6 +470,7 @@ export class StatInkExporter implements GameExporter {
       result.assist = self.result.assist;
       result.kill = result.kill_or_assist - result.assist;
       result.death = self.result.death;
+      result.signal = self.result.noroshiTry ?? undefined;
       result.special = self.result.special;
     }
 

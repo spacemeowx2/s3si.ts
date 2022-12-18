@@ -154,6 +154,7 @@ export type VsPlayer = {
     death: number;
     assist: number;
     special: number;
+    noroshiTry: null | number;
   } | null;
   paint: number;
   crown: boolean;
@@ -646,6 +647,7 @@ export type StatInkPlayer = {
   assist?: number;
   kill_or_assist?: number;
   death?: number;
+  signal?: number;
   special?: number;
   gears?: StatInkGears;
   crown?: "yes" | "no";
@@ -761,6 +763,7 @@ export type StatInkPostBody = {
   assist?: number;
   kill_or_assist?: number; // equals to kill + assist if you know them
   death?: number;
+  signal?: number;
   special?: number; // use count
   inked: number; // not including bonus
   medals: string[]; // 0-3 elements
