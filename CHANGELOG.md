@@ -1,3 +1,7 @@
+## 0.2.6
+
+feat: add tri-color support
+
 ## 0.2.5
 
 feat: add crown

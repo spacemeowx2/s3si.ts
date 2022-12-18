@@ -162,8 +162,17 @@ export type VsPlayer = {
   clothingGear: PlayerGear;
   shoesGear: PlayerGear;
 };
+export type Color = {
+  a: number;
+  b: number;
+  g: number;
+  r: number;
+};
 export type VsTeam = {
   players: VsPlayer[];
+  color: Color;
+  tricolorRole: null | "DEFENSE" | "ATTACK1" | "ATTACK2";
+  festTeamName: null | string;
   result: null | {
     paintRatio: null | number;
     score: null | number;
@@ -742,7 +751,7 @@ export type StatInkPostBody = {
     | "splatfest_challenge"
     | "splatfest_open"
     | "private";
-  rule: "nawabari" | "area" | "hoko" | "yagura" | "asari";
+  rule: "nawabari" | "area" | "hoko" | "yagura" | "asari" | "tricolor";
   stage: string;
   weapon: string;
   result: "win" | "lose" | "draw" | "exempted_lose";
@@ -757,10 +766,21 @@ export type StatInkPostBody = {
   medals: string[]; // 0-3 elements
   our_team_inked?: number; // TW, not including bonus
   their_team_inked?: number; // TW, not including bonus
+  third_team_inked?: number; // Tricolor Turf War
   our_team_percent?: number; // TW
   their_team_percent?: number; // TW
+  third_team_percent?: number; // Tricolor Turf War
   our_team_count?: number; // Anarchy
   their_team_count?: number; // Anarchy
+  our_team_color?: string;
+  their_team_color?: string;
+  third_team_color?: string;
+  our_team_role?: "attacker" | "defender";
+  their_team_role?: "attacker" | "defender";
+  third_team_role?: "attacker" | "defender";
+  our_team_theme?: string;
+  their_team_theme?: string;
+  third_team_theme?: string;
   level_before?: number;
   level_after?: number;
   rank_before?: string; // one of c- ... s+, lowercase only /^[abcs][+-]?$/ except s-
@@ -790,6 +810,7 @@ export type StatInkPostBody = {
   cash_after?: number;
   our_team_players: StatInkPlayer[];
   their_team_players: StatInkPlayer[];
+  third_team_players?: StatInkPlayer[]; // Tricolor Turf War
 
   agent: string;
   agent_version: string;

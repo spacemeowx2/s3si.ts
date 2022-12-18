@@ -5,6 +5,7 @@ import {
   USERAGENT,
 } from "../constant.ts";
 import {
+  Color,
   CoopHistoryDetail,
   CoopHistoryPlayerResult,
   CoopInfo,
@@ -261,14 +262,6 @@ export class StatInkExporter implements GameExporter {
     return vsMode.mode === "FEST" && b64Number(vsMode.id) === 8;
   }
   async exportGame(game: Game): Promise<ExportResult> {
-    if (game.type === "VsInfo" && this.isTriColor(game.detail)) {
-      // TODO: support tri-color fest
-      return {
-        status: "skip",
-        reason: "Tri-color fest is not supported",
-      };
-    }
-
     if (game.type === "VsInfo") {
       const body = await this.mapBattle(game);
       const { url } = await this.api.postBattle(body);
@@ -437,6 +430,10 @@ export class StatInkExporter implements GameExporter {
     }
     const startedAt = Math.floor(new Date(playedTime).getTime() / 1000);
 
+    if (otherTeams.length === 0) {
+      throw new Error(`Other teams is empty`);
+    }
+
     const result: StatInkPostBody = {
       uuid: await gameId(vsDetail.id),
       lobby: this.mapLobby(vsDetail),
@@ -475,13 +472,19 @@ export class StatInkExporter implements GameExporter {
       result.special = self.result.special;
     }
 
+    result.our_team_color = this.mapColor(myTeam.color);
+    result.their_team_color = this.mapColor(otherTeams[0].color);
+    if (otherTeams.length === 2) {
+      result.third_team_color = this.mapColor(otherTeams[1].color);
+    }
+
     if (festMatch) {
       result.fest_dragon =
         SPLATNET3_STATINK_MAP.DRAGON[festMatch.dragonMatchType];
       result.clout_change = festMatch.contribution;
       result.fest_power = festMatch.myFestPower ?? undefined;
     }
-    if (rule === "TURF_WAR") {
+    if (rule === "TURF_WAR" || rule === "TRI_COLOR") {
       result.our_team_percent = (myTeam?.result?.paintRatio ?? 0) * 100;
       result.their_team_percent = (otherTeams?.[0]?.result?.paintRatio ?? 0) *
         100;
@@ -493,6 +496,34 @@ export class StatInkExporter implements GameExporter {
         (acc, i) => acc + i.paint,
         0,
       );
+
+      if (myTeam.tricolorRole && myTeam.festTeamName) {
+        result.our_team_role = myTeam.tricolorRole === "DEFENSE"
+          ? "defender"
+          : "attacker";
+        result.our_team_theme = myTeam.festTeamName;
+      }
+      if (otherTeams[0].tricolorRole && otherTeams[0].festTeamName) {
+        result.their_team_role = otherTeams[0].tricolorRole === "DEFENSE"
+          ? "defender"
+          : "attacker";
+        result.their_team_theme = otherTeams[0].festTeamName;
+      }
+
+      if (otherTeams.length === 2) {
+        result.third_team_percent = (otherTeams[1]?.result?.paintRatio ?? 0) *
+          100;
+        result.third_team_inked = otherTeams[1].players.reduce(
+          (acc, i) => acc + i.paint,
+          0,
+        );
+        if (otherTeams[1].tricolorRole && otherTeams[1].festTeamName) {
+          result.third_team_role = otherTeams[1].tricolorRole === "DEFENSE"
+            ? "defender"
+            : "attacker";
+          result.third_team_theme = otherTeams[1].festTeamName;
+        }
+      }
     }
     if (knockout) {
       result.knockout = knockout === "NEITHER" ? "no" : "yes";
@@ -568,6 +599,13 @@ export class StatInkExporter implements GameExporter {
     }
 
     return result;
+  }
+  mapColor(color: Color): string | undefined {
+    const float2hex = (i: number) =>
+      Math.round(i * 255).toString(16).padStart(2, "0");
+    // rgba
+    const nums = [color.r, color.g, color.b, color.a];
+    throw nums.map(float2hex).join("");
   }
   isRandom(image: Image | null): boolean {
     // question mark
