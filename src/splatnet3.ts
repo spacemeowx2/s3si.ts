@@ -182,7 +182,7 @@ export class Splatnet3 {
         vsResultId: id,
       },
     );
-    if (!validateVsHistoryDetailResponse(resp.vsHistoryDetail)) {
+    if (!validateVsHistoryDetailResponse(resp)) {
       const errors = validateVsHistoryDetailResponse.errors ?? [];
       throw new SchemaError({
         message:

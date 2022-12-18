@@ -28,7 +28,7 @@ export const validateVsHistoryDetailResponse = ajv.compile<
 >(
   {
     ...SCHEMA,
-    ref: "VsHistoryDetail",
+    ref: "VsHistoryDetailResponse",
   },
 );
 export const validateCoopHistoryDetailResponse = ajv.compile<
