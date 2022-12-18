@@ -492,21 +492,20 @@ export default {
       properties: {
         id: { type: "string" },
         judgement: { ref: "VsJudgement" },
+      },
+      optionalProperties: {
+        udemae: { type: "string", nullable: true },
         bankaraMatch: {
           properties: {
-            earnedUdemaePoint: { type: "int32" },
+            earnedUdemaePoint: { type: "int32", nullable: true },
           },
           nullable: true,
         },
       },
-      optionalProperties: {
-        udemae: { type: "string" },
-      },
+      additionalProperties: true,
     },
     VsHistoryGroup: {
       properties: {
-        bankaraMatchChallenge: { ref: "BankaraMatchChallenge", nullable: true },
-        xMatchMeasurement: { ref: "XMatchMeasurement", nullable: true },
         historyDetails: {
           properties: {
             nodes: {
@@ -516,6 +515,10 @@ export default {
             },
           },
         },
+      },
+      optionalProperties: {
+        bankaraMatchChallenge: { ref: "BankaraMatchChallenge", nullable: true },
+        xMatchMeasurement: { ref: "XMatchMeasurement", nullable: true },
       },
     },
     VsHistoryGroups: {
@@ -533,6 +536,7 @@ export default {
           ref: "VsHistoryGroups",
         },
       },
+      additionalProperties: true,
     },
     LatestBattleHistoriesResponse: {
       properties: {
@@ -540,6 +544,7 @@ export default {
           ref: "BattleHistories",
         },
       },
+      additionalProperties: true,
     },
     BankaraBattleHistoriesResponse: {
       properties: {
@@ -571,9 +576,13 @@ export default {
     },
     CoopHistoryGroups: {
       properties: {
-        nodes: {
-          elements: {
-            ref: "CoopHistoryGroup",
+        historyDetails: {
+          properties: {
+            nodes: {
+              elements: {
+                ref: "CoopHistoryGroup",
+              },
+            },
           },
         },
       },
