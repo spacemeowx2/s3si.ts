@@ -15,14 +15,15 @@ import { Game } from "../src/types.ts";
 import { parseHistoryDetailId } from "../src/utils.ts";
 
 async function exportType(
-  { statInkExporter, fileExporter, type, gameFetcher }: {
+  { statInkExporter, fileExporter, type, gameFetcher, filter }: {
     statInkExporter: StatInkExporter;
     fileExporter: FileExporter;
     gameFetcher: GameFetcher;
     type: Game["type"];
+    filter?: (game: Game) => boolean;
   },
 ) {
-  const gameList = await fileExporter.exportedGames({ uid, type });
+  const gameList = await fileExporter.exportedGames({ uid, type, filter });
 
   const workQueue = [
     ...await statInkExporter.notExported({
@@ -32,7 +33,10 @@ async function exportType(
   ]
     .reverse().map((id) => gameList.find((i) => i.id === id)!);
 
-  console.log(`Exporting ${workQueue.length} ${type} games`);
+  console.log(
+    `Exporting ${workQueue.length} ${type} games` +
+      (filter ? " (filtered)" : ""),
+  );
 
   let exported = 0;
   for (const { getContent } of workQueue) {
@@ -79,7 +83,7 @@ if (opts.help) {
     `Usage: deno run -A ${Deno.mainModule} [options]
   
   Options:
-      --type                       Type of game to export. Can be vs, coop, or all. (default: coop)
+      --type                       Type of game to export. Can be vs, tri-color, coop, or all. (default: coop)
       --profile-path <path>, -p    Path to config file (default: ./profile.json)
       --help                       Show this help message and exit`,
   );
@@ -130,7 +134,24 @@ const statInkExporter = new StatInkExporter({
   uploadMode: "Manual",
   env,
 });
-const type = (opts.type ?? "coop").replace("all", "vs,coop");
+const type = (opts.type ?? "coop").replace("all", "vs,coop,tri-color");
+
+if (type.includes("tri-color")) {
+  [
+    await exportType({
+      type: "VsInfo",
+      fileExporter,
+      statInkExporter,
+      gameFetcher,
+      filter: (game) => {
+        if (game.type === "CoopInfo") {
+          return false;
+        }
+        return game.detail.vsRule.rule === "TRI_COLOR";
+      },
+    }),
+  ];
+}
 
 if (type.includes("vs")) {
   await exportType({

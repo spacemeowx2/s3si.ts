@@ -1,7 +1,7 @@
 import type { StatInkPostBody, VsHistoryDetail } from "./types.ts";
 
 export const AGENT_NAME = "s3si.ts";
-export const S3SI_VERSION = "0.2.5";
+export const S3SI_VERSION = "0.2.6";
 export const NSOAPP_VERSION = "2.4.0";
 export const WEB_VIEW_VERSION = "2.0.0-bd36a652";
 export const S3SI_LINK = "https://github.com/spacemeowx2/s3si.ts";
@@ -46,8 +46,7 @@ export const SPLATNET3_STATINK_MAP: {
     LOFT: "yagura",
     GOAL: "hoko",
     CLAM: "asari",
-    // TODO: support tri-color
-    TRI_COLOR: "nawabari",
+    TRI_COLOR: "tricolor",
   },
   RESULT: {
     WIN: "win",
