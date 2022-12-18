@@ -59,7 +59,11 @@ export class FileExporter implements GameExporter {
    * Get all exported files
    */
   async exportedGames(
-    { uid, type }: { uid: string; type: Game["type"] },
+    { uid, type, filter }: {
+      uid: string;
+      type: Game["type"];
+      filter?: (game: Game) => boolean;
+    },
   ): Promise<{ id: string; getContent: () => Promise<Game> }[]> {
     const out: { id: string; filepath: string; timestamp: string }[] = [];
 
@@ -78,12 +82,18 @@ export class FileExporter implements GameExporter {
         continue;
       }
       if (body.type === "VS" && type === "VsInfo") {
+        if (filter && !filter(body.data)) {
+          continue;
+        }
         out.push({
           id: body.data.detail.id,
           filepath,
           timestamp,
         });
       } else if (body.type === "COOP" && type === "CoopInfo") {
+        if (filter && !filter(body.data)) {
+          continue;
+        }
         out.push({
           id: body.data.detail.id,
           filepath,

@@ -326,7 +326,7 @@ export class StatInkExporter implements GameExporter {
       } else if (modeId === 7) {
         return "splatfest_challenge";
       } else if (modeId === 8) {
-        throw new Error("Tri-color battle is not supported");
+        return "splatfest_open";
       }
     } else if (vsMode === "X_MATCH") {
       return "xmatch";
