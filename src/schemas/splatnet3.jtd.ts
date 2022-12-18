@@ -62,6 +62,7 @@ export default {
     },
     CoopHistoryGroup: {
       properties: {
+        id: { type: "string" },
         startTime: { type: "timestamp", nullable: true },
         endTime: { type: "timestamp", nullable: true },
         highestResult: {
@@ -576,11 +577,17 @@ export default {
     },
     CoopHistoryGroups: {
       properties: {
-        historyDetails: {
-          properties: {
-            nodes: {
-              elements: {
-                ref: "CoopHistoryGroup",
+        nodes: {
+          elements: {
+            properties: {
+              historyDetails: {
+                properties: {
+                  nodes: {
+                    elements: {
+                      ref: "CoopHistoryGroup",
+                    },
+                  },
+                },
               },
             },
           },
@@ -589,40 +596,6 @@ export default {
     },
     CoopHistoryResponse: {
       properties: {
-        regularAverageClearWave: { type: "float64", nullable: true },
-        regularGrade: {
-          properties: {
-            id: { type: "string" },
-            name: { type: "string" },
-          },
-          nullable: true,
-        },
-        monthlyGear: {
-          properties: {
-            name: { type: "string" },
-            image: { ref: "Image" },
-          },
-          nullable: true,
-        },
-        scale: {
-          properties: {
-            gold: { type: "uint32" },
-            silver: { type: "uint32" },
-            bronze: { type: "uint32" },
-          },
-        },
-        pointCard: {
-          properties: {
-            defeatBossCount: { type: "uint32" },
-            deliverCount: { type: "uint32" },
-            goldenDeliverCount: { type: "uint32" },
-            playCount: { type: "uint32" },
-            rescueCount: { type: "uint32" },
-            regularPoint: { type: "uint32" },
-            totalPoint: { type: "uint32" },
-          },
-          nullable: true,
-        },
         coopResult: {
           properties: {
             historyGroups: { ref: "CoopHistoryGroups" },
