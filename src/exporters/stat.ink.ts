@@ -450,7 +450,7 @@ export class StatInkExporter implements GameExporter {
 
       our_team_players: await Promise.all(myTeam.players.map(this.mapPlayer)),
       their_team_players: await Promise.all(
-        otherTeams.flatMap((i) => i.players).map(
+        otherTeams[0].players.map(
           this.mapPlayer,
         ),
       ),
@@ -513,6 +513,11 @@ export class StatInkExporter implements GameExporter {
       }
 
       if (otherTeams.length === 2) {
+        result.third_team_players = await Promise.all(
+          otherTeams[0].players.map(
+            this.mapPlayer,
+          ),
+        );
         result.third_team_percent = (otherTeams[1]?.result?.paintRatio ?? 0) *
           100;
         result.third_team_inked = otherTeams[1].players.reduce(
@@ -607,7 +612,7 @@ export class StatInkExporter implements GameExporter {
       Math.round(i * 255).toString(16).padStart(2, "0");
     // rgba
     const nums = [color.r, color.g, color.b, color.a];
-    throw nums.map(float2hex).join("");
+    return nums.map(float2hex).join("");
   }
   isRandom(image: Image | null): boolean {
     // question mark
