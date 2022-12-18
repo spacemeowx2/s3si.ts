@@ -488,5 +488,138 @@ export default {
         coopHistoryDetail: { ref: "CoopHistoryDetail" },
       },
     },
+    BattleListNode: {
+      properties: {
+        id: { type: "string" },
+        judgement: { ref: "VsJudgement" },
+        bankaraMatch: {
+          properties: {
+            earnedUdemaePoint: { type: "int32" },
+          },
+          nullable: true,
+        },
+      },
+      optionalProperties: {
+        udemae: { type: "string" },
+      },
+    },
+    VsHistoryGroup: {
+      properties: {
+        bankaraMatchChallenge: { ref: "BankaraMatchChallenge", nullable: true },
+        xMatchMeasurement: { ref: "XMatchMeasurement", nullable: true },
+        historyDetails: {
+          properties: {
+            nodes: {
+              elements: {
+                ref: "BattleListNode",
+              },
+            },
+          },
+        },
+      },
+    },
+    VsHistoryGroups: {
+      properties: {
+        nodes: {
+          elements: {
+            ref: "VsHistoryGroup",
+          },
+        },
+      },
+    },
+    BattleHistories: {
+      properties: {
+        historyGroups: {
+          ref: "VsHistoryGroups",
+        },
+      },
+    },
+    LatestBattleHistoriesResponse: {
+      properties: {
+        latestBattleHistories: {
+          ref: "BattleHistories",
+        },
+      },
+    },
+    BankaraBattleHistoriesResponse: {
+      properties: {
+        bankaraBattleHistories: {
+          ref: "BattleHistories",
+        },
+      },
+    },
+    XBattleHistoriesResponse: {
+      properties: {
+        xBattleHistories: {
+          ref: "BattleHistories",
+        },
+      },
+    },
+    RegularBattleHistoriesResponse: {
+      properties: {
+        regularBattleHistories: {
+          ref: "BattleHistories",
+        },
+      },
+    },
+    PrivateBattleHistoriesResponse: {
+      properties: {
+        privateBattleHistories: {
+          ref: "BattleHistories",
+        },
+      },
+    },
+    CoopHistoryGroups: {
+      properties: {
+        nodes: {
+          elements: {
+            ref: "CoopHistoryGroup",
+          },
+        },
+      },
+    },
+    CoopHistoryResponse: {
+      properties: {
+        regularAverageClearWave: { type: "float64", nullable: true },
+        regularGrade: {
+          properties: {
+            id: { type: "string" },
+            name: { type: "string" },
+          },
+          nullable: true,
+        },
+        monthlyGear: {
+          properties: {
+            name: { type: "string" },
+            image: { ref: "Image" },
+          },
+          nullable: true,
+        },
+        scale: {
+          properties: {
+            gold: { type: "uint32" },
+            silver: { type: "uint32" },
+            bronze: { type: "uint32" },
+          },
+        },
+        pointCard: {
+          properties: {
+            defeatBossCount: { type: "uint32" },
+            deliverCount: { type: "uint32" },
+            goldenDeliverCount: { type: "uint32" },
+            playCount: { type: "uint32" },
+            rescueCount: { type: "uint32" },
+            regularPoint: { type: "uint32" },
+            totalPoint: { type: "uint32" },
+          },
+          nullable: true,
+        },
+        coopResult: {
+          properties: {
+            historyGroups: { ref: "CoopHistoryGroups" },
+          },
+        },
+      },
+    },
   },
 } as const;

@@ -1,11 +1,20 @@
 import { RankState } from "./state.ts";
 import {
+  BankaraBattleHistoriesResponse,
+  BankaraMatchChallenge,
   CoopHistoryDetail,
   CoopHistoryDetailResponse,
+  CoopHistoryResponse,
+  Image,
+  LatestBattleHistoriesResponse,
   PlayerGear,
+  PrivateBattleHistoriesResponse,
+  RegularBattleHistoriesResponse,
   VsHistoryDetail,
   VsHistoryDetailResponse,
   VsPlayerWeapon,
+  XBattleHistoriesResponse,
+  XMatchMeasurement,
 } from "./schemas/splatnet3.ts";
 
 export enum Queries {
@@ -44,37 +53,6 @@ export type VarsMap = {
   [Queries.ConfigureAnalyticsQuery]: [];
 };
 
-export type Image = {
-  url?: string | { pathname: string };
-  width?: number;
-  height?: number;
-};
-export type BankaraMatchChallenge = {
-  winCount: number;
-  loseCount: number;
-  maxWinCount: number;
-  maxLoseCount: number;
-  state: "FAILED" | "SUCCEEDED" | "INPROGRESS";
-  isPromo: boolean;
-  isUdemaeUp: boolean | null;
-  udemaeAfter: string | null;
-  earnedUdemaePoint: number | null;
-};
-export type XMatchMeasurement = {
-  state: "COMPLETED" | "INPROGRESS";
-  xPowerAfter: null | number;
-  isInitial: boolean;
-  winCount: number;
-  loseCount: number;
-  maxInitialBattleCount: number;
-  maxWinCount: number;
-  maxLoseCount: number;
-  vsRule: {
-    name: string;
-    rule: string;
-    id: string;
-  };
-};
 export type BattleListNode = {
   id: string;
   udemae?: string;
@@ -186,18 +164,6 @@ export type GameExporter = {
   exportSummary?: (summary: Summary) => Promise<ExportResult>;
 };
 
-export type BankaraBattleHistories = {
-  bankaraBattleHistories: {
-    historyGroups: HistoryGroups<BattleListNode>;
-  };
-};
-
-export type XBattleHistories = {
-  xBattleHistories: {
-    historyGroups: HistoryGroups<BattleListNode>;
-  };
-};
-
 export type RespMap = {
   [Queries.HomeQuery]: {
     currentPlayer: {
@@ -217,54 +183,13 @@ export type RespMap = {
     };
     footerMessages: unknown[];
   };
-  [Queries.LatestBattleHistoriesQuery]: {
-    latestBattleHistories: {
-      historyGroups: HistoryGroups<BattleListNode>;
-    };
-  };
-  [Queries.RegularBattleHistoriesQuery]: {
-    regularBattleHistories: {
-      historyGroups: HistoryGroups<BattleListNode>;
-    };
-  };
-  [Queries.BankaraBattleHistoriesQuery]: BankaraBattleHistories;
-  [Queries.XBattleHistoriesQuery]: XBattleHistories;
-  [Queries.PrivateBattleHistoriesQuery]: {
-    privateBattleHistories: {
-      historyGroups: HistoryGroups<BattleListNode>;
-    };
-  };
+  [Queries.LatestBattleHistoriesQuery]: LatestBattleHistoriesResponse;
+  [Queries.RegularBattleHistoriesQuery]: RegularBattleHistoriesResponse;
+  [Queries.BankaraBattleHistoriesQuery]: BankaraBattleHistoriesResponse;
+  [Queries.XBattleHistoriesQuery]: XBattleHistoriesResponse;
+  [Queries.PrivateBattleHistoriesQuery]: PrivateBattleHistoriesResponse;
   [Queries.VsHistoryDetailQuery]: VsHistoryDetailResponse;
-  [Queries.CoopHistoryQuery]: {
-    regularAverageClearWave: number | null;
-    regularGrade: {
-      id: string;
-      name: string;
-    } | null;
-    regularGradePoint: number | null;
-    monthlyGear: {
-      __typename: string;
-      name: string;
-      image: Image;
-    } | null;
-    scale: {
-      gold: number;
-      silver: number;
-      bronze: number;
-    } | null;
-    pointCard: {
-      defeatBossCount: number;
-      deliverCount: number;
-      goldenDeliverCount: number;
-      playCount: number;
-      rescueCount: number;
-      regularPoint: number;
-      totalPoint: number;
-    } | null;
-    coopResult: {
-      historyGroups: CoopHistoryGroups;
-    };
-  };
+  [Queries.CoopHistoryQuery]: CoopHistoryResponse;
   [Queries.CoopHistoryDetailQuery]: CoopHistoryDetailResponse;
   [Queries.myOutfitCommonDataFilteringConditionQuery]: {
     gearPowers: {

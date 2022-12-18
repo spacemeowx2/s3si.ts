@@ -18,6 +18,13 @@ import Ajv, {
   JTDDataType,
   JTDSchemaType,
   SomeJTDSchemaType,
+  ValidateFunction,
 } from "https://esm.sh/ajv@8.11.2/dist/jtd?pin=v99";
 export { Ajv };
-export type { ErrorObject, JTDDataType, JTDSchemaType, SomeJTDSchemaType };
+export type {
+  ErrorObject,
+  JTDDataType,
+  JTDSchemaType,
+  SomeJTDSchemaType,
+  ValidateFunction,
+};

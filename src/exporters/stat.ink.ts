@@ -9,7 +9,6 @@ import {
   ExportResult,
   Game,
   GameExporter,
-  Image,
   StatInkAbility,
   StatInkCoopPlayer,
   StatInkCoopPostBody,
@@ -32,13 +31,13 @@ import {
   nonNullable,
   s3sCoopGameId,
   s3siGameId,
-  urlSimplify,
 } from "../utils.ts";
 import { Env } from "../env.ts";
 import {
   Color,
   CoopHistoryDetail,
   CoopPlayer,
+  Image,
   PlayerGear,
   VsHistoryDetail,
   VsPlayer,
@@ -621,14 +620,12 @@ export class StatInkExporter implements GameExporter {
     const RANDOM_FILENAME =
       "473fffb2442075078d8bb7125744905abdeae651b6a5b7453ae295582e45f7d1";
     // file exporter will replace url to { pathname: string } | string
-    const url = image?.url as ReturnType<typeof urlSimplify> | undefined | null;
-    if (typeof url === "string") {
-      return url.includes(RANDOM_FILENAME);
-    } else if (url === undefined || url === null) {
+    const url = image?.url;
+    if (url === undefined || url === null) {
       return false;
-    } else {
-      return url.pathname.includes(RANDOM_FILENAME);
     }
+
+    return url.includes(RANDOM_FILENAME);
   }
   async mapCoopWeapon(
     { name, image }: { name: string; image: Image | null },
@@ -650,7 +647,7 @@ export class StatInkExporter implements GameExporter {
     name: string;
   }): Promise<string | undefined> {
     const { url } = image;
-    const imageName = typeof url === "object" ? url.pathname : url ?? "";
+    const imageName = url ?? "";
     const hash = /\/(\w+)_0\.\w+/.exec(imageName)?.[1] ?? "";
     const special = SPLATNET3_STATINK_MAP.COOP_SPECIAL_MAP[hash];
 

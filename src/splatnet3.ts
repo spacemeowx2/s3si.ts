@@ -17,10 +17,15 @@ import { DEFAULT_ENV, Env } from "./env.ts";
 import { getBulletToken, getGToken } from "./iksm.ts";
 import { parseHistoryDetailId } from "./utils.ts";
 import {
-  validateCoopHistoryDetailResponse,
-  validateVsHistoryDetailResponse,
+  checkBankaraBattleHistoriesResponse,
+  checkCoopHistoryDetailResponse,
+  checkCoopHistoryResponse,
+  checkLatestBattleHistoriesResponse,
+  checkPrivateBattleHistoriesResponse,
+  checkRegularBattleHistoriesResponse,
+  checkVsHistoryDetailResponse,
+  checkXBattleHistoriesResponse,
 } from "./schemas/splatnet3.ts";
-import { SchemaError } from "./schemas/mod.ts";
 
 export class Splatnet3 {
   protected profile: Profile;
@@ -29,6 +34,15 @@ export class Splatnet3 {
   constructor({ profile, env = DEFAULT_ENV }: { profile: Profile; env?: Env }) {
     this.profile = profile;
     this.env = env;
+  }
+
+  protected async requestWithChecker<Q extends Queries>(
+    checker: (data: unknown) => RespMap[Q],
+    query: Q,
+    ...rest: VarsMap[Q]
+  ) {
+    const data = await this.request(query, ...rest);
+    return checker(data);
   }
 
   protected async request<Q extends Queries>(
@@ -134,19 +148,34 @@ export class Splatnet3 {
     () => Promise<string[]>
   > = {
     [BattleListType.Latest]: () =>
-      this.request(Queries.LatestBattleHistoriesQuery)
+      this.requestWithChecker(
+        checkLatestBattleHistoriesResponse,
+        Queries.LatestBattleHistoriesQuery,
+      )
         .then((r) => getIdsFromGroups(r.latestBattleHistories)),
     [BattleListType.Regular]: () =>
-      this.request(Queries.RegularBattleHistoriesQuery)
+      this.requestWithChecker(
+        checkRegularBattleHistoriesResponse,
+        Queries.RegularBattleHistoriesQuery,
+      )
         .then((r) => getIdsFromGroups(r.regularBattleHistories)),
     [BattleListType.Bankara]: () =>
-      this.request(Queries.BankaraBattleHistoriesQuery)
+      this.requestWithChecker(
+        checkBankaraBattleHistoriesResponse,
+        Queries.BankaraBattleHistoriesQuery,
+      )
         .then((r) => getIdsFromGroups(r.bankaraBattleHistories)),
     [BattleListType.Private]: () =>
-      this.request(Queries.PrivateBattleHistoriesQuery)
+      this.requestWithChecker(
+        checkPrivateBattleHistoriesResponse,
+        Queries.PrivateBattleHistoriesQuery,
+      )
         .then((r) => getIdsFromGroups(r.privateBattleHistories)),
     [BattleListType.Coop]: () =>
-      this.request(Queries.CoopHistoryQuery)
+      this.requestWithChecker(
+        checkCoopHistoryResponse,
+        Queries.CoopHistoryQuery,
+      )
         .then((r) => getIdsFromGroups(r.coopResult)),
   };
 
@@ -176,52 +205,42 @@ export class Splatnet3 {
   async getBattleDetail(
     id: string,
   ) {
-    const resp = await this.request(
+    const resp = await this.requestWithChecker(
+      checkVsHistoryDetailResponse,
       Queries.VsHistoryDetailQuery,
       {
         vsResultId: id,
       },
     );
-    if (!validateVsHistoryDetailResponse(resp)) {
-      const errors = validateVsHistoryDetailResponse.errors ?? [];
-      throw new SchemaError({
-        message:
-          "Battle detail is not valid, please update s3si.ts to latest version or report this issue.",
-        errors,
-      });
-    }
     return resp;
   }
 
   async getCoopDetail(
     id: string,
   ) {
-    const resp = await this.request(
+    return await this.requestWithChecker(
+      checkCoopHistoryDetailResponse,
       Queries.CoopHistoryDetailQuery,
       {
         coopHistoryDetailId: id,
       },
     );
-    if (!validateCoopHistoryDetailResponse(resp)) {
-      const errors = validateCoopHistoryDetailResponse.errors ?? [];
-      throw new SchemaError({
-        message:
-          "Coop battle detail is not valid, please update s3si.ts to latest version or report this issue.",
-        errors,
-      });
-    }
-
-    return resp;
   }
 
   async getBankaraBattleHistories() {
-    const resp = await this.request(Queries.BankaraBattleHistoriesQuery);
+    const resp = await this.requestWithChecker(
+      checkBankaraBattleHistoriesResponse,
+      Queries.BankaraBattleHistoriesQuery,
+    );
 
     return resp;
   }
 
   async getXBattleHistories() {
-    return await this.request(Queries.XBattleHistoriesQuery);
+    return await this.requestWithChecker(
+      checkXBattleHistoriesResponse,
+      Queries.XBattleHistoriesQuery,
+    );
   }
 
   async getCoopHistories() {
@@ -239,7 +258,8 @@ export class Splatnet3 {
   }
 
   async getLatestBattleHistoriesQuery() {
-    const resp = await this.request(
+    const resp = await this.requestWithChecker(
+      checkLatestBattleHistoriesResponse,
       Queries.LatestBattleHistoriesQuery,
     );
 
