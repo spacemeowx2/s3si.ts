@@ -514,7 +514,7 @@ export class StatInkExporter implements GameExporter {
 
       if (otherTeams.length === 2) {
         result.third_team_players = await Promise.all(
-          otherTeams[0].players.map(
+          otherTeams[1].players.map(
             this.mapPlayer,
           ),
         );
