@@ -13,7 +13,8 @@
         "cache/",
         ".vscode/",
         ".github/",
-        "profile.json"
+        "profile.json",
+        "src/generated/"
       ]
     }
   }
