@@ -6,6 +6,13 @@
     "lint": "deno lint",
     "run": "deno run -A"
   },
+  "lint": {
+    "files": {
+      "exclude": [
+        "src/generated/"
+      ]
+    }
+  },
   "fmt": {
     "files": {
       "exclude": [
