@@ -176,10 +176,17 @@ Deno.test("RankTracker issue #36", async () => {
       isPromo: true,
       isUdemaeUp: true,
       udemaeAfter: "S+20",
-      earnedUdemaePoint: null,
+      earnedUdemaePoint: -3450,
     },
     historyDetails: {
       nodes: [{
+        id: genId(2),
+        udemae: "S+19",
+        judgement: "WIN",
+        bankaraMatch: {
+          earnedUdemaePoint: null,
+        },
+      }, {
         id: genId(1),
         udemae: "S+19",
         judgement: "WIN",
@@ -197,28 +204,42 @@ Deno.test("RankTracker issue #36", async () => {
     },
   }]);
 
-  const gameId1 = await gameId(genId(1));
+  const gameId2 = await gameId(genId(2));
   assertEquals(finalState, {
-    gameId: gameId1,
+    gameId: gameId2,
     rank: "S+20",
     rankPoint: 300,
-    timestamp: 1640995201,
+    timestamp: 1640995202,
   });
 
   assertEquals(await tracker.getRankStateById(genId(0)), undefined);
-
   assertEquals(await tracker.getRankStateById(genId(1)), {
     before: {
       gameId: await gameId(genId(0)),
       rank: "S+19",
-      rankPoint: -1,
+      rankPoint: 3750,
       timestamp: 1640995200,
     },
     after: {
-      gameId: gameId1,
+      gameId: await gameId(genId(1)),
+      rank: "S+19",
+      rankPoint: 3750,
+      timestamp: 1640995201,
+    },
+  });
+
+  assertEquals(await tracker.getRankStateById(genId(2)), {
+    before: {
+      gameId: await gameId(genId(1)),
+      rank: "S+19",
+      rankPoint: 3750,
+      timestamp: 1640995201,
+    },
+    after: {
+      gameId: gameId2,
       rank: "S+20",
       rankPoint: 300,
-      timestamp: 1640995201,
+      timestamp: 1640995202,
     },
   });
 });

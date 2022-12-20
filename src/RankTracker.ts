@@ -5,7 +5,7 @@ import {
   HistoryGroups,
   RankParam,
 } from "./types.ts";
-import { gameId, parseHistoryDetailId } from "./utils.ts";
+import { gameId, nonNullable, parseHistoryDetailId } from "./utils.ts";
 
 const splusParams = () => {
   const out: RankParam[] = [];
@@ -234,19 +234,29 @@ function generateDeltaList(
 
 function getRankState(i: FlattenItem): RankState {
   const rank = i.detail.udemae;
-  if (!rank) {
-    throw new Error("rank must be defined");
+  const nextRank = i.bankaraMatchChallenge?.udemaeAfter;
+  const earnedUdemaePoint = i.bankaraMatchChallenge?.earnedUdemaePoint;
+  if (!nonNullable(earnedUdemaePoint)) {
+    throw new TypeError("earnedUdemaePoint must be defined");
+  }
+  if (!rank || !nextRank) {
+    throw new Error("rank and nextRank must be defined");
   }
   const param = RANK_PARAMS.find((i) => i.rank === rank);
+  const nextParam = RANK_PARAMS.find((i) => i.rank === nextRank);
 
-  if (!param) {
-    throw new Error(`Rank not found: ${rank}`);
+  if (!param || !nextParam) {
+    throw new Error(`Rank or nextRank not found: ${rank} ${nextRank}`);
   }
+
+  const oldRankPoint = nextParam.pointRange[0] -
+    earnedUdemaePoint;
+
   return {
     gameId: i.gameId,
     timestamp: Math.floor(i.time.getTime() / 1000),
     rank,
-    rankPoint: -1,
+    rankPoint: oldRankPoint,
   };
 }
 
