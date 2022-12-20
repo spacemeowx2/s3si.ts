@@ -1,3 +1,7 @@
+## 0.2.7
+
+fix: RankTracker shouldn't return -1 rankPoint
+
 ## 0.2.6
 
 feat: add tri-color support
