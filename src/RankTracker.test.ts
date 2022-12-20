@@ -113,7 +113,7 @@ Deno.test("RankTracker autotrack after promotion", async () => {
       isPromo: true,
       isUdemaeUp: true,
       udemaeAfter: "A-",
-      earnedUdemaePoint: null,
+      earnedUdemaePoint: -233,
     },
     historyDetails: {
       nodes: [{
@@ -146,7 +146,7 @@ Deno.test("RankTracker autotrack after promotion", async () => {
     before: {
       gameId: await gameId(genId(0)),
       rank: "B+",
-      rankPoint: -1,
+      rankPoint: 433,
       timestamp: 1640995200,
     },
     after: {
