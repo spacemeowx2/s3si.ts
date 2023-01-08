@@ -499,17 +499,21 @@ export class StatInkExporter implements GameExporter {
         0,
       );
 
-      if (myTeam.tricolorRole && myTeam.festTeamName) {
+      if (myTeam.festTeamName) {
+        result.our_team_theme = myTeam.festTeamName;
+      }
+      if (myTeam.tricolorRole) {
         result.our_team_role = myTeam.tricolorRole === "DEFENSE"
           ? "defender"
           : "attacker";
-        result.our_team_theme = myTeam.festTeamName;
       }
-      if (otherTeams[0].tricolorRole && otherTeams[0].festTeamName) {
+      if (otherTeams[0].festTeamName) {
+        result.their_team_theme = otherTeams[0].festTeamName;
+      }
+      if (otherTeams[0].tricolorRole) {
         result.their_team_role = otherTeams[0].tricolorRole === "DEFENSE"
           ? "defender"
           : "attacker";
-        result.their_team_theme = otherTeams[0].festTeamName;
       }
 
       if (otherTeams.length === 2) {
@@ -524,11 +528,13 @@ export class StatInkExporter implements GameExporter {
           (acc, i) => acc + i.paint,
           0,
         );
-        if (otherTeams[1].tricolorRole && otherTeams[1].festTeamName) {
+        if (otherTeams[1].festTeamName) {
+          result.third_team_theme = otherTeams[1].festTeamName;
+        }
+        if (otherTeams[1].tricolorRole) {
           result.third_team_role = otherTeams[1].tricolorRole === "DEFENSE"
             ? "defender"
             : "attacker";
-          result.third_team_theme = otherTeams[1].festTeamName;
         }
       }
     }

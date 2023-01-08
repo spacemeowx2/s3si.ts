@@ -1,3 +1,7 @@
+## 0.2.8
+
+fix: missing team theme
+
 ## 0.2.7
 
 fix: RankTracker shouldn't return -1 rankPoint
