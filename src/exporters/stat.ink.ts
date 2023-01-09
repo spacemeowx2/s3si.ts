@@ -5,15 +5,10 @@ import {
   USERAGENT,
 } from "../constant.ts";
 import {
-  Color,
-  CoopHistoryDetail,
-  CoopHistoryPlayerResult,
   CoopInfo,
   ExportResult,
   Game,
   GameExporter,
-  Image,
-  PlayerGear,
   StatInkAbility,
   StatInkCoopPlayer,
   StatInkCoopPostBody,
@@ -26,9 +21,7 @@ import {
   StatInkStage,
   StatInkUuidList,
   StatInkWeapon,
-  VsHistoryDetail,
   VsInfo,
-  VsPlayer,
 } from "../types.ts";
 import { msgpack, Mutex } from "../../deps.ts";
 import { APIError } from "../APIError.ts";
@@ -38,9 +31,17 @@ import {
   nonNullable,
   s3sCoopGameId,
   s3siGameId,
-  urlSimplify,
 } from "../utils.ts";
 import { Env } from "../env.ts";
+import {
+  Color,
+  CoopHistoryDetail,
+  CoopPlayer,
+  Image,
+  PlayerGear,
+  VsHistoryDetail,
+  VsPlayer,
+} from "../schemas/splatnet3.ts";
 
 const COOP_POINT_MAP: Record<number, number | undefined> = {
   0: -20,
@@ -615,14 +616,12 @@ export class StatInkExporter implements GameExporter {
     const RANDOM_FILENAME =
       "473fffb2442075078d8bb7125744905abdeae651b6a5b7453ae295582e45f7d1";
     // file exporter will replace url to { pathname: string } | string
-    const url = image?.url as ReturnType<typeof urlSimplify> | undefined | null;
-    if (typeof url === "string") {
-      return url.includes(RANDOM_FILENAME);
-    } else if (url === undefined || url === null) {
+    const url = image?.url;
+    if (url === undefined || url === null) {
       return false;
-    } else {
-      return url.pathname.includes(RANDOM_FILENAME);
     }
+
+    return url.includes(RANDOM_FILENAME);
   }
   async mapCoopWeapon(
     { name, image }: { name: string; image: Image | null },
@@ -644,7 +643,7 @@ export class StatInkExporter implements GameExporter {
     name: string;
   }): Promise<string | undefined> {
     const { url } = image;
-    const imageName = typeof url === "object" ? url.pathname : url ?? "";
+    const imageName = url ?? "";
     const hash = /\/(\w+)_0\.\w+/.exec(imageName)?.[1] ?? "";
     const special = SPLATNET3_STATINK_MAP.COOP_SPECIAL_MAP[hash];
 
@@ -667,7 +666,7 @@ export class StatInkExporter implements GameExporter {
     goldenDeliverCount,
     rescueCount,
     rescuedCount,
-  }: CoopHistoryPlayerResult): Promise<StatInkCoopPlayer> {
+  }: CoopPlayer): Promise<StatInkCoopPlayer> {
     const disconnected = [
       goldenDeliverCount,
       deliverCount,
@@ -720,9 +719,9 @@ export class StatInkExporter implements GameExporter {
     return {
       tide: SPLATNET3_STATINK_MAP.WATER_LEVEL_MAP[wave.waterLevel],
       event,
-      golden_quota: wave.deliverNorm,
+      golden_quota: wave.deliverNorm!,
       golden_appearances: wave.goldenPopCount,
-      golden_delivered: wave.teamDeliverCount,
+      golden_delivered: wave.teamDeliverCount!,
       special_uses,
     };
   }
@@ -748,7 +747,7 @@ export class StatInkExporter implements GameExporter {
 
     const startedAt = Math.floor(new Date(playedTime).getTime() / 1000);
     const golden_eggs = waveResults.reduce(
-      (prev, i) => prev + i.teamDeliverCount,
+      (prev, i) => prev + (i.teamDeliverCount ?? 0),
       0,
     );
     const power_eggs = myResult.deliverCount +
@@ -813,7 +812,7 @@ export class StatInkExporter implements GameExporter {
     // failed
     if (clear_waves !== 3 && waveResults.length > 0) {
       const lastWave = waveResults[waveResults.length - 1];
-      if (lastWave.teamDeliverCount >= lastWave.deliverNorm) {
+      if (lastWave.teamDeliverCount! >= lastWave.deliverNorm!) {
         fail_reason = "wipe_out";
       }
     }

@@ -8,7 +8,7 @@ import {
 } from "../types.ts";
 import { path } from "../../deps.ts";
 import { NSOAPP_VERSION, S3SI_VERSION } from "../constant.ts";
-import { parseHistoryDetailId, urlSimplify } from "../utils.ts";
+import { parseHistoryDetailId, restoreUrl, urlSimplify } from "../utils.ts";
 
 export type FileExporterTypeCommon = {
   nsoVersion: string;
@@ -29,6 +29,12 @@ export type FileExporterType =
   })
   & FileExporterTypeCommon;
 
+export type ExportedGame = {
+  id: string;
+  filepath: string;
+  getContent: () => Promise<Game>;
+};
+
 /**
  * Don't save url in exported file
  */
@@ -38,6 +44,15 @@ function replacer(key: string, value: unknown): unknown {
   }
 
   return typeof value === "string" ? urlSimplify(value) : undefined;
+}
+
+function reviver(key: string, value: unknown): unknown {
+  if (!["url", "maskImageUrl", "overlayImageUrl"].includes(key)) {
+    return value;
+  }
+
+  // restore { pathname: "pathname of url" } to url
+  return restoreUrl(value as { pathname: string } | string);
 }
 
 /**
@@ -70,7 +85,10 @@ export class FileExporter implements GameExporter {
     for await (const entry of Deno.readDir(this.exportPath)) {
       const filename = entry.name;
       const [fileUid, timestamp] = filename.split("_", 2);
-      if (!entry.isFile || fileUid !== uid) {
+      if (!timestamp) {
+        continue;
+      }
+      if (!entry.isFile || (uid !== undefined && fileUid !== uid)) {
         continue;
       }
 
@@ -106,9 +124,10 @@ export class FileExporter implements GameExporter {
       { id, filepath },
     ) => ({
       id,
+      filepath,
       getContent: async () => {
         const content = await Deno.readTextFile(filepath);
-        const body = JSON.parse(content) as FileExporterType;
+        const body = JSON.parse(content, reviver) as FileExporterType;
 
         // summary is excluded
         return body.data as Game;

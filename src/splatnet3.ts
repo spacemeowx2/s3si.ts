@@ -16,6 +16,16 @@ import {
 import { DEFAULT_ENV, Env } from "./env.ts";
 import { getBulletToken, getGToken } from "./iksm.ts";
 import { parseHistoryDetailId } from "./utils.ts";
+import {
+  checkBankaraBattleHistoriesResponse,
+  checkCoopHistoryDetailResponse,
+  checkCoopHistoryResponse,
+  checkLatestBattleHistoriesResponse,
+  checkPrivateBattleHistoriesResponse,
+  checkRegularBattleHistoriesResponse,
+  checkVsHistoryDetailResponse,
+  checkXBattleHistoriesResponse,
+} from "./schemas/splatnet3.ts";
 
 export class Splatnet3 {
   protected profile: Profile;
@@ -24,6 +34,15 @@ export class Splatnet3 {
   constructor({ profile, env = DEFAULT_ENV }: { profile: Profile; env?: Env }) {
     this.profile = profile;
     this.env = env;
+  }
+
+  protected async requestWithChecker<Q extends Queries>(
+    checker: (data: unknown) => RespMap[Q],
+    query: Q,
+    ...rest: VarsMap[Q]
+  ) {
+    const data = await this.request(query, ...rest);
+    return checker(data);
   }
 
   protected async request<Q extends Queries>(
@@ -129,19 +148,34 @@ export class Splatnet3 {
     () => Promise<string[]>
   > = {
     [BattleListType.Latest]: () =>
-      this.request(Queries.LatestBattleHistoriesQuery)
+      this.requestWithChecker(
+        checkLatestBattleHistoriesResponse,
+        Queries.LatestBattleHistoriesQuery,
+      )
         .then((r) => getIdsFromGroups(r.latestBattleHistories)),
     [BattleListType.Regular]: () =>
-      this.request(Queries.RegularBattleHistoriesQuery)
+      this.requestWithChecker(
+        checkRegularBattleHistoriesResponse,
+        Queries.RegularBattleHistoriesQuery,
+      )
         .then((r) => getIdsFromGroups(r.regularBattleHistories)),
     [BattleListType.Bankara]: () =>
-      this.request(Queries.BankaraBattleHistoriesQuery)
+      this.requestWithChecker(
+        checkBankaraBattleHistoriesResponse,
+        Queries.BankaraBattleHistoriesQuery,
+      )
         .then((r) => getIdsFromGroups(r.bankaraBattleHistories)),
     [BattleListType.Private]: () =>
-      this.request(Queries.PrivateBattleHistoriesQuery)
+      this.requestWithChecker(
+        checkPrivateBattleHistoriesResponse,
+        Queries.PrivateBattleHistoriesQuery,
+      )
         .then((r) => getIdsFromGroups(r.privateBattleHistories)),
     [BattleListType.Coop]: () =>
-      this.request(Queries.CoopHistoryQuery)
+      this.requestWithChecker(
+        checkCoopHistoryResponse,
+        Queries.CoopHistoryQuery,
+      )
         .then((r) => getIdsFromGroups(r.coopResult)),
   };
 
@@ -168,21 +202,24 @@ export class Splatnet3 {
     return await this.BATTLE_LIST_TYPE_MAP[battleListType]();
   }
 
-  getBattleDetail(
+  async getBattleDetail(
     id: string,
   ) {
-    return this.request(
+    const resp = await this.requestWithChecker(
+      checkVsHistoryDetailResponse,
       Queries.VsHistoryDetailQuery,
       {
         vsResultId: id,
       },
     );
+    return resp;
   }
 
-  getCoopDetail(
+  async getCoopDetail(
     id: string,
   ) {
-    return this.request(
+    return await this.requestWithChecker(
+      checkCoopHistoryDetailResponse,
       Queries.CoopHistoryDetailQuery,
       {
         coopHistoryDetailId: id,
@@ -191,13 +228,19 @@ export class Splatnet3 {
   }
 
   async getBankaraBattleHistories() {
-    const resp = await this.request(Queries.BankaraBattleHistoriesQuery);
+    const resp = await this.requestWithChecker(
+      checkBankaraBattleHistoriesResponse,
+      Queries.BankaraBattleHistoriesQuery,
+    );
 
     return resp;
   }
 
   async getXBattleHistories() {
-    return await this.request(Queries.XBattleHistoriesQuery);
+    return await this.requestWithChecker(
+      checkXBattleHistoriesResponse,
+      Queries.XBattleHistoriesQuery,
+    );
   }
 
   async getCoopHistories() {
@@ -215,7 +258,8 @@ export class Splatnet3 {
   }
 
   async getLatestBattleHistoriesQuery() {
-    const resp = await this.request(
+    const resp = await this.requestWithChecker(
+      checkLatestBattleHistoriesResponse,
       Queries.LatestBattleHistoriesQuery,
     );
 

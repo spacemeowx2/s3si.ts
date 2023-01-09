@@ -1,4 +1,5 @@
-import type { StatInkPostBody, VsHistoryDetail } from "./types.ts";
+import type { StatInkPostBody } from "./types.ts";
+import type { VsHistoryDetail } from "./schemas/splatnet3.ts";
 
 export const AGENT_NAME = "s3si.ts";
 export const S3SI_VERSION = "0.2.8";
@@ -38,7 +39,7 @@ export const SPLATNET3_STATINK_MAP: {
     | undefined
   >;
   COOP_SPECIAL_MAP: Record<string, string | undefined>;
-  WATER_LEVEL_MAP: Record<0 | 1 | 2, "low" | "normal" | "high">;
+  WATER_LEVEL_MAP: Record<number, "low" | "normal" | "high">;
 } = {
   RULE: {
     TURF_WAR: "nawabari",

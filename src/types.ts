@@ -1,4 +1,21 @@
 import { RankState } from "./state.ts";
+import {
+  BankaraBattleHistoriesResponse,
+  BankaraMatchChallenge,
+  CoopHistoryDetail,
+  CoopHistoryDetailResponse,
+  CoopHistoryResponse,
+  Image,
+  LatestBattleHistoriesResponse,
+  PlayerGear,
+  PrivateBattleHistoriesResponse,
+  RegularBattleHistoriesResponse,
+  VsHistoryDetail,
+  VsHistoryDetailResponse,
+  VsPlayerWeapon,
+  XBattleHistoriesResponse,
+  XMatchMeasurement,
+} from "./schemas/splatnet3.ts";
 
 export enum Queries {
   HomeQuery = "dba47124d5ec3090c97ba17db5d2f4b3",
@@ -36,37 +53,6 @@ export type VarsMap = {
   [Queries.ConfigureAnalyticsQuery]: [];
 };
 
-export type Image = {
-  url?: string | { pathname: string };
-  width?: number;
-  height?: number;
-};
-export type BankaraMatchChallenge = {
-  winCount: number;
-  loseCount: number;
-  maxWinCount: number;
-  maxLoseCount: number;
-  state: "FAILED" | "SUCCEEDED" | "INPROGRESS";
-  isPromo: boolean;
-  isUdemaeUp: boolean | null;
-  udemaeAfter: string | null;
-  earnedUdemaePoint: number | null;
-};
-export type XMatchMeasurement = {
-  state: "COMPLETED" | "INPROGRESS";
-  xPowerAfter: null | number;
-  isInitial: boolean;
-  winCount: number;
-  loseCount: number;
-  maxInitialBattleCount: number;
-  maxWinCount: number;
-  maxLoseCount: number;
-  vsRule: {
-    name: string;
-    rule: string;
-    id: string;
-  };
-};
 export type BattleListNode = {
   id: string;
   udemae?: string;
@@ -115,77 +101,6 @@ export type CoopHistoryGroup = {
 export type CoopHistoryGroups = {
   nodes: CoopHistoryGroup[];
 };
-export type PlayerGear = {
-  name: string;
-  image: Image;
-  primaryGearPower: {
-    name: string;
-    image: Image;
-  };
-  additionalGearPowers: {
-    name: string;
-    image: Image;
-  }[];
-  brand: {
-    name: string;
-    id: string;
-  };
-};
-export type PlayerWeapon = {
-  id: string;
-  name: string;
-  image: Image;
-  subWeapon: {
-    id: string;
-    name: string;
-    image: Image;
-  };
-};
-export type VsPlayer = {
-  id: string;
-  nameId: string | null;
-  name: string;
-  isMyself: boolean;
-  byname: string;
-  weapon: PlayerWeapon;
-  species: "INKLING" | "OCTOLING";
-  result: {
-    kill: number;
-    death: number;
-    assist: number;
-    special: number;
-    noroshiTry: null | number;
-  } | null;
-  paint: number;
-  crown: boolean;
-
-  headGear: PlayerGear;
-  clothingGear: PlayerGear;
-  shoesGear: PlayerGear;
-};
-export type Color = {
-  a: number;
-  b: number;
-  g: number;
-  r: number;
-};
-export type VsTeam = {
-  players: VsPlayer[];
-  color: Color;
-  tricolorRole: null | "DEFENSE" | "ATTACK1" | "ATTACK2";
-  festTeamName: null | string;
-  result: null | {
-    paintRatio: null | number;
-    score: null | number;
-  };
-};
-export type VsRule =
-  | "TURF_WAR"
-  | "AREA"
-  | "LOFT"
-  | "GOAL"
-  | "CLAM"
-  | "TRI_COLOR";
 
 export type ChallengeProgress = {
   index: number;
@@ -218,130 +133,6 @@ export type CoopInfo = {
   };
 };
 export type Game = VsInfo | CoopInfo;
-export type VsMode = "REGULAR" | "BANKARA" | "PRIVATE" | "FEST" | "X_MATCH";
-export type VsHistoryDetail = {
-  id: string;
-  vsRule: {
-    name: string;
-    id: string;
-    rule: VsRule;
-  };
-  vsMode: {
-    id: string;
-    mode: VsMode;
-  };
-  vsStage: {
-    id: string;
-    name: string;
-    image: Image;
-  };
-  xMatch: null | {
-    lastXPower: null | number;
-  };
-  playedTime: string; // 2021-01-01T00:00:00Z
-
-  bankaraMatch: {
-    earnedUdemaePoint: null | number;
-    mode: "OPEN" | "CHALLENGE";
-  } | null;
-  festMatch: {
-    dragonMatchType: "NORMAL" | "DECUPLE" | "DRAGON" | "DOUBLE_DRAGON";
-    contribution: number;
-    myFestPower: number | null;
-  } | null;
-
-  myTeam: VsTeam;
-  otherTeams: VsTeam[];
-  judgement: "LOSE" | "WIN" | "DEEMED_LOSE" | "EXEMPTED_LOSE" | "DRAW";
-  knockout: null | undefined | "NEITHER" | "WIN" | "LOSE";
-  awards: { name: string; rank: string }[];
-  duration: number;
-};
-
-export type CoopHistoryPlayerResult = {
-  player: {
-    byname: string | null;
-    name: string;
-    nameId: string;
-    uniform: {
-      name: string;
-      id: string;
-    };
-  };
-  weapons: { name: string; image: Image | null }[];
-  specialWeapon: null | {
-    image: Image;
-    name: string;
-  };
-  defeatEnemyCount: number;
-  deliverCount: number;
-  goldenAssistCount: number;
-  goldenDeliverCount: number;
-  rescueCount: number;
-  rescuedCount: number;
-};
-
-export type CoopHistoryDetail = {
-  id: string;
-  afterGrade: null | {
-    name: string;
-    id: string;
-  };
-  rule: "REGULAR" | "BIG_RUN";
-  myResult: CoopHistoryPlayerResult;
-  memberResults: CoopHistoryPlayerResult[];
-  bossResult: null | {
-    hasDefeatBoss: boolean;
-    boss: {
-      name: string;
-      id: string;
-    };
-  };
-  enemyResults: {
-    defeatCount: number;
-    teamDefeatCount: number;
-    popCount: number;
-    enemy: {
-      name: string;
-      id: string;
-    };
-  }[];
-  waveResults: {
-    waveNumber: number;
-    waterLevel: 0 | 1 | 2;
-    eventWave: null | {
-      name: string;
-      id: string;
-    };
-    deliverNorm: number;
-    goldenPopCount: number;
-    teamDeliverCount: number;
-    specialWeapons: {
-      image: Image;
-      name: string;
-    }[];
-  }[];
-  resultWave: number;
-  playedTime: string;
-  coopStage: {
-    name: string;
-    id: string;
-  };
-  dangerRate: number;
-  scenarioCode: null;
-  smellMeter: null | number;
-  weapons: { name: string }[];
-  afterGradePoint: null | number;
-  scale: null | {
-    gold: number;
-    silver: number;
-    bronze: number;
-  };
-  jobPoint: null | number;
-  jobScore: null | number;
-  jobRate: null | number;
-  jobBonus: null | number;
-};
 
 export type ExportResult = {
   status: "success";
@@ -373,18 +164,6 @@ export type GameExporter = {
   exportSummary?: (summary: Summary) => Promise<ExportResult>;
 };
 
-export type BankaraBattleHistories = {
-  bankaraBattleHistories: {
-    historyGroups: HistoryGroups<BattleListNode>;
-  };
-};
-
-export type XBattleHistories = {
-  xBattleHistories: {
-    historyGroups: HistoryGroups<BattleListNode>;
-  };
-};
-
 export type RespMap = {
   [Queries.HomeQuery]: {
     currentPlayer: {
@@ -404,59 +183,14 @@ export type RespMap = {
     };
     footerMessages: unknown[];
   };
-  [Queries.LatestBattleHistoriesQuery]: {
-    latestBattleHistories: {
-      historyGroups: HistoryGroups<BattleListNode>;
-    };
-  };
-  [Queries.RegularBattleHistoriesQuery]: {
-    regularBattleHistories: {
-      historyGroups: HistoryGroups<BattleListNode>;
-    };
-  };
-  [Queries.BankaraBattleHistoriesQuery]: BankaraBattleHistories;
-  [Queries.XBattleHistoriesQuery]: XBattleHistories;
-  [Queries.PrivateBattleHistoriesQuery]: {
-    privateBattleHistories: {
-      historyGroups: HistoryGroups<BattleListNode>;
-    };
-  };
-  [Queries.VsHistoryDetailQuery]: {
-    vsHistoryDetail: VsHistoryDetail;
-  };
-  [Queries.CoopHistoryQuery]: {
-    regularAverageClearWave: number | null;
-    regularGrade: {
-      id: string;
-      name: string;
-    } | null;
-    regularGradePoint: number | null;
-    monthlyGear: {
-      __typename: string;
-      name: string;
-      image: Image;
-    } | null;
-    scale: {
-      gold: number;
-      silver: number;
-      bronze: number;
-    } | null;
-    pointCard: {
-      defeatBossCount: number;
-      deliverCount: number;
-      goldenDeliverCount: number;
-      playCount: number;
-      rescueCount: number;
-      regularPoint: number;
-      totalPoint: number;
-    } | null;
-    coopResult: {
-      historyGroups: CoopHistoryGroups;
-    };
-  };
-  [Queries.CoopHistoryDetailQuery]: {
-    coopHistoryDetail: CoopHistoryDetail;
-  };
+  [Queries.LatestBattleHistoriesQuery]: LatestBattleHistoriesResponse;
+  [Queries.RegularBattleHistoriesQuery]: RegularBattleHistoriesResponse;
+  [Queries.BankaraBattleHistoriesQuery]: BankaraBattleHistoriesResponse;
+  [Queries.XBattleHistoriesQuery]: XBattleHistoriesResponse;
+  [Queries.PrivateBattleHistoriesQuery]: PrivateBattleHistoriesResponse;
+  [Queries.VsHistoryDetailQuery]: VsHistoryDetailResponse;
+  [Queries.CoopHistoryQuery]: CoopHistoryResponse;
+  [Queries.CoopHistoryDetailQuery]: CoopHistoryDetailResponse;
   [Queries.myOutfitCommonDataFilteringConditionQuery]: {
     gearPowers: {
       nodes: {
@@ -508,7 +242,7 @@ export type RespMap = {
       xMatchMaxCl: XRank;
       xMatchMaxGl: XRank;
       xMatchMaxLf: XRank;
-      frequentlyUsedWeapons: Pick<PlayerWeapon, "id" | "name" | "image">[];
+      frequentlyUsedWeapons: Pick<VsPlayerWeapon, "id" | "name" | "image">[];
       badges: { id: string }[];
       recentBadges: Badge[];
       allBadges: Badge[];
@@ -567,7 +301,7 @@ export type Badge = {
 };
 export type HistoryGear = Pick<
   PlayerGear,
-  "name" | "primaryGearPower" | "additionalGearPowers" | "image"
+  "name" | "primaryGearPower" | "additionalGearPowers"
 >;
 
 export type Nameplate = {

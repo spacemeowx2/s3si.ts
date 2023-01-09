@@ -9,11 +9,11 @@ import {
   Game,
   HistoryGroupItem,
   VsInfo,
-  VsMode,
 } from "./types.ts";
 import { Cache, MemoryCache } from "./cache.ts";
 import { gameId } from "./utils.ts";
 import { RankTracker } from "./RankTracker.ts";
+import { VsMode } from "./schemas/splatnet3.ts";
 
 /**
  * Fetch game and cache it. It also fetches bankara match challenge info.

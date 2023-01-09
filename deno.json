@@ -6,6 +6,13 @@
     "lint": "deno lint",
     "run": "deno run -A"
   },
+  "lint": {
+    "files": {
+      "exclude": [
+        "src/generated/"
+      ]
+    }
+  },
   "fmt": {
     "files": {
       "exclude": [
@@ -13,7 +20,8 @@
         "cache/",
         ".vscode/",
         ".github/",
-        "profile.json"
+        "profile.json",
+        "src/generated/"
       ]
     }
   }
