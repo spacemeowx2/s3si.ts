@@ -590,6 +590,7 @@ export default {
                 },
               },
             },
+            optionalProperties: {},
           },
         },
       },

@@ -2,6 +2,7 @@ import { RankState } from "./state.ts";
 import {
   BankaraBattleHistoriesResponse,
   BankaraMatchChallenge,
+  BattleListNode,
   CoopHistoryDetail,
   CoopHistoryDetailResponse,
   CoopHistoryResponse,
@@ -12,6 +13,7 @@ import {
   RegularBattleHistoriesResponse,
   VsHistoryDetail,
   VsHistoryDetailResponse,
+  VsHistoryGroup,
   VsPlayerWeapon,
   XBattleHistoriesResponse,
   XMatchMeasurement,
@@ -53,55 +55,9 @@ export type VarsMap = {
   [Queries.ConfigureAnalyticsQuery]: [];
 };
 
-export type BattleListNode = {
-  id: string;
-  udemae?: string;
-  judgement: "LOSE" | "WIN" | "DEEMED_LOSE" | "EXEMPTED_LOSE" | "DRAW";
-  bankaraMatch: null | {
-    earnedUdemaePoint: null | number;
-  };
-};
-export type CoopListNode = {
-  id: string;
-  afterGrade: null | {
-    "name": string;
-    "id": string;
-  };
-  afterGradePoint: null | number;
-};
-export type HistoryGroupItem<T> = {
-  bankaraMatchChallenge: null | BankaraMatchChallenge;
-  xMatchMeasurement: null | XMatchMeasurement;
-
-  historyDetails: {
-    nodes: T[];
-  };
-};
 export type Nodes<T> = {
   nodes: T[];
 };
-export type HistoryGroups<T> = Nodes<HistoryGroupItem<T>>;
-export type CoopHistoryGroup = {
-  startTime: null | string;
-  endTime: null | string;
-  highestResult: null | {
-    grade: {
-      id: string;
-    };
-    gradePoint: number;
-    jobScore: number;
-  };
-  mode: "PRIVATE_CUSTOM" | "REGULAR";
-  rule: "REGULAR" | "BIG_RUN";
-
-  historyDetails: {
-    nodes: CoopListNode[];
-  };
-};
-export type CoopHistoryGroups = {
-  nodes: CoopHistoryGroup[];
-};
-
 export type ChallengeProgress = {
   index: number;
   winCount: number;
@@ -110,7 +66,7 @@ export type ChallengeProgress = {
 // With challenge info
 export type VsInfo = {
   type: "VsInfo";
-  groupInfo: null | Omit<HistoryGroupItem<BattleListNode>, "historyDetails">;
+  groupInfo: null | Omit<VsHistoryGroup, "historyDetails">;
   listNode: null | BattleListNode;
   bankaraMatchChallenge: null | BankaraMatchChallenge;
   challengeProgress: null | ChallengeProgress;

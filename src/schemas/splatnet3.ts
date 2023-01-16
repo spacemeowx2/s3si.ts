@@ -43,6 +43,8 @@ export type Color = GetDefinition<"Color">;
 export type BankaraMatchChallenge = GetDefinition<"BankaraMatchChallenge">;
 export type XMatchMeasurement = GetDefinition<"XMatchMeasurement">;
 export type Image = GetDefinition<"Image">;
+export type BattleListNode = GetDefinition<"BattleListNode">;
+export type VsHistoryGroup = GetDefinition<"VsHistoryGroup">;
 
 function makeChecker<T extends SchemaType>(type: T) {
   const validate = ajv.compile<GetDefinition<T>>(
