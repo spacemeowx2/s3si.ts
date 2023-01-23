@@ -575,6 +575,19 @@ export default {
         },
       },
     },
+    CoopListNode: {
+      properties: {
+        id: { type: "string" },
+        afterGrade: {
+          properties: {
+            id: { type: "string" },
+            name: { type: "string" },
+          },
+          nullable: true,
+        },
+        afterGradePoint: { type: "uint32", nullable: true },
+      },
+    },
     CoopHistoryGroups: {
       properties: {
         nodes: {

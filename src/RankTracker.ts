@@ -1,10 +1,6 @@
+import { VsHistoryGroup } from "./schemas/splatnet3.ts";
 import { RankState } from "./state.ts";
-import {
-  BankaraMatchChallenge,
-  BattleListNode,
-  HistoryGroups,
-  RankParam,
-} from "./types.ts";
+import { BankaraMatchChallenge, BattleListNode, RankParam } from "./types.ts";
 import { gameId, parseHistoryDetailId } from "./utils.ts";
 
 const splusParams = () => {
@@ -221,7 +217,7 @@ function generateDeltaList(
       delta = {
         ...delta,
         // TODO: rankAfter should be undefined in open battle
-        rankAfter: i.detail.udemae,
+        rankAfter: i.detail.udemae ?? undefined,
         rankPoint: i.detail.bankaraMatch?.earnedUdemaePoint ?? 0,
       };
     }
@@ -294,7 +290,7 @@ export class RankTracker {
   }
 
   async updateState(
-    history: HistoryGroups<BattleListNode>["nodes"],
+    history: VsHistoryGroup[],
   ) {
     // history order by time. 0 is the oldest.
     const flatten: FlattenItem[] = await Promise.all(

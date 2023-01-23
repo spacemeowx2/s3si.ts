@@ -45,6 +45,9 @@ export type XMatchMeasurement = GetDefinition<"XMatchMeasurement">;
 export type Image = GetDefinition<"Image">;
 export type BattleListNode = GetDefinition<"BattleListNode">;
 export type VsHistoryGroup = GetDefinition<"VsHistoryGroup">;
+export type CoopHistoryGroup = GetDefinition<"CoopHistoryGroup">;
+export type CoopHistoryGroups = GetDefinition<"CoopHistoryGroups">;
+export type CoopListNode = GetDefinition<"CoopListNode">;
 
 function makeChecker<T extends SchemaType>(type: T) {
   const validate = ajv.compile<GetDefinition<T>>(

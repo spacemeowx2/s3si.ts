@@ -7,13 +7,12 @@ import {
   CoopHistoryGroups,
   CoopInfo,
   Game,
-  HistoryGroupItem,
   VsInfo,
 } from "./types.ts";
 import { Cache, MemoryCache } from "./cache.ts";
 import { gameId } from "./utils.ts";
 import { RankTracker } from "./RankTracker.ts";
-import { VsMode } from "./schemas/splatnet3.ts";
+import { VsHistoryGroup, VsMode } from "./schemas/splatnet3.ts";
 
 /**
  * Fetch game and cache it. It also fetches bankara match challenge info.
@@ -26,11 +25,11 @@ export class GameFetcher {
 
   private lock: Record<string, Mutex | undefined> = {};
   private bankaraLock = new Mutex();
-  private bankaraHistory?: HistoryGroupItem<BattleListNode>[];
+  private bankaraHistory?: VsHistoryGroup[];
   private coopLock = new Mutex();
   private coopHistory?: CoopHistoryGroups["nodes"];
   private xMatchLock = new Mutex();
-  private xMatchHistory?: HistoryGroupItem<BattleListNode>[];
+  private xMatchHistory?: VsHistoryGroup[];
 
   constructor(
     { cache = new MemoryCache(), splatnet, state }: {

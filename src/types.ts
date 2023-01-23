@@ -5,7 +5,10 @@ import {
   BattleListNode,
   CoopHistoryDetail,
   CoopHistoryDetailResponse,
+  CoopHistoryGroup,
+  CoopHistoryGroups,
   CoopHistoryResponse,
+  CoopListNode,
   Image,
   LatestBattleHistoriesResponse,
   PlayerGear,
@@ -18,6 +21,13 @@ import {
   XBattleHistoriesResponse,
   XMatchMeasurement,
 } from "./schemas/splatnet3.ts";
+
+export type {
+  BankaraMatchChallenge,
+  BattleListNode,
+  CoopHistoryGroups,
+  XMatchMeasurement,
+};
 
 export enum Queries {
   HomeQuery = "dba47124d5ec3090c97ba17db5d2f4b3",
