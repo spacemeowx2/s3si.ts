@@ -1,3 +1,7 @@
+## 0.2.9
+
+feat: update `WEB_VIEW_VERSION`
+
 ## 0.2.8
 
 fix: missing team theme
