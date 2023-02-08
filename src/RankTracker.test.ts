@@ -491,3 +491,6 @@ Deno.test("RankTracker", async () => {
     timestamp: 1640995229,
   });
 });
+
+Deno.test("RankTracker clears state when season changes", async () => {
+});
