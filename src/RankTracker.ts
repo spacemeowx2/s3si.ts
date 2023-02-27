@@ -5,7 +5,8 @@ import {
   HistoryGroups,
   RankParam,
 } from "./types.ts";
-import { gameId, nonNullable, parseHistoryDetailId } from "./utils.ts";
+import { gameId, parseHistoryDetailId } from "./utils.ts";
+import { getSeason } from "./VersionData.ts";
 
 const splusParams = () => {
   const out: RankParam[] = [];
@@ -79,9 +80,13 @@ export const RANK_PARAMS: RankParam[] = [{
 }, ...splusParams()];
 
 type Delta = {
-  beforeGameId: string;
+  before: {
+    gameId: string;
+    timestamp: number;
+  };
   gameId: string;
   timestamp: number;
+  rank?: string;
   rankAfter?: string;
   rankPoint: number;
   isPromotion: boolean;
@@ -89,8 +94,24 @@ type Delta = {
   isChallengeFirst: boolean;
 };
 
-// TODO: auto rank up using rank params and delta.
-function addRank(state: RankState, delta: Delta): RankState {
+// delta's beforeGameId must be state's gameId
+function addRank(
+  state: RankState | undefined,
+  delta: Delta,
+): { before: RankState; after: RankState } | undefined {
+  if (!state) {
+    // is rank up, generate state here
+    if (delta.isPromotion && delta.isRankUp) {
+      state = getRankStateByDelta(delta);
+    } else {
+      return;
+    }
+  }
+
+  if (state.gameId !== delta.before.gameId) {
+    throw new Error("Invalid state");
+  }
+
   const { rank, rankPoint } = state;
   const {
     gameId,
@@ -100,6 +121,16 @@ function addRank(state: RankState, delta: Delta): RankState {
     isRankUp,
     isChallengeFirst,
   } = delta;
+
+  if (state.timestamp) {
+    const oldSeason = getSeason(new Date(state.timestamp * 1000));
+    if (oldSeason) {
+      const newSeason = getSeason(new Date(timestamp * 1000));
+      if (newSeason?.id !== oldSeason.id) {
+        return;
+      }
+    }
+  }
 
   const rankIndex = RANK_PARAMS.findIndex((r) => r.rank === rank);
 
@@ -111,20 +142,29 @@ function addRank(state: RankState, delta: Delta): RankState {
 
   if (isChallengeFirst) {
     return {
-      gameId,
-      timestamp,
-      rank,
-      rankPoint: rankPoint - rankParam.charge,
+      before: state,
+      after: {
+        gameId,
+        timestamp,
+        rank,
+        rankPoint: rankPoint - rankParam.charge,
+      },
     };
   }
 
   // S+50 is the highest rank
   if (rankIndex === RANK_PARAMS.length - 1) {
     return {
-      timestamp,
-      gameId,
-      rank,
-      rankPoint: Math.min(rankPoint + delta.rankPoint, rankParam.pointRange[1]),
+      before: state,
+      after: {
+        timestamp,
+        gameId,
+        rank,
+        rankPoint: Math.min(
+          rankPoint + delta.rankPoint,
+          rankParam.pointRange[1],
+        ),
+      },
     };
   }
 
@@ -132,18 +172,24 @@ function addRank(state: RankState, delta: Delta): RankState {
     const nextRankParam = RANK_PARAMS[rankIndex + 1];
 
     return {
-      gameId,
-      timestamp,
-      rank: nextRankParam.rank,
-      rankPoint: nextRankParam.pointRange[0],
+      before: state,
+      after: {
+        gameId,
+        timestamp,
+        rank: nextRankParam.rank,
+        rankPoint: nextRankParam.pointRange[0],
+      },
     };
   }
 
   return {
-    gameId,
-    timestamp,
-    rank: rankAfter ?? rank,
-    rankPoint: rankPoint + delta.rankPoint,
+    before: state,
+    after: {
+      gameId,
+      timestamp,
+      rank: rankAfter ?? rank,
+      rankPoint: rankPoint + delta.rankPoint,
+    },
   };
 }
 
@@ -168,19 +214,39 @@ type FlattenItem = {
   detail: BattleListNode;
 };
 
-function generateDeltaList(
-  state: RankState,
+function beginPoint(
+  state: RankState | undefined,
   flatten: FlattenItem[],
-) {
-  const index = flatten.findIndex((i) => i.gameId === state.gameId);
+): [firstItem: FlattenItem, unProcessed: FlattenItem[]] {
+  if (state) {
+    const index = flatten.findIndex((i) => i.gameId === state.gameId);
 
-  if (index === -1) {
-    return;
+    if (index !== -1) {
+      return [flatten[index], flatten.slice(index)];
+    }
   }
 
-  const unProcessed = flatten.slice(index);
+  if (flatten.length === 0) {
+    throw new Error("flatten must not be empty");
+  }
+  return [flatten[0], flatten];
+}
+
+function getTimestamp(date: Date) {
+  return Math.floor(date.getTime() / 1000);
+}
+
+function generateDeltaList(
+  state: RankState | undefined,
+  flatten: FlattenItem[],
+) {
+  const [firstItem, unProcessed] = beginPoint(state, flatten);
+
   const deltaList: Delta[] = [];
-  let beforeGameId = state.gameId;
+  let before = {
+    gameId: firstItem.gameId,
+    timestamp: getTimestamp(firstItem.time),
+  };
 
   for (const i of unProcessed.slice(1)) {
     if (!i.detail.bankaraMatch) {
@@ -188,21 +254,25 @@ function generateDeltaList(
     }
 
     let delta: Delta = {
-      beforeGameId,
+      before,
       gameId: i.gameId,
-      timestamp: Math.floor(i.time.getTime() / 1000),
+      timestamp: getTimestamp(i.time),
       rankPoint: 0,
       isPromotion: false,
       isRankUp: false,
       isChallengeFirst: false,
     };
-    beforeGameId = i.gameId;
+    before = {
+      gameId: i.gameId,
+      timestamp: Math.floor(i.time.getTime() / 1000),
+    };
     if (i.bankaraMatchChallenge) {
       // challenge
       if (i.index === 0 && i.bankaraMatchChallenge.state !== "INPROGRESS") {
         // last battle in challenge
         delta = {
           ...delta,
+          rank: i.detail.udemae,
           rankAfter: i.bankaraMatchChallenge.udemaeAfter ?? undefined,
           rankPoint: i.bankaraMatchChallenge.earnedUdemaePoint ?? 0,
           isPromotion: i.bankaraMatchChallenge.isPromo ?? false,
@@ -229,19 +299,20 @@ function generateDeltaList(
     deltaList.push(delta);
   }
 
-  return deltaList;
+  return {
+    firstItem,
+    deltaList,
+  };
 }
 
-function getRankState(i: FlattenItem): RankState {
-  const rank = i.detail.udemae;
-  const nextRank = i.bankaraMatchChallenge?.udemaeAfter;
-  const earnedUdemaePoint = i.bankaraMatchChallenge?.earnedUdemaePoint;
-  if (!nonNullable(earnedUdemaePoint)) {
-    throw new TypeError("earnedUdemaePoint must be defined");
-  }
+function getRankStateByDelta(i: Delta): RankState {
+  const rank = i.rank;
+  const nextRank = i.rankAfter;
+  const earnedUdemaePoint = i.rankPoint;
   if (!rank || !nextRank) {
     throw new Error("rank and nextRank must be defined");
   }
+
   const param = RANK_PARAMS.find((i) => i.rank === rank);
   const nextParam = RANK_PARAMS.find((i) => i.rank === nextRank);
 
@@ -253,8 +324,8 @@ function getRankState(i: FlattenItem): RankState {
     earnedUdemaePoint;
 
   return {
-    gameId: i.gameId,
-    timestamp: Math.floor(i.time.getTime() / 1000),
+    gameId: i.before.gameId,
+    timestamp: i.before.timestamp,
     rank,
     rankPoint: oldRankPoint,
   };
@@ -266,37 +337,18 @@ function getRankState(i: FlattenItem): RankState {
 export class RankTracker {
   // key: privous game id
   protected deltaMap: Map<string, Delta> = new Map();
+  // key: after game id
+  protected stateMap: Map<string, { before: RankState; after: RankState }> =
+    new Map();
 
   constructor(protected state: RankState | undefined) {}
 
   async getRankStateById(
     id: string,
   ): Promise<{ before: RankState; after: RankState } | undefined> {
-    if (!this.state) {
-      return;
-    }
     const gid = await gameId(id);
 
-    let cur = this.state;
-    let before = cur;
-
-    // there is no delta for first game
-    if (cur.gameId === gid) {
-      return;
-    }
-    while (cur.gameId !== gid) {
-      const delta = this.deltaMap.get(cur.gameId);
-      if (!delta) {
-        return;
-      }
-      before = cur;
-      cur = addRank(cur, delta);
-    }
-
-    return {
-      before,
-      after: cur,
-    };
+    return this.stateMap.get(gid);
   }
 
   setState(state: RankState | undefined) {
@@ -326,55 +378,22 @@ export class RankTracker {
         .map((i) => i.gameId.then((gameId) => ({ ...i, gameId }))),
     );
 
-    const gameIdTime = new Map<string | undefined, Date>(
-      flatten.map((i) => [i.gameId, i.time]),
-    );
+    let curState: RankState | undefined = this.state;
 
-    let curState: RankState | undefined;
-    const oldestPromotion = flatten.find((i) =>
-      i.bankaraMatchChallenge?.isPromo && i.bankaraMatchChallenge.isUdemaeUp
-    );
+    const { firstItem, deltaList } = generateDeltaList(curState, flatten);
 
-    /*
-     * There are 4 cases:
-     * 1. state === undefined, oldestPromotion === undefined
-     * 2. state === undefined, oldestPromotion !== undefined
-     * 3. state !== undefined, oldestPromotion === undefined
-     * 4. state !== undefined, oldestPromotion !== undefined
-     *
-     * In case 1, we can't track rank. So we do nothing.
-     * In case 2, 3, we track rank by the non-undefined state.
-     * In case 4, we can track by the elder game.
-     */
-    const thisStateTime = gameIdTime.get(this.state?.gameId);
-    if (!thisStateTime && !oldestPromotion) {
-      return;
-    } else if (thisStateTime && !oldestPromotion) {
-      curState = this.state;
-    } else if (!thisStateTime && oldestPromotion) {
-      curState = getRankState(oldestPromotion);
-    } else if (thisStateTime && oldestPromotion) {
-      if (thisStateTime <= oldestPromotion.time) {
-        curState = this.state;
-      } else {
-        curState = getRankState(oldestPromotion);
-      }
-    }
-
-    if (!curState) {
-      return;
-    }
-
-    this.state = curState;
-    const deltaList = generateDeltaList(curState, flatten);
-
-    if (!deltaList) {
+    // history don't contain current state, so skip update
+    if (curState && firstItem.gameId !== curState.gameId) {
       return;
     }
 
     for (const delta of deltaList) {
-      this.deltaMap.set(delta.beforeGameId, delta);
-      curState = addRank(curState, delta);
+      this.deltaMap.set(delta.before.gameId, delta);
+      const result = addRank(curState, delta);
+      curState = result?.after;
+      if (result) {
+        this.stateMap.set(result.after.gameId, result);
+      }
     }
 
     return curState;
