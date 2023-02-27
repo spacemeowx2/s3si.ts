@@ -1,3 +1,9 @@
+## 0.3.0
+
+feat: clear state when season change
+
+feat: update `WEB_VIEW_VERSION`
+
 ## 0.2.9
 
 feat: update `WEB_VIEW_VERSION`
