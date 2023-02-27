@@ -4,7 +4,8 @@
     "fmt": "deno fmt",
     "fmt:check": "deno fmt --check",
     "lint": "deno lint",
-    "run": "deno run -A"
+    "run": "deno run -A",
+    "gen": "deno run -A ./scripts/update-constant.ts"
   },
   "fmt": {
     "files": {

@@ -1,7 +1,7 @@
 import { RankState } from "./state.ts";
 
 export enum Queries {
-  HomeQuery = "dba47124d5ec3090c97ba17db5d2f4b3",
+  HomeQuery = "22e2fa8294168003c21b00c333c35384",
   LatestBattleHistoriesQuery = "4f5f26e64bca394b45345a65a2f383bd",
   RegularBattleHistoriesQuery = "d5b795d09e67ce153e622a184b7e7dfa",
   BankaraBattleHistoriesQuery = "de4754588109b77dbcb90fbe44b612ee",
@@ -9,7 +9,7 @@ export enum Queries {
   PrivateBattleHistoriesQuery = "1d6ed57dc8b801863126ad4f351dfb9a",
   VsHistoryDetailQuery = "291295ad311b99a6288fc95a5c4cb2d2",
   CoopHistoryQuery = "6ed02537e4a65bbb5e7f4f23092f6154",
-  CoopHistoryDetailQuery = "3cc5f826a6646b85f3ae45db51bd0707",
+  CoopHistoryDetailQuery = "379f0d9b78b531be53044bcac031b34b",
   myOutfitCommonDataFilteringConditionQuery =
     "d02ab22c9dccc440076055c8baa0fa7a",
   myOutfitCommonDataEquipmentsQuery = "d29cd0c2b5e6bac90dd5b817914832f8",
