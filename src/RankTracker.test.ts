@@ -3,8 +3,9 @@ import { assertEquals } from "../dev_deps.ts";
 import { BattleListNode } from "./types.ts";
 import { base64 } from "../deps.ts";
 import { gameId } from "./utils.ts";
+import { RankState } from "./state.ts";
 
-const INIT_STATE = {
+const INIT_STATE: RankState = {
   gameId: await gameId(genId(0)),
   rank: "B-",
   rankPoint: 100,
@@ -20,9 +21,9 @@ class TestRankTracker extends RankTracker {
   }
 }
 
-function genId(id: number): string {
+function genId(id: number, date = "20220101"): string {
   return base64.encode(
-    `VsHistoryDetail-asdf:asdf:20220101T${
+    `VsHistoryDetail-asdf:asdf:${date}T${
       id.toString().padStart(6, "0")
     }_------------------------------------`,
   );
@@ -213,20 +214,7 @@ Deno.test("RankTracker issue #36", async () => {
   });
 
   assertEquals(await tracker.getRankStateById(genId(0)), undefined);
-  assertEquals(await tracker.getRankStateById(genId(1)), {
-    before: {
-      gameId: await gameId(genId(0)),
-      rank: "S+19",
-      rankPoint: 3750,
-      timestamp: 1640995200,
-    },
-    after: {
-      gameId: await gameId(genId(1)),
-      rank: "S+19",
-      rankPoint: 3750,
-      timestamp: 1640995201,
-    },
-  });
+  assertEquals(await tracker.getRankStateById(genId(1)), undefined);
 
   assertEquals(await tracker.getRankStateById(genId(2)), {
     before: {
@@ -490,4 +478,51 @@ Deno.test("RankTracker", async () => {
     rankPoint: 332,
     timestamp: 1640995229,
   });
+});
+
+Deno.test("RankTracker clears state when season changes", async () => {
+  const firstDay = new Date("2022-09-09T00:00:00+00:00").getTime() / 1000;
+  const firstSeason = {
+    ...INIT_STATE,
+    timestamp: firstDay,
+  };
+  const tracker = new TestRankTracker(firstSeason);
+  assertEquals(tracker.testGet(), {
+    state: firstSeason,
+    deltaMap: new Map(),
+  });
+
+  const afterState = await tracker.updateState([{
+    xMatchMeasurement: null,
+    bankaraMatchChallenge: {
+      winCount: 3,
+      loseCount: 0,
+      maxWinCount: 3,
+      maxLoseCount: 3,
+      state: "SUCCEEDED",
+      isPromo: true,
+      isUdemaeUp: true,
+      udemaeAfter: "B-",
+      earnedUdemaePoint: 1,
+    },
+    historyDetails: {
+      nodes: [{
+        id: genId(1, "20221209"),
+        udemae: "B-",
+        judgement: "WIN",
+        bankaraMatch: {
+          earnedUdemaePoint: 8,
+        },
+      }, {
+        id: genId(0),
+        udemae: "B-",
+        judgement: "WIN",
+        bankaraMatch: {
+          earnedUdemaePoint: 8,
+        },
+      }],
+    },
+  }]);
+
+  assertEquals(afterState, undefined);
 });
