@@ -22,6 +22,10 @@ Deno.test("getSeason", () => {
 
   assertEquals(season2?.id, "season202212");
 
+  const season3 = getSeason(new Date("2023-03-01T00:00:00+00:00"));
+
+  assertEquals(season3?.id, "season202303");
+
   const nonExist = getSeason(new Date("2022-06-09T00:00:00+00:00"));
 
   assertEquals(nonExist, undefined);

@@ -18,6 +18,12 @@ export const SEASONS: Season[] = [
     start: new Date("2022-12-01T00:00:00+00:00"),
     end: new Date("2023-03-01T00:00:00+00:00"),
   },
+  {
+    id: "season202303",
+    name: "Fresh Season 2023",
+    start: new Date("2023-03-01T00:00:00+00:00"),
+    end: new Date("2023-06-01T00:00:00+00:00"),
+  },
 ];
 
 export const getSeason = (date: Date): Season | undefined => {
