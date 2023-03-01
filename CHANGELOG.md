@@ -1,3 +1,7 @@
+## 0.3.1
+
+feat: use ID for uniform(https://stat.ink/api-info/salmon-uniform3)
+
 ## 0.3.0
 
 feat: clear state when season change

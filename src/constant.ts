@@ -1,7 +1,7 @@
 import type { StatInkPostBody, VsHistoryDetail } from "./types.ts";
 
 export const AGENT_NAME = "s3si.ts";
-export const S3SI_VERSION = "0.3.0";
+export const S3SI_VERSION = "0.3.1";
 export const NSOAPP_VERSION = "2.5.0";
 export const WEB_VIEW_VERSION = "3.0.0-2857bc50";
 export const S3SI_LINK = "https://github.com/spacemeowx2/s3si.ts";
@@ -26,17 +26,6 @@ export const SPLATNET3_STATINK_MAP: {
     StatInkPostBody["fest_dragon"]
   >;
   COOP_EVENT_MAP: Record<number, string | undefined>;
-  COOP_UNIFORM_MAP: Record<
-    number,
-    | "orange"
-    | "green"
-    | "yellow"
-    | "pink"
-    | "blue"
-    | "black"
-    | "white"
-    | undefined
-  >;
   COOP_SPECIAL_MAP: Record<string, string | undefined>;
   WATER_LEVEL_MAP: Record<0 | 1 | 2, "low" | "normal" | "high">;
 } = {
@@ -70,15 +59,6 @@ export const SPLATNET3_STATINK_MAP: {
     6: "cohock_charge",
     7: "giant_tornado",
     8: "mudmouth_eruption",
-  },
-  COOP_UNIFORM_MAP: {
-    1: "orange",
-    2: "green",
-    3: "yellow",
-    4: "pink",
-    5: "blue",
-    6: "black",
-    7: "white",
   },
   COOP_SPECIAL_MAP: {
     "bd327d1b64372dedefd32adb28bea62a5b6152d93aada5d9fc4f669a1955d6d4":

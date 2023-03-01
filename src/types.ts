@@ -681,7 +681,15 @@ export type StatInkCoopPlayer = {
   name: string;
   number: string;
   splashtag_title: string | null;
-  uniform?: "orange" | "green" | "yellow" | "pink" | "blue" | "black" | "white";
+  uniform?:
+    | string
+    | "orange"
+    | "green"
+    | "yellow"
+    | "pink"
+    | "blue"
+    | "black"
+    | "white";
   special?: string;
   weapons: (string | null)[];
   golden_eggs: number;

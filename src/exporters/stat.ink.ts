@@ -681,8 +681,7 @@ export class StatInkExporter implements GameExporter {
       name: player.name,
       number: player.nameId,
       splashtag_title: player.byname,
-      uniform:
-        SPLATNET3_STATINK_MAP.COOP_UNIFORM_MAP[b64Number(player.uniform.id)],
+      uniform: b64Number(player.uniform.id).toString(),
       special: specialWeapon ? await this.mapSpecial(specialWeapon) : undefined,
       weapons: await Promise.all(weapons.map((w) => this.mapCoopWeapon(w))),
       golden_eggs: goldenDeliverCount,
