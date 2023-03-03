@@ -14,7 +14,20 @@
         "cache/",
         ".vscode/",
         ".github/",
-        "profile.json"
+        "profile.json",
+        "gui/"
+      ]
+    }
+  },
+  "lint": {
+    "files": {
+      "exclude": [
+        "export/",
+        "cache/",
+        ".vscode/",
+        ".github/",
+        "profile.json",
+        "gui/"
       ]
     }
   }
