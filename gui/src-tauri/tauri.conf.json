@@ -26,6 +26,16 @@
         ],
         "all": false,
         "open": true
+      },
+      "window": {
+        "all": true
+      },
+      "fs": {
+        "scope": [
+          "$APPCONFIG",
+          "$APPDATA",
+          "$APPCACHE"
+        ]
       }
     },
     "bundle": {
@@ -55,7 +65,8 @@
         "resizable": true,
         "title": "s3si.ts",
         "width": 800,
-        "height": 600
+        "height": 600,
+        "visible": false
       }
     ]
   }
