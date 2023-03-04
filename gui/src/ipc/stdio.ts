@@ -15,9 +15,12 @@ export class IPC<T extends { type: string }> {
   child: Promise<Child>;
 
   constructor() {
-    const command = Command.sidecar('../binaries/s3si', ['--daemon']);
+    const command = import.meta.env.DEV ? new Command("deno", ["run", "-A", "../../s3si.ts", "--daemon"]) : Command.sidecar('../binaries/s3si', ['--daemon']);
     command.stdout.on('data', line => {
       this.callback(JSON.parse(line))
+    })
+    command.stderr.on('data', line => {
+      console.error('daemon stderr', line)
     })
     this.child = command.spawn()
   }

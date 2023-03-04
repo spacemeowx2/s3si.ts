@@ -15,11 +15,22 @@
       "all": false,
       "shell": {
         "sidecar": true,
+        "execute": true,
         "scope": [
           {
             "name": "../binaries/s3si",
             "sidecar": true,
             "args": [
+              "--daemon"
+            ]
+          },
+          {
+            "name": "deno",
+            "cmd": "deno",
+            "args": [
+              "run",
+              "-A",
+              "../../s3si.ts",
               "--daemon"
             ]
           }
