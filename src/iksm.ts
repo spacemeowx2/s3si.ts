@@ -8,70 +8,123 @@ import {
 import { APIError } from "./APIError.ts";
 import { Env, Fetcher } from "./env.ts";
 
-export async function loginManually(
-  { newFetcher, prompts: { promptLogin } }: Env,
-): Promise<string> {
+export async function loginSteps(
+  env: Env,
+): Promise<
+  {
+    authCodeVerifier: string;
+    url: string;
+  }
+>;
+export async function loginSteps(
+  env: Env,
+  step2: {
+    authCodeVerifier: string;
+    login: string;
+  },
+): Promise<
+  {
+    sessionToken: string;
+  }
+>;
+export async function loginSteps(
+  { newFetcher }: Env,
+  step2?: {
+    authCodeVerifier: string;
+    login: string;
+  },
+): Promise<
+  {
+    authCodeVerifier: string;
+    url: string;
+  } | {
+    sessionToken: string;
+  }
+> {
   const fetch = newFetcher();
 
-  const state = urlBase64Encode(random(36));
-  const authCodeVerifier = urlBase64Encode(random(32));
-  const authCvHash = await crypto.subtle.digest(
-    "SHA-256",
-    new TextEncoder().encode(authCodeVerifier),
-  );
-  const authCodeChallenge = urlBase64Encode(authCvHash);
+  if (!step2) {
+    const state = urlBase64Encode(random(36));
+    const authCodeVerifier = urlBase64Encode(random(32));
+    const authCvHash = await crypto.subtle.digest(
+      "SHA-256",
+      new TextEncoder().encode(authCodeVerifier),
+    );
+    const authCodeChallenge = urlBase64Encode(authCvHash);
 
-  const body = {
-    "state": state,
-    "redirect_uri": "npf71b963c1b7b6d119://auth",
-    "client_id": "71b963c1b7b6d119",
-    "scope": "openid user user.birthday user.mii user.screenName",
-    "response_type": "session_token_code",
-    "session_token_code_challenge": authCodeChallenge,
-    "session_token_code_challenge_method": "S256",
-    "theme": "login_form",
-  };
-  const url = "https://accounts.nintendo.com/connect/1.0.0/authorize?" +
-    new URLSearchParams(body);
+    const body = {
+      "state": state,
+      "redirect_uri": "npf71b963c1b7b6d119://auth",
+      "client_id": "71b963c1b7b6d119",
+      "scope": "openid user user.birthday user.mii user.screenName",
+      "response_type": "session_token_code",
+      "session_token_code_challenge": authCodeChallenge,
+      "session_token_code_challenge_method": "S256",
+      "theme": "login_form",
+    };
+    const url = "https://accounts.nintendo.com/connect/1.0.0/authorize?" +
+      new URLSearchParams(body);
 
-  const res = await fetch.get(
-    {
-      url,
-      headers: {
-        "Host": "accounts.nintendo.com",
-        "Connection": "keep-alive",
-        "Cache-Control": "max-age=0",
-        "Upgrade-Insecure-Requests": "1",
-        "User-Agent": DEFAULT_APP_USER_AGENT,
-        "Accept":
-          "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8n",
-        "DNT": "1",
-        "Accept-Encoding": "gzip,deflate,br",
+    const res = await fetch.get(
+      {
+        url,
+        headers: {
+          "Host": "accounts.nintendo.com",
+          "Connection": "keep-alive",
+          "Cache-Control": "max-age=0",
+          "Upgrade-Insecure-Requests": "1",
+          "User-Agent": DEFAULT_APP_USER_AGENT,
+          "Accept":
+            "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8n",
+          "DNT": "1",
+          "Accept-Encoding": "gzip,deflate,br",
+        },
       },
-    },
-  );
+    );
 
-  const login = (await promptLogin(res.url)).trim();
+    return {
+      authCodeVerifier,
+      url: res.url,
+    };
+  } else {
+    const { login, authCodeVerifier } = step2;
+    const loginURL = new URL(login);
+    const params = new URLSearchParams(loginURL.hash.substring(1));
+    const sessionTokenCode = params.get("session_token_code");
+    if (!sessionTokenCode) {
+      throw new Error("No session token code provided");
+    }
+
+    const sessionToken = await getSessionToken({
+      fetch,
+      sessionTokenCode,
+      authCodeVerifier,
+    });
+    if (!sessionToken) {
+      throw new Error("No session token found");
+    }
+
+    return { sessionToken };
+  }
+}
+
+export async function loginManually(
+  env: Env,
+): Promise<string> {
+  const { prompts: { promptLogin } } = env;
+
+  const step1 = await loginSteps(env);
+
+  const { url, authCodeVerifier } = step1;
+
+  const login = (await promptLogin(url)).trim();
   if (!login) {
     throw new Error("No login URL provided");
   }
-  const loginURL = new URL(login);
-  const params = new URLSearchParams(loginURL.hash.substring(1));
-  const sessionTokenCode = params.get("session_token_code");
-  if (!sessionTokenCode) {
-    throw new Error("No session token code provided");
-  }
 
-  const sessionToken = await getSessionToken({
-    fetch,
-    sessionTokenCode,
-    authCodeVerifier,
-  });
-  if (!sessionToken) {
-    throw new Error("No session token found");
-  }
+  const step2 = await loginSteps(env, { authCodeVerifier, login });
 
-  return sessionToken;
+  return step2.sessionToken;
 }
 
 export async function getGToken(

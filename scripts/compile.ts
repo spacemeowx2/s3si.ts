@@ -20,7 +20,7 @@ if (import.meta.main) {
         "-o",
         `../gui/binaries/s3si-${target}`,
         "-A",
-        "../s3si.ts",
+        "../src/daemon.ts",
       ],
       cwd: __dirname,
     });

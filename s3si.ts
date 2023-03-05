@@ -1,12 +1,11 @@
 import { App, DEFAULT_OPTS } from "./src/app.ts";
-import { runDaemon } from "./src/daemon.ts";
 import { showError } from "./src/utils.ts";
 import { flags } from "./deps.ts";
 
 const parseArgs = (args: string[]) => {
   const parsed = flags.parse(args, {
     string: ["profilePath", "exporter", "skipMode"],
-    boolean: ["help", "noProgress", "monitor", "withSummary", "daemon"],
+    boolean: ["help", "noProgress", "monitor", "withSummary"],
     alias: {
       "help": "h",
       "profilePath": ["p", "profile-path"],
@@ -37,11 +36,6 @@ Options:
     --with-summary               Include summary in the output
     --help                       Show this help message and exit`,
   );
-  Deno.exit(0);
-}
-if (opts.daemon) {
-  await runDaemon();
-
   Deno.exit(0);
 }
 
