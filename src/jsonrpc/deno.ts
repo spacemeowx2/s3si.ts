@@ -15,7 +15,7 @@ export class DenoIO implements Transport {
     const result = await this.lines.next();
 
     if (!result.done) {
-      return JSON.parse(result.value);
+      return result.value;
     }
 
     return undefined;

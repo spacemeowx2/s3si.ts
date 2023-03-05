@@ -1,41 +1,13 @@
-// deno-lint-ignore-file no-empty-interface
-
 import {
   JSONRPCServer,
-  ResponseError,
   RPCResult,
+  S3SIService,
   Service,
 } from "./jsonrpc/mod.ts";
 import { DenoIO } from "./jsonrpc/deno.ts";
 import { loginSteps } from "./iksm.ts";
 import { DEFAULT_ENV, Env } from "./env.ts";
 import { Queue } from "./jsonrpc/channel.ts";
-
-export interface S3SINetworkError extends ResponseError<100> {
-}
-
-export interface S3SIService {
-  loginSteps(): Promise<
-    RPCResult<
-      {
-        authCodeVerifier: string;
-        url: string;
-      },
-      S3SINetworkError
-    >
-  >;
-  loginSteps(step2: {
-    authCodeVerifier: string;
-    login: string;
-  }): Promise<
-    RPCResult<
-      {
-        sessionToken: string;
-      },
-      S3SINetworkError
-    >
-  >;
-}
 
 enum LoggerLevel {
   Debug = "debug",
@@ -71,24 +43,16 @@ class S3SIServiceImplement implements S3SIService, Service {
   };
 
   loginSteps(): Promise<
-    RPCResult<
-      {
-        authCodeVerifier: string;
-        url: string;
-      },
-      S3SINetworkError
-    >
+    RPCResult<{
+      authCodeVerifier: string;
+      url: string;
+    }>
   >;
   loginSteps(step2: {
     authCodeVerifier: string;
     login: string;
   }): Promise<
-    RPCResult<
-      {
-        sessionToken: string;
-      },
-      S3SINetworkError
-    >
+    RPCResult<{ sessionToken: string }>
   >;
   async loginSteps(step2?: {
     authCodeVerifier: string;
@@ -100,8 +64,7 @@ class S3SIServiceImplement implements S3SIService, Service {
         url: string;
       } | {
         sessionToken: string;
-      },
-      S3SINetworkError
+      }
     >
   > {
     if (!step2) {
