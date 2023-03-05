@@ -47,7 +47,7 @@ export class JSONRPCServer {
       };
     }
 
-    const result = await func(...params);
+    const result = await func.apply(this.service, params);
 
     return {
       ...res,
@@ -81,7 +81,7 @@ export class JSONRPCServer {
       error: {
         code: 32000,
         message: "Internal error",
-        data: e,
+        data: String(e),
       },
     });
 

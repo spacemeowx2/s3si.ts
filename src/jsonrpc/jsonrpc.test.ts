@@ -13,6 +13,7 @@ export interface SimpleService {
 }
 
 class SimpleServiceImplement implements SimpleService, Service {
+  // deno-lint-ignore require-await
   async add(a: number, b: number): Promise<RPCResult<number>> {
     return {
       result: a + b,

@@ -64,3 +64,26 @@ export const ERROR_INTERNAL_ERROR: ResponseError<-32603> = {
   code: -32603,
   message: "Internal error",
 };
+
+export interface S3SIService {
+  loginSteps(): Promise<
+    RPCResult<
+      {
+        authCodeVerifier: string;
+        url: string;
+      }
+    >
+  >;
+  loginSteps(step2: {
+    authCodeVerifier: string;
+    login: string;
+  }): Promise<
+    RPCResult<
+      {
+        sessionToken: string;
+      }
+    >
+  >;
+  // deno-lint-ignore no-explicit-any
+  [key: string]: any;
+}

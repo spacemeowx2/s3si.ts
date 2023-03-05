@@ -1,15 +1,14 @@
-import { ExtractType } from "./types";
 import { Command, Child } from '@tauri-apps/api/shell'
 
-export class IPC<T extends { type: string }> {
-  queue: T[] = [];
-  waiting: ((value: T) => void)[] = [];
-  callback = (data: unknown) => {
+export class StdioTransport {
+  queue: string[] = [];
+  waiting: ((value: string | undefined) => void)[] = [];
+  callback = (data: string) => {
     const waiting = this.waiting.shift();
     if (waiting) {
-      waiting(data as T);
+      waiting(data);
     } else {
-      this.queue.push(data as T);
+      this.queue.push(data);
     }
   };
   child: Promise<Child>;
@@ -19,7 +18,7 @@ export class IPC<T extends { type: string }> {
       ? new Command("deno", ["run", "-A", "../../src/daemon.ts"])
       : Command.sidecar('../binaries/s3si');
     command.stdout.on('data', line => {
-      this.callback(JSON.parse(line))
+      this.callback(line)
     })
     command.stderr.on('data', line => {
       console.error('daemon stderr', line)
@@ -27,17 +26,8 @@ export class IPC<T extends { type: string }> {
     this.child = command.spawn()
   }
 
-  async recvType<K extends T["type"]>(
-    type: K,
-  ): Promise<ExtractType<T, K>> {
-    const data = await this.recv();
-    if (data.type !== type) {
-      throw new Error(`Unexpected type: ${data.type}`);
-    }
-    return data as ExtractType<T, K>;
-  }
-  async recv(): Promise<T> {
-    return new Promise<T>((resolve) => {
+  async recv(): Promise<string | undefined> {
+    return new Promise((resolve) => {
       const data = this.queue.shift();
       if (data) {
         resolve(data);
@@ -46,8 +36,12 @@ export class IPC<T extends { type: string }> {
       }
     });
   }
-  async send(data: T) {
+  async send(data: string) {
     const child = await this.child;
-    await child.write(JSON.stringify(data) + "\n")
+    await child.write(data + "\n")
+  }
+  async close() {
+    const child = await this.child;
+    await child.kill()
   }
 }
