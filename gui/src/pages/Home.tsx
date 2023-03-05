@@ -17,10 +17,22 @@ export const Home: React.FC = ({ }) => {
       throw new Error(result.error.message);
     }
 
-    const sessionToken = await invoke('open_login_window', {
+    const login: string | null = await invoke('open_login_window', {
       url: result.result.url
     })
-    console.log(sessionToken)
+    if (login === null || login === '') {
+      console.log('user cancel login');
+      return;
+    }
+    const loginResult: { url: string } = JSON.parse(login);
+    const sessionToken = await client.loginSteps({
+      authCodeVerifier: result.result.authCodeVerifier,
+      login: loginResult.url,
+    })
+    if (sessionToken.error) {
+      throw new Error(sessionToken.error.message);
+    }
+    console.log('sessionToken', sessionToken.result);
   }
   return <>
     Hello world!  <Loading />
