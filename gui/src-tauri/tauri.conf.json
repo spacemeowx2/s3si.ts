@@ -19,10 +19,7 @@
         "scope": [
           {
             "name": "../binaries/s3si",
-            "sidecar": true,
-            "args": [
-              "--daemon"
-            ]
+            "sidecar": true
           },
           {
             "name": "deno",
@@ -30,8 +27,7 @@
             "args": [
               "run",
               "-A",
-              "../../s3si.ts",
-              "--daemon"
+              "../../src/daemon.ts"
             ]
           }
         ],
