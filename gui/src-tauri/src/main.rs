@@ -21,7 +21,7 @@ function onSelectUserClick(e) {
     "callback":0,
     "error":0,
     "__tauriModule":"Event",
-    "message":{"cmd":"emit","event":"login","payload":element.href}
+    "message":{"cmd":"emit","event":"login","payload":{"url":element.href}}
   }))
 }
 function detectAndInject() {
