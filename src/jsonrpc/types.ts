@@ -33,8 +33,11 @@ export type Transport = {
 };
 
 export type RPCResult<Result, Error extends ResponseError = ResponseError> = {
-  result?: Result;
-  error?: Error;
+  result: Result;
+  error?: undefined;
+} | {
+  result?: undefined;
+  error: Error;
 };
 
 export type Service = {
