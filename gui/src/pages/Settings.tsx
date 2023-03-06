@@ -1,3 +1,4 @@
+import { Loading } from 'components/Loading';
 import { usePromise } from 'hooks/usePromise';
 import React from 'react'
 import { useTranslation } from 'react-i18next';
@@ -13,7 +14,7 @@ export const Settings: React.FC = () => {
   }
 
   if (loading) {
-    return <div className='card m-2 h-full'>{t('加载中...')}</div>
+    return <div className='h-full flex items-center justify-center'><Loading /></div>
   }
 
   return <>
