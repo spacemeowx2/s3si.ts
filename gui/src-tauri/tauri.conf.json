@@ -77,6 +77,8 @@
         "title": "s3si.ts",
         "width": 400,
         "height": 300,
+        "minWidth": 320,
+        "minHeight": 300,
         "visible": false
       }
     ]

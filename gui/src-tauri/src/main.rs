@@ -38,11 +38,18 @@ detectAndInject();
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 #[tauri::command]
 async fn open_login_window(app: tauri::AppHandle, url: String) -> Option<String> {
-    let window = WindowBuilder::new(&app, "login", tauri::WindowUrl::App("/".into()))
-        .title("Login")
-        .initialization_script(INIT_SCRIPT)
-        .build()
-        .ok()?;
+    let encoded = urlencoding::encode(&url);
+    let window = WindowBuilder::new(
+        &app,
+        "login",
+        tauri::WindowUrl::App(format!("/redirect?url={encoded}").into()),
+    )
+    .title("Login")
+    .center()
+    .inner_size(1040.0, 960.0)
+    .initialization_script(INIT_SCRIPT)
+    .build()
+    .ok()?;
     let result: Arc<Mutex<Option<String>>> = Arc::new(Mutex::new(None));
     let r2 = result.clone();
     let r3 = result.clone();
@@ -59,9 +66,6 @@ async fn open_login_window(app: tauri::AppHandle, url: String) -> Option<String>
             }
         }
     });
-    window
-        .eval(&format!("window.location.href = '{}'", url))
-        .ok()?;
 
     loop {
         sleep(Duration::from_millis(100)).await;
