@@ -39,9 +39,9 @@
       },
       "fs": {
         "scope": [
-          "$APPCONFIG/*",
-          "$APPDATA/*",
-          "$APPCACHE/*"
+          "$APPCONFIG/**/*",
+          "$APPDATA/**/*",
+          "$APPCACHE/**/*"
         ],
         "all": true
       },
