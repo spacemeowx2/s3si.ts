@@ -9,6 +9,7 @@ import { Config, getConfig, getProfile, Profile, setConfig, setProfile } from 's
 import { composeLoadable } from 'utils/composeLoadable';
 import classNames from 'classnames';
 import { useLogin } from 'services/s3si';
+import { STAT_INK } from 'constant';
 
 const Page: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
   const { t } = useTranslation();
@@ -89,7 +90,7 @@ const Form: React.FC<{
             className='underline'
             target='_blank'
             rel='noopener noreferrer'
-            href='https://stat.ink/profile'
+            href={`${STAT_INK}/profile`}
             title={t('打开 stat.ink') ?? undefined}
           >{t('stat.ink')}</a></span>
         </label>
