@@ -12,6 +12,18 @@ export type Profile = {
 export type Config = {
 }
 
+// TODO: import from state.ts.
+const DEFAULT_STATE: State = {
+  cacheDir: "./cache",
+  fGen: "https://api.imink.app/f",
+  fileExportPath: "./export",
+  monitorInterval: 500,
+};
+
+const defaultProfile: Profile = {
+  state: DEFAULT_STATE,
+}
+
 const defaultConfig: Config = {
 }
 
@@ -22,8 +34,8 @@ export async function initFiles() {
 initFiles().catch(console.error);
 
 export async function getConfig(): Promise<Config> {
-  const config = await fs.readTextFile(await configFile);
   try {
+    const config = await fs.readTextFile(await configFile);
     return JSON.parse(config);
   } catch (e) {
     return defaultConfig;
@@ -32,4 +44,17 @@ export async function getConfig(): Promise<Config> {
 
 export async function setConfig(config: Config) {
   await fs.writeTextFile(await configFile, JSON.stringify(config));
+}
+
+export async function getProfile(index: number): Promise<Profile> {
+  try {
+    const profile = await fs.readTextFile(await profileDir.then(c => join(c, `${index}.json`)));
+    return JSON.parse(profile);
+  } catch (e) {
+    return defaultProfile;
+  }
+}
+
+export async function setProfile(index: number, profile: Profile) {
+  await fs.writeTextFile(await profileDir.then(c => join(c, `${index}.json`)), JSON.stringify(profile));
 }
