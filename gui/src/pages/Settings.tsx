@@ -71,6 +71,7 @@ const Form: React.FC<{
               loading: loginState.loading,
             })}
             onClick={onLogin}
+            disabled={loginState.loading}
           >{t('网页登录')}</button></span>
         </label>
         <input
