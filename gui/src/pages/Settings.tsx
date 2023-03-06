@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import { Config, getConfig, getProfile, Profile, setConfig, setProfile } from 'services/config';
 import { composeLoadable } from 'utils/composeLoadable';
 import classNames from 'classnames';
+import { useLogin } from 'services/s3si';
 
 const Page: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
   const { t } = useTranslation();
@@ -27,20 +28,60 @@ const Form: React.FC<{
   oldValue: FormData,
   onSaved?: () => void,
 }> = ({ oldValue, onSaved }) => {
+  const { login } = useLogin();
   const { t } = useTranslation();
   const [value, setValue] = useState(oldValue);
 
   const changed = JSON.stringify(value) !== JSON.stringify(oldValue);
+
+  const setSessionToken = (t: string) => setValue({
+    ...value,
+    profile: {
+      ...value.profile,
+      state: {
+        ...value.profile.state,
+        loginState: {
+          ...value.profile.state.loginState,
+          sessionToken: t,
+        },
+      }
+    }
+  })
 
   const [onSave, { loading, error }] = usePromiseLazy(async () => {
     await setProfile(0, value.profile);
     await setConfig(value.config);
     onSaved?.();
   })
+  const [onLogin, loginState] = usePromiseLazy(async () => {
+    const result = await login();
+    if (!result) {
+      return;
+    }
+    setSessionToken(result.sessionToken);
+  })
 
   return <>
     <div className='card'>
-      <div className="form-control w-full max-w-xs mb-4">
+      <div className="form-control w-full max-w-md mb-4">
+        <label className="label">
+          <span className="label-text">{t('Nintendo Account 会话令牌')}</span>
+          <span className="label-text-alt"><button
+            className={classNames('link', {
+              loading: loginState.loading,
+            })}
+            onClick={onLogin}
+          >{t('网页登录')}</button></span>
+        </label>
+        <input
+          className="input input-bordered w-full"
+          type="text"
+          placeholder={t('请点击右上角的登录填入') ?? undefined}
+          value={value.profile.state.loginState?.sessionToken ?? ''}
+          onChange={e => setSessionToken(e.target.value)}
+        />
+      </div>
+      <div className="form-control w-full max-w-md mb-4">
         <label className="label">
           <span className="label-text">{t('stat.ink API密钥')}</span>
           <span className="label-text-alt"><a
@@ -52,7 +93,7 @@ const Form: React.FC<{
           >{t('stat.ink')}</a></span>
         </label>
         <input
-          className="input input-bordered w-full max-w-xs"
+          className="input input-bordered w-full"
           type="text"
           placeholder={t('长度为43') ?? undefined}
           value={value.profile.state.statInkApiKey ?? ''}
@@ -70,11 +111,13 @@ const Form: React.FC<{
       </div>
     </div>
     <ErrorContent error={error} />
-    <div className='flex gap-5'>
-      <button className={classNames('btn btn-primary w-[150px]', {
-        loading,
-      })} onClick={onSave} disabled={!changed}>{t('保存')}</button>
-      <button className={classNames('btn w-[150px]', {
+    <div className='flex gap-4 max-w-md justify-between flex-auto-all'>
+      <div className="tooltip" data-tip={changed ? undefined : t('没有更改')}>
+        <button className={classNames('btn btn-primary w-full', {
+          loading,
+        })} onClick={onSave} disabled={!changed}>{t('保存')}</button>
+      </div>
+      <button className={classNames('btn', {
         loading,
       })} onClick={() => setValue(oldValue)}>{t('重置')}</button>
     </div>

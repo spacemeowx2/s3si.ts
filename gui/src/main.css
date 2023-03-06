@@ -34,3 +34,9 @@ body {
     background-color: #2f2f2f;
   }
 }
+
+/* custom classes */
+
+.flex-auto-all > * {
+  @apply flex-auto;
+}
