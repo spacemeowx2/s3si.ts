@@ -39,10 +39,14 @@
       },
       "fs": {
         "scope": [
-          "$APPCONFIG",
-          "$APPDATA",
-          "$APPCACHE"
-        ]
+          "$APPCONFIG/*",
+          "$APPDATA/*",
+          "$APPCACHE/*"
+        ],
+        "all": true
+      },
+      "path": {
+        "all": true
       }
     },
     "bundle": {

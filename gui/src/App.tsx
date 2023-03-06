@@ -1,3 +1,4 @@
+import 'i18n/config';
 import { useEffect } from "react";
 import { getCurrent } from "@tauri-apps/api/window";
 import { Routes, Route } from "react-router-dom";
