@@ -35,7 +35,31 @@ function detectAndInject() {
 detectAndInject();
 "#;
 
-// Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
+#[tauri::command]
+async fn open_splatnet(app: tauri::AppHandle, gtoken: String) -> Option<()> {
+    let _window = WindowBuilder::new(
+        &app,
+        "splatnet3",
+        tauri::WindowUrl::App("https://api.lp1.av5ja.srv.nintendo.net/".into()),
+    )
+    .title("Splatnet3")
+    .center()
+    .inner_size(1040.0, 960.0)
+    .initialization_script(&format!(
+        r##"
+const gtoken = "_gtoken={gtoken}";
+if (!document.cookie.includes(gtoken)) {{
+    document.cookie = gtoken;
+    window.location.reload();
+}}
+    "##
+    ))
+    .build()
+    .ok()?;
+
+    None
+}
+
 #[tauri::command]
 async fn open_login_window(app: tauri::AppHandle, url: String) -> Option<String> {
     let encoded = urlencoding::encode(&url);
@@ -79,7 +103,7 @@ async fn open_login_window(app: tauri::AppHandle, url: String) -> Option<String>
 
 fn main() {
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![open_login_window])
+        .invoke_handler(tauri::generate_handler![open_login_window, open_splatnet])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
