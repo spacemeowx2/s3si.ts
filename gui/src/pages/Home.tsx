@@ -1,3 +1,4 @@
+import { invoke } from '@tauri-apps/api';
 import { ErrorContent } from 'components/ErrorContent';
 import { Loading } from 'components/Loading';
 import { LogPanel, RunPanel } from 'components/RunPanel';
@@ -10,7 +11,7 @@ import { getConfig, getProfile } from 'services/config';
 import { composeLoadable } from 'utils/composeLoadable';
 
 export const Home: React.FC = () => {
-  let { loading, error, retry } = composeLoadable({
+  let { loading, error, retry, result } = composeLoadable({
     config: usePromise(getConfig),
     profile: usePromise(() => getProfile(0)),
   });
@@ -27,6 +28,13 @@ export const Home: React.FC = () => {
       <ErrorContent error={error} retry={retry} />
     </>
   }
+  const gtoken = result?.profile.state.loginState?.gToken
+  const onOpenSplatnet3 = async () => {
+    await invoke('open_splatnet', {
+      gtoken,
+    })
+  };
+
 
   return <div className='flex p-2 w-full h-full gap-2'>
     <div className='max-w-full md:max-w-sm flex-auto'>
@@ -35,6 +43,7 @@ export const Home: React.FC = () => {
         <RunPanel />
         <Link to='/settings' className='btn'>{t('设置')}</Link>
         <a className='btn' href={STAT_INK} target='_blank' rel='noreferrer'>{t('前往 stat.ink')}</a>
+        <button className='btn' onClick={onOpenSplatnet3}>{t('打开鱿鱼圈3')}</button>
       </div>
     </div>
     <LogPanel className='hidden sm:block flex-1' />
