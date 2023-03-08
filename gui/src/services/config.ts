@@ -58,3 +58,7 @@ export async function getProfile(index: number): Promise<Profile> {
 export async function setProfile(index: number, profile: Profile) {
   await fs.writeTextFile(await profileDir.then(c => join(c, `${index}.json`)), JSON.stringify(profile));
 }
+
+export function canExport(profile: Profile): boolean {
+  return !!profile.state.loginState?.sessionToken
+}

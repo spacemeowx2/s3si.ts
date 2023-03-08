@@ -1,6 +1,6 @@
 export class Queue<T> {
-  queue: T[] = [];
-  waiting: ((value: T | undefined) => void)[] = [];
+  private queue: T[] = [];
+  private waiting: ((value: T | undefined) => void)[] = [];
 
   pop = (): Promise<T | undefined> => {
     return new Promise<T | undefined>((resolve) => {

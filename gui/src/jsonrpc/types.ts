@@ -1,1 +1,1 @@
-export * from '../../../src/jsonrpc/types';
+export type * from '../../../src/jsonrpc/types';
