@@ -1,6 +1,6 @@
 import { ErrorContent } from 'components/ErrorContent';
 import { Loading } from 'components/Loading';
-import { RunPanel } from 'components/RunPanel';
+import { LogPanel, RunPanel } from 'components/RunPanel';
 import { STAT_INK } from 'constant';
 import { usePromise } from 'hooks/usePromise';
 import React from 'react'
@@ -28,14 +28,15 @@ export const Home: React.FC = () => {
     </>
   }
 
-  return <>
-    <div className='full-card'>
-      <h1 className='mb-4'>{t('欢迎!')}</h1>
+  return <div className='flex p-2 w-full h-full gap-2'>
+    <div className='max-w-full md:max-w-sm flex-auto'>
       <div className='flex flex-col gap-2'>
+        <LogPanel className='sm:hidden max-h-[10rem]' />
         <RunPanel />
         <Link to='/settings' className='btn'>{t('配置')}</Link>
         <a className='btn' href={STAT_INK} target='_blank' rel='noreferrer'>{t('前往 stat.ink')}</a>
       </div>
     </div>
-  </>
+    <LogPanel className='hidden sm:block flex-1' />
+  </div>
 }

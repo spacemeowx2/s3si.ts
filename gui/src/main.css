@@ -26,6 +26,7 @@ body {
 
 #root {
   height: 100vh;
+  overflow: hidden
 }
 
 @media (prefers-color-scheme: dark) {
@@ -42,5 +43,5 @@ body {
 }
 
 .full-card {
-  @apply card m-2 h-full;
+  @apply card p-2 h-full;
 }

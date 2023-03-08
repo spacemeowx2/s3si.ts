@@ -60,5 +60,5 @@ export async function setProfile(index: number, profile: Profile) {
 }
 
 export function canExport(profile: Profile): boolean {
-  return !!profile.state.loginState?.sessionToken
+  return !!(profile.state.loginState?.sessionToken && profile.state.statInkApiKey)
 }

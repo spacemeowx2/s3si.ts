@@ -1,11 +1,12 @@
 import { invoke } from "@tauri-apps/api";
 import { JSONRPCClient, S3SIService, StdioTransport } from "jsonrpc";
-import { ExportOpts, State } from "jsonrpc/types";
-import { useCallback } from "react";
+import { ExportOpts, Log, State } from "jsonrpc/types";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 
 const client = new JSONRPCClient<S3SIService>({
   transport: new StdioTransport()
 }).getProxy();
+const LOG_SUB = new Set<(logs: Log[]) => void>();
 
 async function getLogs() {
   while (true) {
@@ -31,9 +32,56 @@ async function getLogs() {
           break;
       }
     }
+    for (const cb of LOG_SUB) {
+      cb(r.result);
+    }
   }
 }
 getLogs()
+
+const LOG_CONTEXT = createContext<{
+  logs: Log[],
+  renderedLogs: React.ReactNode[]
+}>({
+  logs: [],
+  renderedLogs: [],
+});
+
+export const useLog = () => {
+  return useContext(LOG_CONTEXT);
+}
+
+function renderLevel(log: Log) {
+  return `[${log.level.toUpperCase()}]`.padEnd(7)
+}
+
+function renderLog(log: Log) {
+  return `${renderLevel(log)} ${log.msg.map(String).join(' ')}`
+}
+
+export const LogProvider: React.FC<{ limit?: number, children?: React.ReactNode }> = ({ children, limit = 10 }) => {
+  const [logs, setLogs] = useState<Log[]>([]);
+
+  useEffect(() => {
+    const cb = (logs: Log[]) => {
+      setLogs(old => [...old, ...logs].slice(-limit));
+    }
+    LOG_SUB.add(cb);
+    return () => {
+      LOG_SUB.delete(cb);
+    }
+  }, [limit])
+
+
+  const renderedLogs = useMemo(() => logs.map(renderLog), [logs])
+
+  return <LOG_CONTEXT.Provider value={{
+    logs,
+    renderedLogs,
+  }}>
+    {children}
+  </LOG_CONTEXT.Provider>
+}
 
 export const useLogin = () => {
   const login = useCallback(async () => {
