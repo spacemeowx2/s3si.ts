@@ -40,3 +40,7 @@ body {
 .flex-auto-all > * {
   @apply flex-auto;
 }
+
+.full-card {
+  @apply card m-2 h-full;
+}
