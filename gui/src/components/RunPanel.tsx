@@ -3,7 +3,7 @@ import { usePromise } from 'hooks/usePromise';
 import React, { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next';
 import { canExport, getProfile, setProfile } from 'services/config';
-import { run, useLog } from 'services/s3si';
+import { addLog, run, useLog } from 'services/s3si';
 import { Checkbox } from './Checkbox';
 import { Loading } from './Loading';
 
@@ -24,6 +24,10 @@ export const RunPanel: React.FC<RunPanelProps> = () => {
   const onClick = async () => {
     setLoading(true);
     try {
+      addLog({
+        level: 'log',
+        msg: ['Export started at', new Date().toLocaleString()],
+      })
       const { state } = result;
       const newState = await run(state, {
         exporter: "stat.ink,file",
@@ -35,14 +39,24 @@ export const RunPanel: React.FC<RunPanelProps> = () => {
         ...result,
         state: newState,
       })
+    } catch (e) {
+      console.error(e)
+      addLog({
+        level: 'error',
+        msg: [e],
+      })
     } finally {
+      addLog({
+        level: 'log',
+        msg: ['Export ended at', new Date().toLocaleString()],
+      })
       setLoading(false);
     }
   }
   const disabled = !canExport(result);
 
   return <>
-    <div className="tooltip" data-tip={disabled ? t('请先完成登录和stat.ink的API密钥设置') : undefined}>
+    <div className="tooltip" data-tip={disabled ? t('请先在设置中完成Nintendo Account登录和stat.ink的API密钥') : undefined}>
       <Checkbox disabled={disabled || loading} value={exportBattle} onChange={setExportBattle}>{t('导出对战数据')}</Checkbox>
       <Checkbox disabled={disabled || loading} value={exportCoop} onChange={setExportCoop}>{t('导出打工数据')}</Checkbox>
       <button

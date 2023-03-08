@@ -75,15 +75,32 @@ export class JSONRPCServer {
     ) => Response<any, ResponseError<32000, unknown>> = (id) =>
     (
       e,
-    ) => ({
-      jsonrpc: "2.0",
-      id: id,
-      error: {
-        code: 32000,
-        message: "Internal error",
-        data: String(e),
-      },
-    });
+    ) => {
+      if (e instanceof Error) {
+        return {
+          jsonrpc: "2.0",
+          id: id,
+          error: {
+            code: 32000,
+            message: e.message,
+            data: {
+              name: e.name,
+              stack: e.stack,
+              cause: e.cause,
+            },
+          },
+        };
+      }
+      return {
+        jsonrpc: "2.0",
+        id: id,
+        error: {
+          code: 32000,
+          message: "Internal error",
+          data: String(e),
+        },
+      };
+    };
 
     // batch request
     if (Array.isArray(req)) {

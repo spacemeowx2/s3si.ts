@@ -58,7 +58,7 @@ export const Guide: React.FC = () => {
 
 
   const steps: Step[] = [{
-    title: t('登录任天堂帐号'),
+    title: t('登录Nintendo Account'),
     element: LoginNintendoAccount,
   }, {
     title: t('填写stat.ink API密钥'),
@@ -69,7 +69,7 @@ export const Guide: React.FC = () => {
   }]
 
   return <div className="full-card">
-    <Header title={t('配置向导')} />
+    <Header title={t('设置向导')} />
     <Steps className='mt-4' steps={steps} />
   </div>
 }
