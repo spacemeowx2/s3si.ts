@@ -7,8 +7,8 @@
     "withGlobalTauri": false
   },
   "package": {
-    "productName": "s3si-ts",
-    "version": "0.3.2"
+    "productName": "s3si.ts",
+    "version": "0.1.0"
   },
   "tauri": {
     "allowlist": {
