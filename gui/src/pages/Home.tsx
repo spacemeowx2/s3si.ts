@@ -1,3 +1,4 @@
+import { CheckUpdate } from 'components/CheckUpdate';
 import { ErrorContent } from 'components/ErrorContent';
 import { Loading } from 'components/Loading';
 import { STAT_INK } from 'constant';
@@ -33,6 +34,7 @@ export const Home: React.FC = () => {
       <div className='flex flex-col gap-2'>
         <Link to='/settings' className='btn btn-primary'>{t('配置')}</Link>
         <a className='btn' href={STAT_INK} target='_blank' rel='noreferrer'>{t('前往 stat.ink')}</a>
+        <CheckUpdate className='btn'>{t('检查更新')}</CheckUpdate>
       </div>
     </div>
   </>

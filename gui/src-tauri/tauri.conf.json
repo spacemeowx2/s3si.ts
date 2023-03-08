@@ -8,7 +8,7 @@
   },
   "package": {
     "productName": "s3si-ts",
-    "version": "0.3.3"
+    "version": "0.3.2"
   },
   "tauri": {
     "allowlist": {
@@ -47,6 +47,10 @@
       },
       "path": {
         "all": true
+      },
+      "process": {
+        "all": false,
+        "relaunch": true
       }
     },
     "bundle": {
