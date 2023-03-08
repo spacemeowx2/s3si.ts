@@ -3,19 +3,17 @@ import { Loading } from 'components/Loading';
 import { usePromise, usePromiseLazy } from 'hooks/usePromise';
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next';
-import { AiOutlineLeft } from 'react-icons/ai';
-import { useNavigate } from 'react-router-dom';
 import { Config, getConfig, getProfile, Profile, setConfig, setProfile } from 'services/config';
 import { composeLoadable } from 'utils/composeLoadable';
 import classNames from 'classnames';
 import { useLogin } from 'services/s3si';
 import { STAT_INK } from 'constant';
+import { Header } from 'components/Header';
 
 const Page: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
   const { t } = useTranslation();
-  const navigate = useNavigate();
-  return <div className='card m-2 h-full'>
-    <h2 className="card-title" data-tauri-drag-region><button onClick={() => navigate('/')}><AiOutlineLeft /></button>{t('配置')}</h2>
+  return <div className='full-card'>
+    <Header title={t('配置')} />
     {children}
   </div>
 }

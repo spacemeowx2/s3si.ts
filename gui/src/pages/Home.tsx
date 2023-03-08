@@ -29,7 +29,7 @@ export const Home: React.FC = () => {
   }
 
   return <>
-    <div className='card m-2 h-full'>
+    <div className='full-card'>
       <h1 className='mb-4'>{t('欢迎!')}</h1>
       <div className='flex flex-col gap-2'>
         <Link to='/settings' className='btn btn-primary'>{t('配置')}</Link>
