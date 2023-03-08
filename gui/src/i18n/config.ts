@@ -1,12 +1,16 @@
 import i18next from 'i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
 import { initReactI18next } from 'react-i18next';
-import translation from './translation/en.json';
+import en from './translation/en.json';
+import zhCN from './translation/zh-CN.json';
 import HttpBackend from 'i18next-http-backend'
 
 export const resources = {
   en: {
-    translation,
+    translation: en,
+  },
+  'zh-CN': {
+    translation: zhCN,
   }
 };
 
@@ -21,6 +25,5 @@ if (import.meta.env.DEV) {
 instance.init({
   debug: import.meta.env.DEV,
   resources,
-  saveMissing: true,
-  fallbackLng: 'en'
+  // saveMissing: true,
 });
