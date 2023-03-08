@@ -8,20 +8,17 @@ import { DenoIO } from "./jsonrpc/deno.ts";
 import { loginSteps } from "./iksm.ts";
 import { DEFAULT_ENV, Env } from "./env.ts";
 import { Queue } from "./jsonrpc/channel.ts";
-
-enum LoggerLevel {
-  Debug = "debug",
-  Log = "log",
-  Warn = "warn",
-  Error = "error",
-}
+import { ExportOpts, Log } from "./jsonrpc/types.ts";
+import { App } from "./app.ts";
+import { InMemoryStateBackend, State } from "./state.ts";
+import { MemoryCache } from "./cache.ts";
 
 class S3SIServiceImplement implements S3SIService, Service {
   loginMap: Map<string, {
     step1: (url: string) => void;
     promise: Promise<string>;
   }> = new Map();
-  loggerQueue: Queue<{ level: LoggerLevel; msg: unknown[] }> = new Queue();
+  loggerQueue: Queue<Log> = new Queue();
   env: Env = {
     prompts: {
       promptLogin: () => {
@@ -32,12 +29,10 @@ class S3SIServiceImplement implements S3SIService, Service {
       },
     },
     logger: {
-      debug: (...msg) =>
-        this.loggerQueue.push({ level: LoggerLevel.Debug, msg }),
-      log: (...msg) => this.loggerQueue.push({ level: LoggerLevel.Log, msg }),
-      warn: (...msg) => this.loggerQueue.push({ level: LoggerLevel.Warn, msg }),
-      error: (...msg) =>
-        this.loggerQueue.push({ level: LoggerLevel.Error, msg }),
+      debug: (...msg) => this.loggerQueue.push({ level: "debug", msg }),
+      log: (...msg) => this.loggerQueue.push({ level: "log", msg }),
+      warn: (...msg) => this.loggerQueue.push({ level: "warn", msg }),
+      error: (...msg) => this.loggerQueue.push({ level: "error", msg }),
     },
     newFetcher: DEFAULT_ENV.newFetcher,
   };
@@ -74,6 +69,28 @@ class S3SIServiceImplement implements S3SIService, Service {
     }
     return {
       result: await loginSteps(this.env, step2),
+    };
+  }
+  async getLogs(): Promise<RPCResult<Log[]>> {
+    const log = await this.loggerQueue.pop();
+    return {
+      result: log ? [log] : [],
+    };
+  }
+  async run(state: State, opts: ExportOpts): Promise<RPCResult<State>> {
+    const stateBackend = new InMemoryStateBackend(state);
+    const app = new App({
+      ...opts,
+      noProgress: true,
+      env: this.env,
+      profilePath: "",
+      stateBackend,
+      cache: new MemoryCache(),
+    });
+    await app.run();
+
+    return {
+      result: stateBackend.state,
     };
   }
   // deno-lint-ignore no-explicit-any
