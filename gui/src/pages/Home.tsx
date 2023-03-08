@@ -33,7 +33,7 @@ export const Home: React.FC = () => {
       <div className='flex flex-col gap-2'>
         <LogPanel className='sm:hidden max-h-[10rem]' />
         <RunPanel />
-        <Link to='/settings' className='btn'>{t('配置')}</Link>
+        <Link to='/settings' className='btn'>{t('设置')}</Link>
         <a className='btn' href={STAT_INK} target='_blank' rel='noreferrer'>{t('前往 stat.ink')}</a>
       </div>
     </div>

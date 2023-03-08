@@ -9,11 +9,15 @@ import classNames from 'classnames';
 import { useLogin } from 'services/s3si';
 import { STAT_INK } from 'constant';
 import { Header } from 'components/Header';
+import { useSubField } from 'hooks/useSubField';
+import { useNavigate } from 'react-router-dom';
+
+const STAT_INK_KEY_LENGTH = 43;
 
 const Page: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
   const { t } = useTranslation();
   return <div className='full-card'>
-    <Header title={t('配置')} />
+    <Header title={t('设置')} />
     {children}
   </div>
 }
@@ -30,22 +34,12 @@ const Form: React.FC<{
   const { login } = useLogin();
   const { t } = useTranslation();
   const [value, setValue] = useState(oldValue);
+  const { subField } = useSubField({ value, onChange: setValue });
 
   const changed = JSON.stringify(value) !== JSON.stringify(oldValue);
 
-  const setSessionToken = (t: string) => setValue({
-    ...value,
-    profile: {
-      ...value.profile,
-      state: {
-        ...value.profile.state,
-        loginState: {
-          ...value.profile.state.loginState,
-          sessionToken: t,
-        },
-      }
-    }
-  })
+  const sessionToken = subField('profile.state.loginState.sessionToken')
+  const statInkApiKey = subField('profile.state.statInkApiKey')
 
   const [onSave, { loading, error }] = usePromiseLazy(async () => {
     await setProfile(0, value.profile);
@@ -57,8 +51,10 @@ const Form: React.FC<{
     if (!result) {
       return;
     }
-    setSessionToken(result.sessionToken);
+    sessionToken.onChange(result.sessionToken);
   })
+
+  const statInkKeyError = (statInkApiKey.value?.length ?? STAT_INK_KEY_LENGTH) !== STAT_INK_KEY_LENGTH;
 
   return <>
     <div className='card'>
@@ -77,8 +73,8 @@ const Form: React.FC<{
           className="input input-bordered w-full"
           type="text"
           placeholder={t('请点击右上角的登录填入') ?? undefined}
-          value={value.profile.state.loginState?.sessionToken ?? ''}
-          onChange={e => setSessionToken(e.target.value)}
+          value={sessionToken.value ?? ''}
+          onChange={e => sessionToken.onChange(e.target.value)}
         />
       </div>
       <div className="form-control w-full max-w-md mb-4">
@@ -90,24 +86,19 @@ const Form: React.FC<{
             rel='noopener noreferrer'
             href={`${STAT_INK}/profile`}
             title={t('打开 stat.ink') ?? undefined}
-          >{t('stat.ink')}</a></span>
+          >{t('查看API密钥')}</a></span>
         </label>
-        <input
-          className="input input-bordered w-full"
-          type="text"
-          placeholder={t('长度为43') ?? undefined}
-          value={value.profile.state.statInkApiKey ?? ''}
-          onChange={e => setValue({
-            ...value,
-            profile: {
-              ...value.profile,
-              state: {
-                ...value.profile.state,
-                statInkApiKey: e.target.value,
-              }
-            }
-          })}
-        />
+        <div className='tooltip' data-tip={statInkKeyError ? t('密钥的长度应该为{{length}}, 请检查', { length: STAT_INK_KEY_LENGTH }) : null}>
+          <input
+            className={classNames("input input-bordered w-full", {
+              'input-error': statInkKeyError,
+            })}
+            type="text"
+            placeholder={t('请从stat.ink中获取API密钥') ?? undefined}
+            value={statInkApiKey.value ?? ''}
+            onChange={e => statInkApiKey.onChange(e.target.value)}
+          />
+        </div>
       </div>
     </div>
     <ErrorContent error={error} />
@@ -115,7 +106,7 @@ const Form: React.FC<{
       <div className="tooltip" data-tip={changed ? undefined : t('没有更改')}>
         <button className={classNames('btn btn-primary w-full', {
           loading,
-        })} onClick={onSave} disabled={!changed}>{t('保存')}</button>
+        })} onClick={onSave} disabled={!changed || statInkKeyError}>{t('保存')}</button>
       </div>
       <button className={classNames('btn', {
         loading,
@@ -125,6 +116,7 @@ const Form: React.FC<{
 }
 
 export const Settings: React.FC = () => {
+  const navigate = useNavigate();
   let { loading, error, retry, result } = composeLoadable({
     config: usePromise(getConfig),
     profile: usePromise(() => getProfile(0)),
@@ -143,6 +135,6 @@ export const Settings: React.FC = () => {
   }
 
   return <Page>
-    {result && <Form oldValue={result} onSaved={retry} />}
+    {result && <Form oldValue={result} onSaved={() => navigate(-1)} />}
   </Page>
 }

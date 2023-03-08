@@ -1,6 +1,6 @@
 import { invoke } from "@tauri-apps/api";
 import { JSONRPCClient, S3SIService, StdioTransport } from "jsonrpc";
-import { ExportOpts, Log, State } from "jsonrpc/types";
+import { ExportOpts, Log, LoggerLevel, State } from "jsonrpc/types";
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 
 const client = new JSONRPCClient<S3SIService>({
@@ -39,6 +39,12 @@ async function getLogs() {
 }
 getLogs()
 
+export function addLog(...log: Log[]) {
+  for (const cb of LOG_SUB) {
+    cb(log);
+  }
+}
+
 const LOG_CONTEXT = createContext<{
   logs: Log[],
   renderedLogs: React.ReactNode[]
@@ -51,12 +57,26 @@ export const useLog = () => {
   return useContext(LOG_CONTEXT);
 }
 
+function renderMsg(i: any) {
+  if (i instanceof Error) {
+    return i.message
+  }
+  return String(i)
+}
+
+const DISPLAY_MAP: Record<LoggerLevel, string> = {
+  debug: 'DEBUG',
+  log: 'INFO',
+  warn: 'WARN',
+  error: 'ERROR',
+}
+
 function renderLevel(log: Log) {
-  return `[${log.level.toUpperCase()}]`.padEnd(7)
+  return `[${DISPLAY_MAP[log.level]}]`.padEnd(7)
 }
 
 function renderLog(log: Log) {
-  return `${renderLevel(log)} ${log.msg.map(String).join(' ')}`
+  return `${renderLevel(log)} ${log.msg.map(renderMsg).join(' ')}`
 }
 
 export const LogProvider: React.FC<{ limit?: number, children?: React.ReactNode }> = ({ children, limit = 10 }) => {
