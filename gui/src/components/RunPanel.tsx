@@ -1,9 +1,9 @@
 import classNames from 'classnames';
 import { usePromise } from 'hooks/usePromise';
-import React, { useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next';
 import { canExport, getProfile, setProfile } from 'services/config';
-import { run } from 'services/s3si';
+import { run, useLog } from 'services/s3si';
 import { Checkbox } from './Checkbox';
 import { Loading } from './Loading';
 
@@ -39,16 +39,40 @@ export const RunPanel: React.FC<RunPanelProps> = () => {
       setLoading(false);
     }
   }
+  const disabled = !canExport(result);
 
   return <>
-    <Checkbox value={exportBattle} onChange={setExportBattle}>{t('导出对战数据')}</Checkbox>
-    <Checkbox value={exportCoop} onChange={setExportCoop}>{t('导出打工数据')}</Checkbox>
-    <button
-      onClick={onClick}
-      className={classNames('btn', {
-        'btn-disabled': !canExport(result) || (!exportBattle && !exportCoop),
-        'loading': loading,
-      })}
-    >{t('导出')}</button>
+    <div className="tooltip" data-tip={disabled ? t('请先完成登录和stat.ink的API密钥设置') : undefined}>
+      <Checkbox disabled={disabled || loading} value={exportBattle} onChange={setExportBattle}>{t('导出对战数据')}</Checkbox>
+      <Checkbox disabled={disabled || loading} value={exportCoop} onChange={setExportCoop}>{t('导出打工数据')}</Checkbox>
+      <button
+        onClick={onClick}
+        className={classNames('btn w-full', {
+          'btn-disabled': disabled || (!exportBattle && !exportCoop),
+          'loading': loading,
+        })}
+      >{t('导出')}</button>
+    </div>
   </>
+}
+
+export type LogPanelProps = {
+  className?: string
+}
+
+export const LogPanel: React.FC<LogPanelProps> = ({ className }) => {
+  const { renderedLogs } = useLog();
+  const div = useRef<HTMLDivElement>(null);
+  const { t } = useTranslation();
+
+  useEffect(() => {
+    if (div.current) {
+      div.current.scrollTop = div.current.scrollHeight;
+    }
+  }, [renderedLogs])
+
+  return <div ref={div} className={`bg-neutral overflow-auto rounded p-4 ${className}`}>
+    {renderedLogs.length === 0 && <pre><code>{t('欢迎! 请点击"导出"按钮开始使用.')}</code></pre>}
+    {renderedLogs.map((line, i) => <pre key={i}><code>{line}</code></pre>)}
+  </div>
 }
