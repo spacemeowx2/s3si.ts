@@ -39,7 +39,7 @@ jobs:
           cache-dependency-path: gui/pnpm-lock.yaml
 
       - name: Debug
-        run: which deno && ls `which deno`
+        run: env
 
       - uses: actions/cache@v2
         with:
