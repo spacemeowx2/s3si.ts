@@ -41,8 +41,8 @@ jobs:
       - name: Rust cache
         uses: swatinem/rust-cache@v2
         with:
-          prefix-key: v0-rust-${{ runner.os }}-${{ matrix.platform }}-
           workspaces: "./gui/src-tauri -> target"
+          cache-on-failure: true
 
       - name: Compile s3si.ts
         run: deno run -A ./scripts/compile.ts
