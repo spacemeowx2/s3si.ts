@@ -10,8 +10,9 @@ import { DEFAULT_ENV, Env } from "./env.ts";
 import { Queue } from "./jsonrpc/channel.ts";
 import { ExportOpts, Log } from "./jsonrpc/types.ts";
 import { App } from "./app.ts";
-import { InMemoryStateBackend, State } from "./state.ts";
+import { InMemoryStateBackend, Profile, State } from "./state.ts";
 import { MemoryCache } from "./cache.ts";
+import { Splatnet3 } from "./splatnet3.ts";
 
 class S3SIServiceImplement implements S3SIService, Service {
   loginMap: Map<string, {
@@ -69,6 +70,25 @@ class S3SIServiceImplement implements S3SIService, Service {
     }
     return {
       result: await loginSteps(this.env, step2),
+    };
+  }
+  async ensureTokenValid(state: State): Promise<
+    RPCResult<State>
+  > {
+    const stateBackend = new InMemoryStateBackend(state);
+    const profile = new Profile({ stateBackend, env: this.env });
+    await profile.readState();
+    const splatnet3 = new Splatnet3({ profile, env: this.env });
+    if (!await splatnet3.checkToken()) {
+      return {
+        error: {
+          code: 101,
+          message: "SessionToken is invalid",
+        },
+      };
+    }
+    return {
+      result: stateBackend.state,
     };
   }
   async getLogs(): Promise<RPCResult<Log[]>> {

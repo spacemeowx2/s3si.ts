@@ -155,7 +155,7 @@ export class Splatnet3 {
     }
 
     try {
-      await this.request(Queries.HomeQuery);
+      await this.request(Queries.ConfigureAnalyticsQuery);
       return true;
     } catch (_e) {
       return false;

@@ -132,6 +132,7 @@ export interface S3SIService {
       }
     >
   >;
+  ensureTokenValid(state: State): Promise<RPCResult<State>>;
   getLogs(): Promise<RPCResult<Log[]>>;
   run(state: State, opts: ExportOpts): Promise<RPCResult<State>>;
   // deno-lint-ignore no-explicit-any

@@ -140,3 +140,11 @@ export async function run(state: State, opts: ExportOpts) {
   }
   return r.result;
 }
+
+export async function ensureTokenValid(state: State) {
+  const r = await client.ensureTokenValid(state);
+  if (r.error) {
+    throw new Error(r.error.message);
+  }
+  return r.result;
+}

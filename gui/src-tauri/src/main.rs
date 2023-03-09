@@ -57,7 +57,7 @@ document.addEventListener("DOMContentLoaded", () => {{
     const style = document.createElement('style');
     style.innerHTML = `
         [class^="App_App_"] , [class^="InAppContent_children_"] , [class^="SwipableView_swipableViewItem_"] ,
-        [class^="MainWrapper_wrapper_"] {{
+        [class^="MainWrapper_wrapper_"] , [class^="FriendList_wrapper_"] {{
             overflow: auto;
         }}
     `;
