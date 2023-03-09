@@ -41,11 +41,6 @@ jobs:
       - name: Debug
         run: deno info
 
-      - uses: actions/cache@v2
-        with:
-          path: ~/.deno
-          key: ${{ runner.os }}-${{ matrix.platform }}-deno-${{ hashFiles('deno.lock') }}
-
       - name: Rust cache
         uses: swatinem/rust-cache@v2
         with:
@@ -61,6 +56,16 @@ jobs:
 
       - name: Build the app
         uses: tauri-apps/tauri-action@v0
+        if: ${{ !startsWith(github.ref, 'refs/tags/gui-v') }}
+
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          projectPath: ./gui
+
+      - name: Release the app
+        uses: tauri-apps/tauri-action@v0
+        if: ${{ startsWith(github.ref, 'refs/tags/gui-v') }}
 
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -70,6 +75,6 @@ jobs:
           tagName: ${{ github.ref_name }}
           releaseName: "s3si.ts v__VERSION__"
           releaseBody: "See the assets to download and install this version."
-          releaseDraft: ${{ startsWith(github.ref, 'refs/tags/gui-v') }}
+          releaseDraft: true
           prerelease: false
           projectPath: ./gui
