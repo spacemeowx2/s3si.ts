@@ -114,6 +114,7 @@ export type ExportOpts = {
 };
 
 export interface S3SIService {
+  hello(): Promise<RPCResult<string>>;
   loginSteps(): Promise<
     RPCResult<
       {

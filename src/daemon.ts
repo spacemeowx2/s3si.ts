@@ -38,6 +38,11 @@ class S3SIServiceImplement implements S3SIService, Service {
     newFetcher: DEFAULT_ENV.newFetcher,
   };
 
+  hello(): Promise<RPCResult<string>> {
+    return Promise.resolve({
+      result: "world",
+    });
+  }
   loginSteps(): Promise<
     RPCResult<{
       authCodeVerifier: string;
