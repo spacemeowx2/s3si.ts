@@ -2,7 +2,7 @@ name: GUI
 on: [push, pull_request, workflow_dispatch]
 
 jobs:
-  release:
+  build:
     permissions:
       contents: write
     strategy:
@@ -27,16 +27,16 @@ jobs:
         with:
           deno-version: 1.x
 
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 7.29.1
+
       - name: Sync node version and setup cache
         uses: actions/setup-node@v3
         with:
           node-version: "lts/*"
           cache: "pnpm"
           cache-dependency-path: gui/pnpm-lock.yaml
-
-      - uses: pnpm/action-setup@v2
-        with:
-          version: 7.29.1
 
       - name: Debug
         run: which deno && ls `which deno`
