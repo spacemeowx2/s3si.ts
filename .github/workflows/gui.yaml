@@ -39,7 +39,7 @@ jobs:
           cache-dependency-path: gui/pnpm-lock.yaml
 
       - name: Debug
-        run: env
+        run: deno info
 
       - uses: actions/cache@v2
         with:
@@ -49,6 +49,7 @@ jobs:
       - name: Rust cache
         uses: swatinem/rust-cache@v2
         with:
+          prefix-key: v0-rust-${{ runner.os }}-${{ matrix.platform }}-
           workspaces: "./gui/src-tauri -> target"
 
       - name: Compile s3si.ts
