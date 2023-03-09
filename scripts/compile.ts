@@ -46,13 +46,12 @@ if (import.meta.main) {
     Deno.exit(status.code);
   }
 
+  const binPath = `${__dirname}/../gui/binaries/s3si-${target}${
+    Deno.build.os === "windows" ? ".exe" : ""
+  }`;
   console.log("Test the binary");
   const s3si = Deno.run({
-    cmd: [
-      `${__dirname}/../gui/binaries/s3si-${target}${
-        Deno.build.os === "windows" ? ".exe" : ""
-      }`,
-    ],
+    cmd: [binPath],
     stdin: "piped",
     stdout: "piped",
   });
@@ -69,4 +68,17 @@ if (import.meta.main) {
     '{"jsonrpc":"2.0","id":1,"result":{"result":"world"}}\n',
   );
   console.log("Test passed");
+
+  const hashBuffer = await crypto.subtle.digest(
+    "SHA-256",
+    await Deno.readFile(binPath),
+  );
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+
+  // 将 Uint8Array 转换为十六进制字符串形式的散列值
+  const hashHex = hashArray.map((b) => b.toString(16).padStart(2, "0")).join(
+    "",
+  );
+
+  console.log("Hash:", hashHex);
 }
