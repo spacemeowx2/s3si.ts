@@ -52,6 +52,17 @@ if (!document.cookie.includes(gtoken)) {{
     document.cookie = gtoken;
     window.location.reload();
 }}
+document.addEventListener("DOMContentLoaded", () => {{
+    // insert css
+    const style = document.createElement('style');
+    style.innerHTML = `
+        [class^="App_App_"] , [class^="InAppContent_children_"] , [class^="SwipableView_swipableViewItem_"] ,
+        [class^="MainWrapper_wrapper_"] {{
+            overflow: auto;
+        }}
+    `;
+    document.head.appendChild(style);
+}});
     "##
     ))
     .build()
