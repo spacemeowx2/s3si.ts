@@ -1,15 +1,12 @@
-name: Release
-on:
-  push:
-    tags:
-      - "gui-v*"
-  workflow_dispatch:
+name: GUI
+on: [push, pull_request, workflow_dispatch]
 
 jobs:
   release:
     permissions:
       contents: write
     strategy:
+      fail-fast: false
       matrix:
         platform: [macos-latest, ubuntu-20.04, windows-latest]
     runs-on: ${{ matrix.platform }}
@@ -23,26 +20,12 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev libayatana-appindicator3-dev librsvg2-dev
 
-      - uses: denoland/setup-deno@v1
-        with:
-          deno-version: 1.x
-
-      - uses: actions/cache@v2
-        with:
-          path: ~/.deno
-          key: ${{ runner.os }}-${{ matrix.platform }}-deno-${{ hashFiles('deno.lock') }}
-
       - name: Rust setup
         uses: dtolnay/rust-toolchain@stable
 
-      - name: Rust cache
-        uses: swatinem/rust-cache@v2
+      - uses: denoland/setup-deno@v1
         with:
-          workspaces: "./gui/src-tauri -> target"
-
-      - uses: pnpm/action-setup@v2
-        with:
-          version: 7.29.1
+          deno-version: 1.x
 
       - name: Sync node version and setup cache
         uses: actions/setup-node@v3
@@ -50,6 +33,23 @@ jobs:
           node-version: "lts/*"
           cache: "pnpm"
           cache-dependency-path: gui/pnpm-lock.yaml
+
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 7.29.1
+
+      - name: Debug
+        run: which deno && ls `which deno`
+
+      - uses: actions/cache@v2
+        with:
+          path: ~/.deno
+          key: ${{ runner.os }}-${{ matrix.platform }}-deno-${{ hashFiles('deno.lock') }}
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: "./gui/src-tauri -> target"
 
       - name: Compile s3si.ts
         run: deno run -A ./scripts/compile.ts
@@ -60,6 +60,7 @@ jobs:
 
       - name: Build the app
         uses: tauri-apps/tauri-action@v0
+        if: startsWith(github.ref, 'refs/tags/gui-v')
 
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
