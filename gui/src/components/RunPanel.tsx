@@ -30,7 +30,7 @@ export const RunPanel: React.FC<RunPanelProps> = () => {
       })
       const { state } = result;
       const newState = await run(state, {
-        exporter: "stat.ink,file",
+        exporter: "stat.ink",
         monitor: false,
         withSummary: false,
         skipMode: exportBattle === false ? 'vs' : exportCoop === false ? 'coop' : undefined,
@@ -85,7 +85,7 @@ export const LogPanel: React.FC<LogPanelProps> = ({ className }) => {
     }
   }, [renderedLogs])
 
-  return <div ref={div} className={`bg-neutral overflow-auto rounded p-4 ${className}`}>
+  return <div ref={div} className={`bg-neutral text-neutral-content overflow-auto rounded p-4 ${className}`}>
     {renderedLogs.length === 0 && <pre><code>{t('欢迎! 请点击"导出"按钮开始使用.')}</code></pre>}
     {renderedLogs.map((line, i) => <pre key={i}><code>{line}</code></pre>)}
   </div>

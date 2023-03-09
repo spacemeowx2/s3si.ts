@@ -37,13 +37,15 @@ export const Home: React.FC = () => {
 
 
   return <div className='flex p-2 w-full h-full gap-2'>
-    <div className='max-w-full md:max-w-sm flex-auto'>
-      <div className='flex flex-col gap-2'>
-        <LogPanel className='sm:hidden max-h-[10rem]' />
+    <div className='max-w-full h-full md:max-w-sm flex-auto'>
+      <div className='flex flex-col gap-2 h-full'>
+        <LogPanel className='sm:hidden flex-auto' />
         <RunPanel />
         <Link to='/settings' className='btn'>{t('设置')}</Link>
-        <a className='btn' href={STAT_INK} target='_blank' rel='noreferrer'>{t('前往 stat.ink')}</a>
-        <button className='btn' onClick={onOpenSplatnet3}>{t('打开鱿鱼圈3')}</button>
+        <div className='flex gap-2 flex-auto-all'>
+          <button className='btn' onClick={onOpenSplatnet3}>{t('打开鱿鱼圈3')}</button>
+          <a className='btn' href={STAT_INK} target='_blank' rel='noreferrer'>{t('前往 stat.ink')}</a>
+        </div>
       </div>
     </div>
     <LogPanel className='hidden sm:block flex-1' />

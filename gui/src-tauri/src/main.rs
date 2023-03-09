@@ -44,7 +44,7 @@ async fn open_splatnet(app: tauri::AppHandle, gtoken: String) -> Option<()> {
     )
     .title("Splatnet3")
     .center()
-    .inner_size(1040.0, 960.0)
+    .inner_size(400.0, 700.0)
     .initialization_script(&format!(
         r##"
 const gtoken = "_gtoken={gtoken}";
