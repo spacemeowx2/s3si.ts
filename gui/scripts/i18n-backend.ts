@@ -10,7 +10,7 @@ const keys: Set<string> = new Set();
 
 async function updateFile() {
   delayId = null;
-  for (const lng of ["en", "zh-CN"]) {
+  for (const lng of ["en", 'ja', "zh-CN"]) {
     const translationPath = path.join(
       __dirname,
       `../src/i18n/translation/${lng}.json`,

@@ -35,6 +35,7 @@ export const OpenSplatnet: React.FC<OpenSplatnetProps> = ({ children }) => {
       const gtoken = newState.loginState?.gToken;
       await invoke('open_splatnet', {
         gtoken,
+        lang: result.profile.state.userLang,
       });
     } catch (e) {
       setError(e);
