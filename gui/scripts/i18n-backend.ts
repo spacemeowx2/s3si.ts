@@ -1,4 +1,4 @@
-import { Application, Router } from 'https://deno.land/x/oak@v12.1.0/mod.ts';
+import { Application, Router } from "https://deno.land/x/oak@v12.1.0/mod.ts";
 import * as path from "https://deno.land/std@0.178.0/path/mod.ts";
 
 const PORT = 1421;
@@ -10,23 +10,29 @@ const keys: Set<string> = new Set();
 
 async function updateFile() {
   delayId = null;
-  for (const lng of ['en', 'zh-CN']) {
-    const translationPath = path.join(__dirname, `../src/i18n/translation/${lng}.json`);
+  for (const lng of ["en", "zh-CN"]) {
+    const translationPath = path.join(
+      __dirname,
+      `../src/i18n/translation/${lng}.json`,
+    );
 
     let translations: Record<string, string> = {};
     try {
       translations = JSON.parse(await Deno.readTextFile(translationPath));
     } catch (error) {}
-    const toAdd = [...keys].filter(k => !Object.keys(translations).includes(k));
+    const toAdd = [...keys].filter((k) =>
+      !Object.keys(translations).includes(k)
+    );
 
     translations = Object.fromEntries(
       [
         ...Object.entries(translations),
         ...toAdd
-          .map(i => [i, i] as const)]
-          .sort(([a], [b]) => a.localeCompare(b)),
+          .map((i) => [i, i] as const),
+      ]
+        .sort(([a], [b]) => a.localeCompare(b)),
     );
-    console.log('Add keys:', toAdd, 'for', lng);
+    console.log("Add keys:", toAdd, "for", lng);
 
     await Deno.writeTextFile(
       translationPath,
@@ -35,12 +41,14 @@ async function updateFile() {
   }
   keys.clear();
 }
-let delayId: number|null = null;
+let delayId: number | null = null;
 
-router.post('/locales/add/:lng/:ns', async (context) => {
+router.post("/locales/add/:lng/:ns", async (context) => {
   try {
     // ns, lng is ignored
-    const body: Record<string,string> = await context.request.body({ type: 'json' }).value;
+    const body: Record<string, string> = await context.request.body({
+      type: "json",
+    }).value;
     for (const key of Object.keys(body)) {
       keys.add(key);
     }
@@ -51,7 +59,7 @@ router.post('/locales/add/:lng/:ns', async (context) => {
     delayId = setTimeout(updateFile, 1000);
 
     context.response.status = 200;
-    context.response.body = { message: 'Translation added.' };
+    context.response.body = { message: "Translation added." };
   } catch (error) {
     context.response.status = 500;
     context.response.body = { message: error.message };
@@ -61,5 +69,5 @@ router.post('/locales/add/:lng/:ns', async (context) => {
 app.use(router.routes());
 app.use(router.allowedMethods());
 
-console.log(`Listening on port ${PORT}...`)
+console.log(`Listening on port ${PORT}...`);
 await app.listen({ port: PORT });
