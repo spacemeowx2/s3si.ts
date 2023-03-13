@@ -9,6 +9,12 @@ import {
   Transport,
 } from "./types.ts";
 
+export class JSONRPCError extends Error {
+  constructor(public rpcError: ResponseError) {
+    super(rpcError.message);
+  }
+}
+
 export class JSONRPCClient<S extends Service> {
   protected nextId = 1;
   protected transport: Transport;
@@ -102,7 +108,7 @@ export class JSONRPCClient<S extends Service> {
     return new Promise<R>((res, rej) => {
       this.requestMap.set(req.id, (result) => {
         if (result.error) {
-          rej(result.error);
+          rej(new JSONRPCError(result.error));
         } else {
           res(result.result);
         }
@@ -113,9 +119,7 @@ export class JSONRPCClient<S extends Service> {
   getProxy(): S {
     const proxy = new Proxy({}, {
       get: (_, method: string) => {
-        return (...params: unknown[]) => {
-          return this.call(method, ...params as any);
-        };
+        return (...params: unknown[]) => this.call(method, ...params as any);
       },
     });
     return proxy as S;
