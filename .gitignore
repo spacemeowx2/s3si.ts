@@ -4,3 +4,4 @@ export/
 cache/
 .DS_Store
 /*.json
+/npm

@@ -1,22 +1,113 @@
 import { invoke } from "@tauri-apps/api";
-import { JSONRPCClient, S3SIService, StdioTransport } from "jsonrpc";
-import { ExportOpts, Log, LoggerLevel, State } from "jsonrpc/types";
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { App } from '../../../src/app';
+import { Env } from '../../../src/env';
+import { Queue } from "../../../src/jsonrpc/channel";
+import { loginSteps } from "../../../src/iksm";
+import { InMemoryStateBackend, Profile, State } from "../../../src/state";
+import { Splatnet3 } from "../../../src/splatnet3";
+import { MemoryCache } from "../../../src/cache";
 
-const client = new JSONRPCClient<S3SIService>({
-  transport: new StdioTransport()
-}).getProxy();
+type LoggerLevel = 'debug' | 'log' | 'warn' | 'error';
+type Log = {
+  level: LoggerLevel;
+  msg: unknown[]
+}
+export type ExportOpts = {
+  exporter: string;
+  monitor: boolean;
+  withSummary: boolean;
+  skipMode?: string;
+};
+
+class S3SIServiceImplement {
+  loginMap: Map<string, {
+    step1: (url: string) => void;
+    promise: Promise<string>;
+  }> = new Map();
+  loggerQueue: Queue<Log> = new Queue();
+  env: Env = {
+    prompts: {
+      promptLogin: () => {
+        return Promise.reject("Not implemented");
+      },
+      prompt: () => {
+        return Promise.reject("Not implemented");
+      },
+    },
+    logger: {
+      debug: (...msg) => this.loggerQueue.push({ level: "debug", msg }),
+      log: (...msg) => this.loggerQueue.push({ level: "log", msg }),
+      warn: (...msg) => this.loggerQueue.push({ level: "warn", msg }),
+      error: (...msg) => this.loggerQueue.push({ level: "error", msg }),
+    },
+    newFetcher: () => {
+      throw new Error("Not implemented");
+    },
+  };
+
+  loginSteps(): Promise<{
+    authCodeVerifier: string;
+    url: string;
+  }>;
+  loginSteps(step2: {
+    authCodeVerifier: string;
+    login: string;
+  }): Promise<{ sessionToken: string }>;
+  async loginSteps(step2?: {
+    authCodeVerifier: string;
+    login: string;
+  }): Promise<
+    {
+      authCodeVerifier: string;
+      url: string;
+    } | {
+      sessionToken: string;
+    }
+  > {
+    if (!step2) {
+      return await loginSteps(this.env);
+    }
+    return await loginSteps(this.env, step2);
+  }
+  async ensureTokenValid(state: State): Promise<State> {
+    const stateBackend = new InMemoryStateBackend(state);
+    const profile = new Profile({ stateBackend, env: this.env });
+    await profile.readState();
+    const splatnet3 = new Splatnet3({ profile, env: this.env });
+    if (!await splatnet3.checkToken()) {
+      throw new Error('SessionToken is invalid')
+    }
+    return stateBackend.state;
+  }
+  async getLogs(): Promise<Log[]> {
+    const log = await this.loggerQueue.pop();
+    return log ? [log] : [];
+  }
+  async run(state: State, opts: ExportOpts): Promise<State> {
+    const stateBackend = new InMemoryStateBackend(state);
+    const app = new App({
+      ...opts,
+      noProgress: true,
+      env: this.env,
+      profilePath: "",
+      stateBackend,
+      cache: new MemoryCache(),
+    });
+    await app.run();
+
+    return stateBackend.state;
+  }
+}
+
+const client = new S3SIServiceImplement();
 const LOG_SUB = new Set<(logs: Log[]) => void>();
 
 async function getLogs() {
   while (true) {
     const r = await client.getLogs()
 
-    if (r.error) {
-      throw new Error(r.error.message);
-    }
-
-    for (const { level, msg } of r.result) {
+    for (const { level, msg } of r) {
       switch (level) {
         case 'debug':
           console.debug(...msg);
@@ -33,7 +124,7 @@ async function getLogs() {
       }
     }
     for (const cb of LOG_SUB) {
-      cb(r.result);
+      cb(r);
     }
   }
 }
@@ -106,12 +197,9 @@ export const LogProvider: React.FC<{ limit?: number, children?: React.ReactNode 
 export const useLogin = () => {
   const login = useCallback(async () => {
     const result = await client.loginSteps();
-    if (result.error) {
-      throw new Error(result.error.message);
-    }
 
     const login: string | null = await invoke('open_login_window', {
-      url: result.result.url
+      url: result.url
     })
     if (login === null || login === '') {
       console.log('user cancel login');
@@ -119,13 +207,10 @@ export const useLogin = () => {
     }
     const loginResult: { url: string } = JSON.parse(login);
     const sessionToken = await client.loginSteps({
-      authCodeVerifier: result.result.authCodeVerifier,
+      authCodeVerifier: result.authCodeVerifier,
       login: loginResult.url,
     })
-    if (sessionToken.error) {
-      throw new Error(sessionToken.error.message);
-    }
-    return sessionToken.result;
+    return sessionToken;
   }, [])
 
   return {
@@ -134,17 +219,9 @@ export const useLogin = () => {
 }
 
 export async function run(state: State, opts: ExportOpts) {
-  const r = await client.run(state, opts);
-  if (r.error) {
-    throw new Error(r.error.message);
-  }
-  return r.result;
+  return await client.run(state, opts);
 }
 
 export async function ensureTokenValid(state: State) {
-  const r = await client.ensureTokenValid(state);
-  if (r.error) {
-    throw new Error(r.error.message);
-  }
-  return r.result;
+  return await client.ensureTokenValid(state);
 }
