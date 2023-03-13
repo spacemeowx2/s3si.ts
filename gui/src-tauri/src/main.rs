@@ -36,11 +36,12 @@ detectAndInject();
 "#;
 
 #[tauri::command]
-async fn open_splatnet(app: tauri::AppHandle, gtoken: String) -> Option<()> {
+async fn open_splatnet(app: tauri::AppHandle, gtoken: String, lang: Option<String>) -> Option<()> {
+    let ui_lang = lang.unwrap_or_else(|| "en-US".to_string());
     let _window = WindowBuilder::new(
         &app,
         "splatnet3",
-        tauri::WindowUrl::App("https://api.lp1.av5ja.srv.nintendo.net/".into()),
+        tauri::WindowUrl::App(format!("https://api.lp1.av5ja.srv.nintendo.net/?lang={ui_lang}").into()),
     )
     .title("Splatnet3")
     .center()

@@ -27,12 +27,34 @@ type FormData = {
   profile: Profile,
 }
 
+const SPLATNET3_LANGS = {
+  "de-DE": "German",
+  "en-GB": "English (UK/Australia)",
+  "en-US": "English (US)",
+  "es-ES": "Spanish (Spain)",
+  "es-MX": "Spanish (Latin America)",
+  "fr-CA": "French (Canada)",
+  "fr-FR": "French (France)",
+  "it-IT": "Italian",
+  "ja-JP": "Japanese",
+  "ko-KR": "Korean",
+  "nl-NL": "Dutch",
+  "ru-RU": "Russian",
+  "zh-CN": "Chinese (China)",
+  "zh-TW": "Chinese (Taiwan)"
+}
+const UI_LANGS = {
+  "en": "English",
+  "zh-CN": "简体中文",
+  "ja": "日本語",
+};
+
 const Form: React.FC<{
   oldValue: FormData,
   onSaved?: () => void,
 }> = ({ oldValue, onSaved }) => {
   const { login } = useLogin();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [value, setValue] = useState(oldValue);
   const { subField } = useSubField({ value, onChange: setValue });
 
@@ -40,6 +62,7 @@ const Form: React.FC<{
 
   const sessionToken = subField('profile.state.loginState.sessionToken')
   const statInkApiKey = subField('profile.state.statInkApiKey')
+  const splatnet3Lang = subField('profile.state.userLang')
 
   const [onSave, { loading, error }] = usePromiseLazy(async () => {
     await setProfile(0, value.profile);
@@ -99,6 +122,28 @@ const Form: React.FC<{
             onChange={e => statInkApiKey.onChange(e.target.value)}
           />
         </div>
+      </div>
+      <div className="form-control w-full max-w-md mb-4">
+        <label className="label">
+          <span className="label-text">{t('鱿鱼圈3语言偏好')}</span>
+        </label>
+        <select className="select w-full" value={splatnet3Lang.value} onChange={
+          e => splatnet3Lang.onChange(e.target.value)
+        }>
+          {Object.entries(SPLATNET3_LANGS).map(([key, value]) => <option key={key} value={key}>{value} ({key})</option>)}
+        </select>
+      </div>
+      <div className="form-control w-full max-w-md mb-4">
+        <label className="label">
+          <span className="label-text">{t('界面语言')}</span>
+        </label>
+        <select className="select w-full" value={i18n.language} onChange={
+          e => {
+            i18n.changeLanguage(e.target.value);
+          }
+        }>
+          {Object.entries(UI_LANGS).map(([key, value]) => <option key={key} value={key}>{value} ({key})</option>)}
+        </select>
       </div>
     </div>
     <ErrorContent error={error} />
