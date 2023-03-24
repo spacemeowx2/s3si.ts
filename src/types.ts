@@ -11,7 +11,7 @@ export enum Queries {
   CoopHistoryQuery = "91b917becd2fa415890f5b47e15ffb15",
   CoopHistoryDetailQuery = "379f0d9b78b531be53044bcac031b34b",
   myOutfitCommonDataFilteringConditionQuery =
-  "d02ab22c9dccc440076055c8baa0fa7a",
+    "d02ab22c9dccc440076055c8baa0fa7a",
   myOutfitCommonDataEquipmentsQuery = "d29cd0c2b5e6bac90dd5b817914832f8",
   HistoryRecordQuery = "f09da9d24d888797fdfb2f060dbdf4ed",
   ConfigureAnalyticsQuery = "f8ae00773cc412a50dd41a6d9a159ddd",
@@ -682,14 +682,14 @@ export type StatInkCoopPlayer = {
   number: string;
   splashtag_title: string | null;
   uniform?:
-  | string
-  | "orange"
-  | "green"
-  | "yellow"
-  | "pink"
-  | "blue"
-  | "black"
-  | "white";
+    | string
+    | "orange"
+    | "green"
+    | "yellow"
+    | "pink"
+    | "blue"
+    | "black"
+    | "white";
   special?: string;
   weapons: (string | null)[];
   golden_eggs: number;
@@ -754,13 +754,13 @@ export type StatInkPostBody = {
   test?: "yes" | "no";
   uuid: string;
   lobby:
-  | "regular"
-  | "bankara_challenge"
-  | "bankara_open"
-  | "xmatch"
-  | "splatfest_challenge"
-  | "splatfest_open"
-  | "private";
+    | "regular"
+    | "bankara_challenge"
+    | "bankara_open"
+    | "xmatch"
+    | "splatfest_challenge"
+    | "splatfest_open"
+    | "private";
   rule: "nawabari" | "area" | "hoko" | "yagura" | "asari" | "tricolor";
   stage: string;
   weapon: string;
@@ -808,12 +808,12 @@ export type StatInkPostBody = {
   x_power_after?: number | null;
   fest_power?: number; // Splatfest Power (Pro)
   fest_dragon?:
-  | "10x"
-  | "decuple"
-  | "100x"
-  | "dragon"
-  | "333x"
-  | "double_dragon";
+    | "10x"
+    | "decuple"
+    | "100x"
+    | "dragon"
+    | "333x"
+    | "double_dragon";
   clout_before?: number; // Splatfest Clout, before the battle
   clout_after?: number; // Splatfest Clout, after the battle
   clout_change?: number; // Splatfest Clout, equals to clout_after - clout_before if you know them
