@@ -2,18 +2,18 @@ import { RankState } from "./state.ts";
 
 export enum Queries {
   HomeQuery = "22e2fa8294168003c21b00c333c35384",
-  LatestBattleHistoriesQuery = "4f5f26e64bca394b45345a65a2f383bd",
-  RegularBattleHistoriesQuery = "d5b795d09e67ce153e622a184b7e7dfa",
-  BankaraBattleHistoriesQuery = "de4754588109b77dbcb90fbe44b612ee",
-  XBattleHistoriesQuery = "45c74fefb45a49073207229ca65f0a62",
-  PrivateBattleHistoriesQuery = "1d6ed57dc8b801863126ad4f351dfb9a",
+  LatestBattleHistoriesQuery = "0176a47218d830ee447e10af4a287b3f",
+  RegularBattleHistoriesQuery = "3baef04b095ad8975ea679d722bc17de",
+  BankaraBattleHistoriesQuery = "0438ea6978ae8bd77c5d1250f4f84803",
+  XBattleHistoriesQuery = "6796e3cd5dc3ebd51864dc709d899fc5",
+  PrivateBattleHistoriesQuery = "8e5ae78b194264a6c230e262d069bd28",
   VsHistoryDetailQuery = "291295ad311b99a6288fc95a5c4cb2d2",
-  CoopHistoryQuery = "6ed02537e4a65bbb5e7f4f23092f6154",
+  CoopHistoryQuery = "91b917becd2fa415890f5b47e15ffb15",
   CoopHistoryDetailQuery = "379f0d9b78b531be53044bcac031b34b",
   myOutfitCommonDataFilteringConditionQuery =
-    "d02ab22c9dccc440076055c8baa0fa7a",
+  "d02ab22c9dccc440076055c8baa0fa7a",
   myOutfitCommonDataEquipmentsQuery = "d29cd0c2b5e6bac90dd5b817914832f8",
-  HistoryRecordQuery = "32b6771f94083d8f04848109b7300af5",
+  HistoryRecordQuery = "f09da9d24d888797fdfb2f060dbdf4ed",
   ConfigureAnalyticsQuery = "f8ae00773cc412a50dd41a6d9a159ddd",
 }
 export type VarsMap = {
@@ -682,14 +682,14 @@ export type StatInkCoopPlayer = {
   number: string;
   splashtag_title: string | null;
   uniform?:
-    | string
-    | "orange"
-    | "green"
-    | "yellow"
-    | "pink"
-    | "blue"
-    | "black"
-    | "white";
+  | string
+  | "orange"
+  | "green"
+  | "yellow"
+  | "pink"
+  | "blue"
+  | "black"
+  | "white";
   special?: string;
   weapons: (string | null)[];
   golden_eggs: number;
@@ -754,13 +754,13 @@ export type StatInkPostBody = {
   test?: "yes" | "no";
   uuid: string;
   lobby:
-    | "regular"
-    | "bankara_challenge"
-    | "bankara_open"
-    | "xmatch"
-    | "splatfest_challenge"
-    | "splatfest_open"
-    | "private";
+  | "regular"
+  | "bankara_challenge"
+  | "bankara_open"
+  | "xmatch"
+  | "splatfest_challenge"
+  | "splatfest_open"
+  | "private";
   rule: "nawabari" | "area" | "hoko" | "yagura" | "asari" | "tricolor";
   stage: string;
   weapon: string;
@@ -808,12 +808,12 @@ export type StatInkPostBody = {
   x_power_after?: number | null;
   fest_power?: number; // Splatfest Power (Pro)
   fest_dragon?:
-    | "10x"
-    | "decuple"
-    | "100x"
-    | "dragon"
-    | "333x"
-    | "double_dragon";
+  | "10x"
+  | "decuple"
+  | "100x"
+  | "dragon"
+  | "333x"
+  | "double_dragon";
   clout_before?: number; // Splatfest Clout, before the battle
   clout_after?: number; // Splatfest Clout, after the battle
   clout_change?: number; // Splatfest Clout, equals to clout_after - clout_before if you know them

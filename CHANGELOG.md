@@ -1,3 +1,7 @@
+## 0.3.2
+
+feat: update `WEB_VIEW_VERSION` and query hashes
+
 ## 0.3.1
 
 feat: use ID for uniform(https://stat.ink/api-info/salmon-uniform3)
