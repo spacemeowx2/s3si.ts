@@ -1,3 +1,7 @@
+## 0.3.3
+
+feat: add eggstra work mode
+
 ## 0.3.2
 
 feat: update `WEB_VIEW_VERSION` and query hashes

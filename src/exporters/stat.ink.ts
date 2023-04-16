@@ -723,6 +723,8 @@ export class StatInkExporter implements GameExporter {
       golden_appearances: wave.goldenPopCount,
       golden_delivered: wave.teamDeliverCount,
       special_uses,
+      // fill it later
+      danger_rate: null,
     };
   }
   async mapCoop(
@@ -766,10 +768,13 @@ export class StatInkExporter implements GameExporter {
       : undefined;
     const title_exp_after = detail.afterGradePoint;
 
+    const maxWaves = detail.rule === "TEAM_CONTEST" ? 5 : 3;
     let clear_waves: number;
     if (waveResults.length > 0) {
       // when cleared, resultWave === 0, so we need to add 1.
-      clear_waves = waveResults.filter((i) => i.waveNumber < 4).length -
+      clear_waves = waveResults.filter((i) =>
+        i.waveNumber < maxWaves + 1
+      ).length -
         1 + (resultWave === 0 ? 1 : 0);
     } else {
       clear_waves = 0;
@@ -810,7 +815,7 @@ export class StatInkExporter implements GameExporter {
 
     let fail_reason: StatInkCoopPostBody["fail_reason"] = null;
     // failed
-    if (clear_waves !== 3 && waveResults.length > 0) {
+    if (clear_waves !== maxWaves && waveResults.length > 0) {
       const lastWave = waveResults[waveResults.length - 1];
       if (lastWave.teamDeliverCount >= lastWave.deliverNorm) {
         fail_reason = "wipe_out";
@@ -821,8 +826,9 @@ export class StatInkExporter implements GameExporter {
       uuid: await gameId(detail.id),
       private: groupInfo?.mode === "PRIVATE_CUSTOM" ? "yes" : "no",
       big_run: detail.rule === "BIG_RUN" ? "yes" : "no",
+      eggstra_work: detail.rule === "TEAM_CONTEST" ? "yes" : "no",
       stage: b64Number(detail.coopStage.id).toString(),
-      danger_rate: dangerRate * 100,
+      danger_rate: detail.rule === "TEAM_CONTEST" ? null : dangerRate * 100,
       clear_waves,
       fail_reason,
       king_smell: smellMeter,
@@ -855,6 +861,57 @@ export class StatInkExporter implements GameExporter {
       automated: "yes",
       start_at: startedAt,
     };
+    // caculate wave danger_rate.
+    // translated from here: https://github.com/frozenpandaman/s3s/commit/d46ece00e5a7706688eaf025f18c5a8ea1c54c0f#diff-819571ec7b067d2398cd1f9dbc737160312efc4128ba4a2f0e165c70225dea0eR1050
+    if (detail.rule === "TEAM_CONTEST") {
+      let lastWave: StatInkCoopWave | undefined;
+      for (
+        const [wave] of result.waves
+          .map((p, i) => [p, i] as const)
+      ) {
+        let haz_level: number;
+        if (!lastWave) {
+          haz_level = 60;
+        } else {
+          const num_players = result.players.length;
+          const quota = lastWave.golden_quota; // last wave, most recent one added to the list
+          const delivered = lastWave.golden_delivered;
+          let added_percent = 0; // default, no increase if less than 1.5x quota delivered
+          if (num_players == 4) {
+            if (delivered >= quota * 2) {
+              added_percent = 60;
+            } else if (delivered >= quota * 1.5) {
+              added_percent = 30;
+            }
+          } else if (num_players == 3) {
+            if (delivered >= quota * 2) {
+              added_percent = 40;
+            } else if (delivered >= quota * 1.5) {
+              added_percent = 20;
+            }
+          } else if (num_players == 2) {
+            if (delivered >= quota * 2) {
+              added_percent = 20;
+            } else if (delivered >= quota * 1.5) {
+              added_percent = 10;
+              added_percent = 5;
+            }
+          } else if (num_players == 1) {
+            if (delivered >= quota * 2) {
+              added_percent = 10;
+            } else if (delivered >= quota * 1.5) {
+              added_percent = 5;
+            }
+          }
+
+          const prev_percent = lastWave.danger_rate!;
+
+          haz_level = prev_percent + added_percent;
+        }
+        wave.danger_rate = haz_level;
+        lastWave = wave;
+      }
+    }
     return result;
   }
 }

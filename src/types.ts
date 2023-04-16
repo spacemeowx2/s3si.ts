@@ -287,7 +287,7 @@ export type CoopHistoryDetail = {
     name: string;
     id: string;
   };
-  rule: "REGULAR" | "BIG_RUN";
+  rule: "REGULAR" | "BIG_RUN" | "TEAM_CONTEST";
   myResult: CoopHistoryPlayerResult;
   memberResults: CoopHistoryPlayerResult[];
   bossResult: null | {
@@ -674,6 +674,8 @@ export type StatInkCoopWave = {
   golden_delivered: number;
   golden_appearances: number;
   special_uses?: Record<string, number>;
+  // [0, 333]
+  danger_rate: number | null;
 };
 
 export type StatInkCoopPlayer = {
@@ -712,9 +714,10 @@ export type StatInkCoopPostBody = {
   uuid: string;
   private: "yes" | "no";
   big_run: "yes" | "no";
+  eggstra_work: "yes" | "no";
   stage: string;
   // [0, 333]
-  danger_rate: number;
+  danger_rate: number | null;
   // [0, 3]
   clear_waves: number;
   fail_reason?: null | "wipe_out" | "time_limit";
