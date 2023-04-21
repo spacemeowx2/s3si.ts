@@ -72,8 +72,9 @@
       "csp": null
     },
     "updater": {
-      "active": true,
+      "active": false,
       "endpoints": [
+        "https://s3si-update.imspace.cn/v1/{{target}}/{{arch}}/{{current_version}}",
         "https://gist.githubusercontent.com/spacemeowx2/a67078487d3450b75927953f6edc14e2/raw/update-request.json"
       ],
       "dialog": true,

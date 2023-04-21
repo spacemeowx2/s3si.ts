@@ -62,6 +62,10 @@ jobs:
         with:
           projectPath: ./gui
 
+      - name: Prepare to release the app
+        if: ${{ startsWith(github.ref, 'refs/tags/gui-v') }}
+        run: deno run -A ./gui/scripts/enable-updater.ts
+
       - name: Release the app
         uses: tauri-apps/tauri-action@v0
         if: ${{ startsWith(github.ref, 'refs/tags/gui-v') }}
