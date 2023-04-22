@@ -18,6 +18,9 @@ dependencies:
   i18next-browser-languagedetector:
     specifier: ^7.0.1
     version: 7.0.1
+  immer:
+    specifier: ^10.0.1
+    version: registry.npmmirror.com/immer@10.0.1
   react:
     specifier: ^18.2.0
     version: 18.2.0
@@ -36,6 +39,9 @@ dependencies:
   react-use:
     specifier: ^17.4.0
     version: registry.npmmirror.com/react-use@17.4.0(react-dom@18.2.0)(react@18.2.0)
+  zustand:
+    specifier: ^4.3.7
+    version: registry.npmmirror.com/zustand@4.3.7(immer@10.0.1)(react@18.2.0)
 
 devDependencies:
   '@tauri-apps/cli':
@@ -4678,6 +4684,12 @@ packages:
       - encoding
     dev: true
 
+  registry.npmmirror.com/immer@10.0.1:
+    resolution: {integrity: sha512-zg++jJLsKKTwXGeSYIw0HgChSYQGtu0UDTnbKx5aGLYgte4CwTmH9eJDYyQ6FheyUtBe+lQW9FrGxya1G+Dtmg==, registry: https://registry.npmjs.org/, tarball: https://registry.npmmirror.com/immer/-/immer-10.0.1.tgz}
+    name: immer
+    version: 10.0.1
+    dev: false
+
   registry.npmmirror.com/inline-style-prefixer@6.0.4:
     resolution: {integrity: sha512-FwXmZC2zbeeS7NzGjJ6pAiqRhXR0ugUShSNb6GApMl6da0/XGc4MOJsoWAywia52EEWbXNSy0pzkwz/+Y+swSg==, registry: https://registry.npmjs.org/, tarball: https://registry.npmmirror.com/inline-style-prefixer/-/inline-style-prefixer-6.0.4.tgz}
     name: inline-style-prefixer
@@ -4909,6 +4921,17 @@ packages:
     version: 2.5.0
     dev: false
 
+  registry.npmmirror.com/use-sync-external-store@1.2.0(react@18.2.0):
+    resolution: {integrity: sha512-eEgnFxGQ1Ife9bzYs6VLi8/4X6CObHMw9Qr9tPY43iKwsPw8xE8+EFsf/2cFZ5S3esXgpWgtSCtLNS41F+sKPA==, registry: https://registry.npmjs.org/, tarball: https://registry.npmmirror.com/use-sync-external-store/-/use-sync-external-store-1.2.0.tgz}
+    id: registry.npmmirror.com/use-sync-external-store/1.2.0
+    name: use-sync-external-store
+    version: 1.2.0
+    peerDependencies:
+      react: ^16.8.0 || ^17.0.0 || ^18.0.0
+    dependencies:
+      react: 18.2.0
+    dev: false
+
   registry.npmmirror.com/webidl-conversions@3.0.1:
     resolution: {integrity: sha512-2JAn3z8AR6rjK8Sm8orRC0h/bcl/DqL7tRPdGZ4I1CjdF+EaMLmYxBHyXuKL849eucPFhvBoxMsflfOb8kxaeQ==, registry: https://registry.npmjs.org/, tarball: https://registry.npmmirror.com/webidl-conversions/-/webidl-conversions-3.0.1.tgz}
     name: webidl-conversions
@@ -4923,3 +4946,23 @@ packages:
       tr46: registry.npmmirror.com/tr46@0.0.3
       webidl-conversions: registry.npmmirror.com/webidl-conversions@3.0.1
     dev: true
+
+  registry.npmmirror.com/zustand@4.3.7(immer@10.0.1)(react@18.2.0):
+    resolution: {integrity: sha512-dY8ERwB9Nd21ellgkBZFhudER8KVlelZm8388B5nDAXhO/+FZDhYMuRnqDgu5SYyRgz/iaf8RKnbUs/cHfOGlQ==, registry: https://registry.npmjs.org/, tarball: https://registry.npmmirror.com/zustand/-/zustand-4.3.7.tgz}
+    id: registry.npmmirror.com/zustand/4.3.7
+    name: zustand
+    version: 4.3.7
+    engines: {node: '>=12.7.0'}
+    peerDependencies:
+      immer: '>=9.0'
+      react: '>=16.8'
+    peerDependenciesMeta:
+      immer:
+        optional: true
+      react:
+        optional: true
+    dependencies:
+      immer: registry.npmmirror.com/immer@10.0.1
+      react: 18.2.0
+      use-sync-external-store: registry.npmmirror.com/use-sync-external-store@1.2.0(react@18.2.0)
+    dev: false
