@@ -1,3 +1,7 @@
+## 0.3.5
+
+fix: wrong ability keys in some languages
+
 ## 0.3.4
 
 fix(gui): GUI ja translation about VS and Salmon Run

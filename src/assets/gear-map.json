@@ -1,0 +1,522 @@
+[
+  {
+    "key": "ink_saver_main",
+    "name": {
+      "de-DE": "Hauptverbrauch",
+      "en-GB": "Ink Saver (Main)",
+      "en-US": "Ink Saver (Main)",
+      "es-ES": "Tintahorro (ppal.)",
+      "es-MX": "Ahorro tinta (ppal.)",
+      "fr-CA": "Encrémenteur (pr.)",
+      "fr-FR": "Encrémenteur (pr.)",
+      "it-IT": "Eco-colore princ.",
+      "ja-JP": "インク効率アップ(メイン)",
+      "ko-KR": "잉크 효율 업(메인)",
+      "nl-NL": "Hoofdspaarder",
+      "ru-RU": "Основной баллон X",
+      "zh-CN": "提升墨汁效率（主要武器）",
+      "zh-TW": "提升墨汁效率（主要武器）"
+    },
+    "primary_only": false
+  },
+  {
+    "key": "ink_saver_sub",
+    "name": {
+      "de-DE": "Sekundärverbrauch",
+      "en-GB": "Ink Saver (Sub)",
+      "en-US": "Ink Saver (Sub)",
+      "es-ES": "Tintahorro (sec.)",
+      "es-MX": "Ahorro tinta (sec.)",
+      "fr-CA": "Encrémenteur (sec.)",
+      "fr-FR": "Encrémenteur (sec.)",
+      "it-IT": "Eco-colore second.",
+      "ja-JP": "インク効率アップ(サブ)",
+      "ko-KR": "잉크 효율 업(서브)",
+      "nl-NL": "Subspaarder",
+      "ru-RU": "Запасной баллон X",
+      "zh-CN": "提升墨汁效率（次要武器）",
+      "zh-TW": "提升墨汁效率（次要武器）"
+    },
+    "primary_only": false
+  },
+  {
+    "key": "ink_recovery_up",
+    "name": {
+      "de-DE": "Regeneration +",
+      "en-GB": "Ink Recovery Up",
+      "en-US": "Ink Recovery Up",
+      "es-ES": "Recarga rápida",
+      "es-MX": "Mejor recarga tinta",
+      "fr-CA": "Levée d'encre",
+      "fr-FR": "Levée d'encre",
+      "it-IT": "Recupero colore +",
+      "ja-JP": "インク回復力アップ",
+      "ko-KR": "잉크 회복력 업",
+      "nl-NL": "Inktvulling",
+      "ru-RU": "Быстрый баллон",
+      "zh-CN": "提升墨汁回复力",
+      "zh-TW": "提升墨汁回復力"
+    },
+    "primary_only": false
+  },
+  {
+    "key": "run_speed_up",
+    "name": {
+      "de-DE": "Lauftempo +",
+      "en-GB": "Run Speed Up",
+      "en-US": "Run Speed Up",
+      "es-ES": "Supercarrera",
+      "es-MX": "Carrera acelerada",
+      "fr-CA": "Course à pied",
+      "fr-FR": "Course à pied",
+      "it-IT": "Velocità +",
+      "ja-JP": "ヒト移動速度アップ",
+      "ko-KR": "인간 이동 속도 업",
+      "nl-NL": "Hardloper",
+      "ru-RU": "Спринтер",
+      "zh-CN": "提升人类移动速度",
+      "zh-TW": "提升人類移動速度"
+    },
+    "primary_only": false
+  },
+  {
+    "key": "swim_speed_up",
+    "name": {
+      "de-DE": "Schwimmtempo +",
+      "en-GB": "Swim Speed Up",
+      "en-US": "Swim Speed Up",
+      "es-ES": "Superbuceo",
+      "es-MX": "Nado acelerado",
+      "fr-CA": "Turbo-calmar",
+      "fr-FR": "Turbo-calamar",
+      "it-IT": "Velocità nuoto +",
+      "ja-JP": "イカダッシュ速度アップ",
+      "ko-KR": "징어대시 속도 업",
+      "nl-NL": "Zwemdiploma",
+      "ru-RU": "Плавунец",
+      "zh-CN": "提升鱿鱼冲刺速度",
+      "zh-TW": "提升魷魚衝刺速度"
+    },
+    "primary_only": false
+  },
+  {
+    "key": "special_charge_up",
+    "name": {
+      "de-DE": "Spezialladezeit +",
+      "en-GB": "Special Charge Up",
+      "en-US": "Special Charge Up",
+      "es-ES": "Recarga especial",
+      "es-MX": "Recarga especial",
+      "fr-CA": "Jauge spéciale +",
+      "fr-FR": "Jauge spéciale +",
+      "it-IT": "Ricarica speciale +",
+      "ja-JP": "スペシャル増加量アップ",
+      "ko-KR": "스페셜 증가량 업",
+      "nl-NL": "Speciaallader",
+      "ru-RU": "Особый насос",
+      "zh-CN": "提升特殊武器增加量",
+      "zh-TW": "提升特殊武器增加量"
+    },
+    "primary_only": false
+  },
+  {
+    "key": "special_saver",
+    "name": {
+      "de-DE": "Spezialabzug -",
+      "en-GB": "Special Saver",
+      "en-US": "Special Saver",
+      "es-ES": "Reducción especial",
+      "es-MX": "Ahorro especial",
+      "fr-CA": "Baisse spéciale -",
+      "fr-FR": "Baisse spéciale -",
+      "it-IT": "Riduzione speciale -",
+      "ja-JP": "スペシャル減少量ダウン",
+      "ko-KR": "스페셜 감소량 다운",
+      "nl-NL": "Speciaalspaarder",
+      "ru-RU": "Особый резерв",
+      "zh-CN": "降低特殊武器减少量",
+      "zh-TW": "降低特殊武器減少量"
+    },
+    "primary_only": false
+  },
+  {
+    "key": "special_power_up",
+    "name": {
+      "de-DE": "Spezialstärke +",
+      "en-GB": "Special Power Up",
+      "en-US": "Special Power Up",
+      "es-ES": "Superarma especial",
+      "es-MX": "Mejora especial",
+      "fr-CA": "Arme spéciale +",
+      "fr-FR": "Arme spéciale +",
+      "it-IT": "Arma speciale +",
+      "ja-JP": "スペシャル性能アップ",
+      "ko-KR": "스페셜 성능 업",
+      "nl-NL": "Specialist",
+      "ru-RU": "Особый подход",
+      "zh-CN": "提升特殊武器性能",
+      "zh-TW": "提升特殊武器性能"
+    },
+    "primary_only": false
+  },
+  {
+    "key": "quick_respawn",
+    "name": {
+      "de-DE": "Schnelle Rückkehr",
+      "en-GB": "Quick Respawn",
+      "en-US": "Quick Respawn",
+      "es-ES": "Retorno exprés",
+      "es-MX": "Regeneración rápida",
+      "fr-CA": "Sans temps mort",
+      "fr-FR": "Sans temps morts",
+      "it-IT": "Il tempo è colore",
+      "ja-JP": "復活時間短縮",
+      "ko-KR": "부활 시간 단축",
+      "nl-NL": "Comeback",
+      "ru-RU": "Феникс",
+      "zh-CN": "缩短复活时间",
+      "zh-TW": "縮短復活時間"
+    },
+    "primary_only": false
+  },
+  {
+    "key": "quick_super_jump",
+    "name": {
+      "de-DE": "Supersprung +",
+      "en-GB": "Quick Super Jump",
+      "en-US": "Quick Super Jump",
+      "es-ES": "Supersalto rápido",
+      "es-MX": "Supersalto rápido",
+      "fr-CA": "Aérodynamisme",
+      "fr-FR": "Aérodynamisme",
+      "it-IT": "Salti super e veloci",
+      "ja-JP": "スーパージャンプ時間短縮",
+      "ko-KR": "슈퍼 점프 시간 단축",
+      "nl-NL": "Turbosprong",
+      "ru-RU": "Суперпрыгун",
+      "zh-CN": "缩短超级跳跃时间",
+      "zh-TW": "縮短超級跳躍時間"
+    },
+    "primary_only": false
+  },
+  {
+    "key": "sub_power_up",
+    "name": {
+      "de-DE": "Sekundärstärke +",
+      "en-GB": "Sub Power Up",
+      "en-US": "Sub Power Up",
+      "es-ES": "Superarma secundaria",
+      "es-MX": "Mejora secundaria",
+      "fr-CA": "Arme secondaire +",
+      "fr-FR": "Arme secondaire +",
+      "it-IT": "Arma secondaria +",
+      "ja-JP": "サブ性能アップ",
+      "ko-KR": "서브 성능 업",
+      "nl-NL": "Subtopper",
+      "ru-RU": "Про-Запас",
+      "zh-CN": "提升次要武器性能",
+      "zh-TW": "提升次要武器性能"
+    },
+    "primary_only": false
+  },
+  {
+    "key": "ink_resistance_up",
+    "name": {
+      "de-DE": "Tintentoleranz +",
+      "en-GB": "Ink Resistance Up",
+      "en-US": "Ink Resistance Up",
+      "es-ES": "Impermeabilidad",
+      "es-MX": "Impermeabilidad",
+      "fr-CA": "Imperméabilité",
+      "fr-FR": "Pieds au sec",
+      "it-IT": "Scarpe impermeabili",
+      "ja-JP": "相手インク影響軽減",
+      "ko-KR": "상대 잉크 영향 감소",
+      "nl-NL": "Inkttolerantie",
+      "ru-RU": "Краскостойкость",
+      "zh-CN": "减轻对手墨汁影响",
+      "zh-TW": "減輕對手墨汁影響"
+    },
+    "primary_only": false
+  },
+  {
+    "key": "sub_resistance_up",
+    "name": {
+      "de-DE": "Sekundärschutz +",
+      "en-GB": "Sub Resistance Up",
+      "en-US": "Sub Resistance Up",
+      "es-ES": "Resistencia secundaria",
+      "es-MX": "Resistencia secundaria",
+      "fr-CA": "Filtre à secondaires",
+      "fr-FR": "Filtre à secondaires",
+      "it-IT": "Arma sec. impermeabile",
+      "ja-JP": "サブ影響軽減",
+      "ko-KR": "서브 영향 감소",
+      "nl-NL": "Subdemper",
+      "ru-RU": "Стойкость запаса",
+      "zh-CN": "减轻次要武器影响",
+      "zh-TW": "減輕次要武器影響"
+    },
+    "primary_only": false
+  },
+  {
+    "key": "intensify_action",
+    "name": {
+      "de-DE": "Action +",
+      "en-GB": "Intensify Action",
+      "en-US": "Intensify Action",
+      "es-ES": "Agilidad extra",
+      "es-MX": "Agilidad extra",
+      "fr-CA": "Feu de l'action",
+      "fr-FR": "Feu de l'action",
+      "it-IT": "Intensificazione",
+      "ja-JP": "アクション強化",
+      "ko-KR": "액션 강화",
+      "nl-NL": "Actie-assistentie",
+      "ru-RU": "Ультраудар",
+      "zh-CN": "行动强化",
+      "zh-TW": "行動強化"
+    },
+    "primary_only": false
+  },
+  {
+    "key": "opening_gambit",
+    "name": {
+      "de-DE": "Startvorteil",
+      "en-GB": "Opening Gambit",
+      "en-US": "Opening Gambit",
+      "es-ES": "Acelerón de salida",
+      "es-MX": "Acelerón de salida",
+      "fr-CA": "Départ toute allure",
+      "fr-FR": "Chapeaux de roue",
+      "it-IT": "Partenza a razzo",
+      "ja-JP": "スタートダッシュ",
+      "ko-KR": "스타트 대시",
+      "nl-NL": "Vliegende start",
+      "ru-RU": "Стартовый спурт",
+      "zh-CN": "最初冲刺",
+      "zh-TW": "最初衝刺"
+    },
+    "primary_only": true
+  },
+  {
+    "key": "last_ditch_effort",
+    "name": {
+      "de-DE": "Endspurt",
+      "en-GB": "Last-Ditch Effort",
+      "en-US": "Last-Ditch Effort",
+      "es-ES": "Sprint final",
+      "es-MX": "Último recurso",
+      "fr-CA": "Ultime sursaut",
+      "fr-FR": "Ultime sursaut",
+      "it-IT": "Splash finale",
+      "ja-JP": "ラストスパート",
+      "ko-KR": "라스트 스퍼트",
+      "nl-NL": "Eindsprint",
+      "ru-RU": "Финишный спурт",
+      "zh-CN": "最后冲刺",
+      "zh-TW": "最後衝刺"
+    },
+    "primary_only": true
+  },
+  {
+    "key": "tenacity",
+    "name": {
+      "de-DE": "Zähigkeit",
+      "en-GB": "Tenacity",
+      "en-US": "Tenacity",
+      "es-ES": "Ventaja",
+      "es-MX": "Tenacidad",
+      "fr-CA": "Ténacité",
+      "fr-FR": "Justice",
+      "it-IT": "Tenacia",
+      "ja-JP": "逆境強化",
+      "ko-KR": "역경 강화",
+      "nl-NL": "Volharding",
+      "ru-RU": "Компенсатор",
+      "zh-CN": "逆境强化",
+      "zh-TW": "逆境強化"
+    },
+    "primary_only": true
+  },
+  {
+    "key": "comeback",
+    "name": {
+      "de-DE": "Rückkehr",
+      "en-GB": "Comeback",
+      "en-US": "Comeback",
+      "es-ES": "Remontada",
+      "es-MX": "Remonte",
+      "fr-CA": "Retour",
+      "fr-FR": "Come-back",
+      "it-IT": "Gran ritorno",
+      "ja-JP": "カムバック",
+      "ko-KR": "컴백",
+      "nl-NL": "Opfrisser",
+      "ru-RU": "Ответный удар",
+      "zh-CN": "回归",
+      "zh-TW": "回歸"
+    },
+    "primary_only": true
+  },
+  {
+    "key": "ninja_squid",
+    "name": {
+      "de-DE": "Tintenfisch-Ninja",
+      "en-GB": "Ninja Squid",
+      "en-US": "Ninja Squid",
+      "es-ES": "Ninjalamar",
+      "es-MX": "Ninjalamar",
+      "fr-CA": "Ninjalmar",
+      "fr-FR": "Ninjalamar",
+      "it-IT": "Calamaro ninja",
+      "ja-JP": "イカニンジャ",
+      "ko-KR": "징어닌자",
+      "nl-NL": "Ninja-inktvis",
+      "ru-RU": "Мимикрия",
+      "zh-CN": "鱿鱼忍者",
+      "zh-TW": "魷魚忍者"
+    },
+    "primary_only": true
+  },
+  {
+    "key": "haunt",
+    "name": {
+      "de-DE": "Vergeltung",
+      "en-GB": "Haunt",
+      "en-US": "Haunt",
+      "es-ES": "Represalia",
+      "es-MX": "Resentimiento",
+      "fr-CA": "Vengeance",
+      "fr-FR": "Revanche",
+      "it-IT": "Rappresaglia",
+      "ja-JP": "リベンジ",
+      "ko-KR": "리벤지",
+      "nl-NL": "Revanche",
+      "ru-RU": "Вендетта",
+      "zh-CN": "复仇",
+      "zh-TW": "復仇"
+    },
+    "primary_only": true
+  },
+  {
+    "key": "thermal_ink",
+    "name": {
+      "de-DE": "Markierfarbe",
+      "en-GB": "Thermal Ink",
+      "en-US": "Thermal Ink",
+      "es-ES": "Señuelo",
+      "es-MX": "Tinta rastreadora",
+      "fr-CA": "Encre thermique",
+      "fr-FR": "Encre thermique",
+      "it-IT": "Inchiostro termico",
+      "ja-JP": "サーマルインク",
+      "ko-KR": "서멀 잉크",
+      "nl-NL": "Markeerstift",
+      "ru-RU": "Клеймо",
+      "zh-CN": "热力墨汁",
+      "zh-TW": "熱力墨汁"
+    },
+    "primary_only": true
+  },
+  {
+    "key": "respawn_punisher",
+    "name": {
+      "de-DE": "Heimsuchung",
+      "en-GB": "Respawn Punisher",
+      "en-US": "Respawn Punisher",
+      "es-ES": "Castigo póstumo",
+      "es-MX": "Castigo póstumo",
+      "fr-CA": "Retour perdant",
+      "fr-FR": "Retour perdant",
+      "it-IT": "Castigo",
+      "ja-JP": "復活ペナルティアップ",
+      "ko-KR": "부활 페널티 업",
+      "nl-NL": "Repercussie",
+      "ru-RU": "Кара",
+      "zh-CN": "提升复活惩罚",
+      "zh-TW": "提升復活懲罰"
+    },
+    "primary_only": true
+  },
+  {
+    "key": "ability_doubler",
+    "name": {
+      "de-DE": "Effektdoppelung",
+      "en-GB": "Ability Doubler",
+      "en-US": "Ability Doubler",
+      "es-ES": "Duplicador",
+      "es-MX": "Duplicador",
+      "fr-CA": "Bonus ×2",
+      "fr-FR": "Bonus ×2",
+      "it-IT": "Raddoppiatore",
+      "ja-JP": "追加ギアパワー倍化",
+      "ko-KR": "추가 기어 파워 2배",
+      "nl-NL": "Verdubbelaar",
+      "ru-RU": "Дупликатор",
+      "zh-CN": "追加装备能力增倍",
+      "zh-TW": "追加裝備能力增倍"
+    },
+    "primary_only": true
+  },
+  {
+    "key": "stealth_jump",
+    "name": {
+      "de-DE": "Sprunginfiltration",
+      "en-GB": "Stealth Jump",
+      "en-US": "Stealth Jump",
+      "es-ES": "Supersalto invisible",
+      "es-MX": "Supersalto invisible",
+      "fr-CA": "Super saut invisible",
+      "fr-FR": "Réception réussie",
+      "it-IT": "Salto al buio",
+      "ja-JP": "ステルスジャンプ",
+      "ko-KR": "스텔스 점프",
+      "nl-NL": "Sluipsprong",
+      "ru-RU": "Десант",
+      "zh-CN": "隐身跳跃",
+      "zh-TW": "隱身跳躍"
+    },
+    "primary_only": true
+  },
+  {
+    "key": "object_shredder",
+    "name": {
+      "de-DE": "Zerstörer",
+      "en-GB": "Object Shredder",
+      "en-US": "Object Shredder",
+      "es-ES": "Demolición",
+      "es-MX": "Demolición",
+      "fr-CA": "Démolition",
+      "fr-FR": "Démolition",
+      "it-IT": "Demolitore",
+      "ja-JP": "対物攻撃力アップ",
+      "ko-KR": "오브젝트 공격력 업",
+      "nl-NL": "Sloper",
+      "ru-RU": "Демонтажник",
+      "zh-CN": "提升对物体攻击力",
+      "zh-TW": "提升對物體攻擊力"
+    },
+    "primary_only": true
+  },
+  {
+    "key": "drop_roller",
+    "name": {
+      "de-DE": "Tricklandung",
+      "en-GB": "Drop Roller",
+      "en-US": "Drop Roller",
+      "es-ES": "Amortiguador",
+      "es-MX": "Aterrizaje rodante",
+      "fr-CA": "Super roulade",
+      "fr-FR": "Super roulade",
+      "it-IT": "Atterraggio stiloso",
+      "ja-JP": "受け身術",
+      "ko-KR": "낙법",
+      "nl-NL": "Rolmodel",
+      "ru-RU": "Акробат",
+      "zh-CN": "受身术",
+      "zh-TW": "受身術"
+    },
+    "primary_only": true
+  }
+]
