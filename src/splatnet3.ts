@@ -57,7 +57,7 @@ export class Splatnet3 {
           "Referer":
             `https://api.lp1.av5ja.srv.nintendo.net/?lang=${state.userLang}&na_country=${state.userCountry}&na_lang=${state.userLang}`,
           "Accept-Encoding": "gzip, deflate",
-          "Cookie": `_gtoken: ${state.loginState?.gToken}`,
+          "Cookie": `_gtoken=${state.loginState?.gToken}`,
         },
         body: JSON.stringify(body),
       });

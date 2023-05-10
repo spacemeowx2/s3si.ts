@@ -1,4 +1,4 @@
-import { CookieJar, wrapFetch } from "../../deps.ts";
+import { wrapFetch } from "../../deps.ts";
 import { readline } from "../utils.ts";
 import type { Env } from "./mod.ts";
 
@@ -23,9 +23,11 @@ export const DEFAULT_ENV: Env = {
     warn: console.warn,
     error: console.error,
   },
-  newFetcher: ({ cookies } = {}) => {
-    const cookieJar = new CookieJar(cookies);
-    const fetch = wrapFetch({ cookieJar });
+  newFetcher: ({ cookiesJar = false } = {}) => {
+    let fetch = self.fetch;
+    if (cookiesJar) {
+      fetch = wrapFetch();
+    }
 
     return {
       async get({ url, headers }) {

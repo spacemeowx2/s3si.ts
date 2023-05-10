@@ -45,5 +45,5 @@ export type Logger = {
 export type Env = {
   prompts: Prompts;
   logger: Logger;
-  newFetcher: (opts?: { cookies?: CookieOptions[] }) => Fetcher;
+  newFetcher: (opts?: { cookiesJar?: boolean }) => Fetcher;
 };

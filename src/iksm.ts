@@ -41,7 +41,7 @@ export async function loginSteps(
     sessionToken: string;
   }
 > {
-  const fetch = newFetcher();
+  const fetch = newFetcher({ cookiesJar: true });
 
   if (!step2) {
     const state = urlBase64Encode(random(36));
@@ -292,13 +292,7 @@ export async function getBulletToken(
     env: Env;
   },
 ) {
-  const { post } = env.newFetcher({
-    cookies: [{
-      name: "_gtoken",
-      value: webServiceToken,
-      domain: "api.lp1.av5ja.srv.nintendo.net",
-    }],
-  });
+  const { post } = env.newFetcher();
   const resp = await post({
     url: "https://api.lp1.av5ja.srv.nintendo.net/api/bullet_tokens",
     headers: {
@@ -310,6 +304,7 @@ export async function getBulletToken(
       "Accept": "*/*",
       "Origin": "https://api.lp1.av5ja.srv.nintendo.net",
       "X-Requested-With": "com.nintendo.znca",
+      "Cookie": `_gtoken=${webServiceToken}`,
     },
   });
 
