@@ -39,7 +39,7 @@ import {
   s3siGameId,
   urlSimplify,
 } from "../utils.ts";
-import { Env } from "../env.ts";
+import { Env } from "../env/mod.ts";
 import GEAR_MAP from "../assets/gear-map.json" assert { type: "json" };
 
 const COOP_POINT_MAP: Record<number, number | undefined> = {

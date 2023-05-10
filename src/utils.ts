@@ -5,7 +5,7 @@ import {
   S3SI_NAMESPACE,
 } from "./constant.ts";
 import { base64, uuid } from "../deps.ts";
-import { Env } from "./env.ts";
+import { Env } from "./env/mod.ts";
 import { io } from "../deps.ts";
 
 const stdinLines = io.readLines(Deno.stdin);

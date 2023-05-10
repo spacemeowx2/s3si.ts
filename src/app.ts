@@ -8,7 +8,7 @@ import { StatInkExporter } from "./exporters/stat.ink.ts";
 import { FileExporter } from "./exporters/file.ts";
 import { delay, showError } from "./utils.ts";
 import { GameFetcher } from "./GameFetcher.ts";
-import { DEFAULT_ENV, Env } from "./env.ts";
+import { DEFAULT_ENV, Env } from "./env/mod.ts";
 
 export type Opts = {
   profilePath: string;

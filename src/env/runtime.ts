@@ -1,36 +1,6 @@
-import { CookieJar, CookieOptions, wrapFetch } from "../deps.ts";
-import { readline } from "./utils.ts";
-
-export type Prompts = {
-  /**
-   * Prompt the user to enter the npf url.
-   */
-  promptLogin: (url: string) => Promise<string>;
-  /**
-   * Prompt the user to enter the string.
-   */
-  prompt: (tips: string) => Promise<string>;
-};
-
-export type Fetcher = {
-  get(opts: { url: string; headers?: HeadersInit }): Promise<Response>;
-  post(
-    opts: { url: string; body?: BodyInit; headers?: HeadersInit },
-  ): Promise<Response>;
-};
-
-export type Logger = {
-  debug: (...msg: unknown[]) => void;
-  log: (...msg: unknown[]) => void;
-  warn: (...msg: unknown[]) => void;
-  error: (...msg: unknown[]) => void;
-};
-
-export type Env = {
-  prompts: Prompts;
-  logger: Logger;
-  newFetcher: (opts?: { cookies?: CookieOptions[] }) => Fetcher;
-};
+import { CookieJar, wrapFetch } from "../../deps.ts";
+import { readline } from "../utils.ts";
+import type { Env } from "./mod.ts";
 
 export const DEFAULT_ENV: Env = {
   prompts: {
@@ -74,5 +44,3 @@ export const DEFAULT_ENV: Env = {
     };
   },
 };
-
-export type { CookieOptions };

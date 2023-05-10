@@ -13,7 +13,7 @@ import {
   Summary,
   VarsMap,
 } from "./types.ts";
-import { DEFAULT_ENV, Env } from "./env.ts";
+import { DEFAULT_ENV, Env } from "./env/mod.ts";
 import { getBulletToken, getGToken } from "./iksm.ts";
 import { parseHistoryDetailId } from "./utils.ts";
 

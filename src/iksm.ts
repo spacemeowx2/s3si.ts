@@ -6,7 +6,7 @@ import {
   WEB_VIEW_VERSION,
 } from "./constant.ts";
 import { APIError } from "./APIError.ts";
-import { Env, Fetcher } from "./env.ts";
+import { Env, Fetcher } from "./env/mod.ts";
 
 export async function loginSteps(
   env: Env,

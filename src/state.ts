@@ -1,5 +1,5 @@
 import { DeepReadonly } from "../deps.ts";
-import { DEFAULT_ENV, Env } from "./env.ts";
+import { DEFAULT_ENV, Env } from "./env/mod.ts";
 
 export type LoginState = {
   sessionToken?: string;

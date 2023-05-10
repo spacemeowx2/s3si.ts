@@ -2,93 +2,108 @@ lockfileVersion: '6.0'
 
 packageExtensionsChecksum: 48913be470f7ffb75d24e5848808682a
 
-dependencies:
-  '@tauri-apps/api':
-    specifier: ^1.2.0
-    version: 1.2.0
-  classnames:
-    specifier: ^2.3.2
-    version: registry.npmmirror.com/classnames@2.3.2
-  daisyui:
-    specifier: ^2.51.3
-    version: 2.51.3(autoprefixer@10.4.14)(postcss@8.4.23)
-  i18next:
-    specifier: ^22.4.10
-    version: 22.4.10
-  i18next-browser-languagedetector:
-    specifier: ^7.0.1
-    version: 7.0.1
-  immer:
-    specifier: ^10.0.1
-    version: registry.npmmirror.com/immer@10.0.1
-  react:
-    specifier: ^18.2.0
-    version: 18.2.0
-  react-dom:
-    specifier: ^18.2.0
-    version: 18.2.0(react@18.2.0)
-  react-i18next:
-    specifier: ^12.2.2
-    version: 12.2.2(i18next@22.4.10)(react-dom@18.2.0)(react@18.2.0)
-  react-icons:
-    specifier: ^4.8.0
-    version: 4.8.0(react@18.2.0)
-  react-router-dom:
-    specifier: ^6.10.0
-    version: 6.10.0(react-dom@18.2.0)(react@18.2.0)
-  react-use:
-    specifier: ^17.4.0
-    version: registry.npmmirror.com/react-use@17.4.0(react-dom@18.2.0)(react@18.2.0)
-  zustand:
-    specifier: ^4.3.7
-    version: registry.npmmirror.com/zustand@4.3.7(immer@10.0.1)(react@18.2.0)
+importers:
 
-devDependencies:
-  '@tauri-apps/cli':
-    specifier: ^1.2.3
-    version: 1.2.3
-  '@types/node':
-    specifier: ^18.16.1
-    version: 18.16.1
-  '@types/react':
-    specifier: ^18.0.15
-    version: 18.0.28
-  '@types/react-dom':
-    specifier: ^18.0.6
-    version: 18.0.11
-  '@vitejs/plugin-react':
-    specifier: ^4.0.0
-    version: 4.0.0(vite@4.3.3)
-  autoprefixer:
-    specifier: ^10.4.14
-    version: 10.4.14(postcss@8.4.23)
-  eslint:
-    specifier: ^8.39.0
-    version: 8.39.0
-  eslint-config-react-app:
-    specifier: ^7.0.1
-    version: 7.0.1(eslint@8.39.0)(typescript@5.0.4)
-  i18next-http-backend:
-    specifier: ^2.2.0
-    version: 2.2.0
-  postcss:
-    specifier: ^8.4.23
-    version: 8.4.23
-  tailwindcss:
-    specifier: ^3.3.2
-    version: 3.3.2
-  typescript:
-    specifier: ^5.0.4
-    version: 5.0.4
-  vite:
-    specifier: ^4.3.3
-    version: 4.3.3(@types/node@18.16.1)
-  vite-plugin-eslint:
-    specifier: ^1.8.1
-    version: 1.8.1(eslint@8.39.0)(vite@4.3.3)
-  vite-tsconfig-paths:
-    specifier: ^4.2.0
-    version: 4.2.0(typescript@5.0.4)(vite@4.3.3)
+  .:
+    dependencies:
+      '@tauri-apps/api':
+        specifier: ^1.2.0
+        version: 1.2.0
+      classnames:
+        specifier: ^2.3.2
+        version: registry.npmmirror.com/classnames@2.3.2
+      daisyui:
+        specifier: ^2.51.3
+        version: 2.51.3(autoprefixer@10.4.14)(postcss@8.4.23)
+      i18next:
+        specifier: ^22.4.10
+        version: 22.4.10
+      i18next-browser-languagedetector:
+        specifier: ^7.0.1
+        version: 7.0.1
+      immer:
+        specifier: ^10.0.1
+        version: registry.npmmirror.com/immer@10.0.1
+      react:
+        specifier: ^18.2.0
+        version: 18.2.0
+      react-dom:
+        specifier: ^18.2.0
+        version: 18.2.0(react@18.2.0)
+      react-i18next:
+        specifier: ^12.2.2
+        version: 12.2.2(i18next@22.4.10)(react-dom@18.2.0)(react@18.2.0)
+      react-icons:
+        specifier: ^4.8.0
+        version: 4.8.0(react@18.2.0)
+      react-router-dom:
+        specifier: ^6.10.0
+        version: 6.10.0(react-dom@18.2.0)(react@18.2.0)
+      react-use:
+        specifier: ^17.4.0
+        version: registry.npmmirror.com/react-use@17.4.0(react-dom@18.2.0)(react@18.2.0)
+      s3si-core:
+        specifier: workspace:*
+        version: link:../npm
+      zustand:
+        specifier: ^4.3.7
+        version: registry.npmmirror.com/zustand@4.3.7(immer@10.0.1)(react@18.2.0)
+    devDependencies:
+      '@tauri-apps/cli':
+        specifier: ^1.2.3
+        version: 1.2.3
+      '@types/node':
+        specifier: ^18.16.1
+        version: 18.16.1
+      '@types/react':
+        specifier: ^18.0.15
+        version: 18.0.28
+      '@types/react-dom':
+        specifier: ^18.0.6
+        version: 18.0.11
+      '@vitejs/plugin-react':
+        specifier: ^4.0.0
+        version: 4.0.0(vite@4.3.3)
+      autoprefixer:
+        specifier: ^10.4.14
+        version: 10.4.14(postcss@8.4.23)
+      eslint:
+        specifier: ^8.39.0
+        version: 8.39.0
+      eslint-config-react-app:
+        specifier: ^7.0.1
+        version: 7.0.1(eslint@8.39.0)(typescript@5.0.4)
+      i18next-http-backend:
+        specifier: ^2.2.0
+        version: 2.2.0
+      postcss:
+        specifier: ^8.4.23
+        version: 8.4.23
+      tailwindcss:
+        specifier: ^3.3.2
+        version: 3.3.2
+      typescript:
+        specifier: ^5.0.4
+        version: 5.0.4
+      vite:
+        specifier: ^4.3.3
+        version: 4.3.3(@types/node@18.16.1)
+      vite-plugin-eslint:
+        specifier: ^1.8.1
+        version: 1.8.1(eslint@8.39.0)(vite@4.3.3)
+      vite-tsconfig-paths:
+        specifier: ^4.2.0
+        version: 4.2.0(typescript@5.0.4)(vite@4.3.3)
+
+  ../npm:
+    dependencies:
+      '@deno/shim-deno':
+        specifier: ~0.12.0
+        version: 0.12.0
+    devDependencies:
+      '@types/node':
+        specifier: ^18.11.9
+        version: 18.16.1
 
 packages:
 
@@ -1548,6 +1563,17 @@ packages:
       '@babel/helper-validator-identifier': 7.19.1
       to-fast-properties: 2.0.0
     dev: true
+
+  /@deno/shim-deno-test@0.4.0:
+    resolution: {integrity: sha512-oYWcD7CpERZy/TXMTM9Tgh1HD/POHlbY9WpzmAk+5H8DohcxG415Qws8yLGlim3EaKBT2v3lJv01x4G0BosnaQ==}
+    dev: false
+
+  /@deno/shim-deno@0.12.0:
+    resolution: {integrity: sha512-nD/Izdp4RfU35rip2Jx4lP1WOWY8qAvGLpB3wvjlwgut237/RS4PwhLdmYnxDBXdsjjWMx8sDxmdHWs35GF3yA==}
+    dependencies:
+      '@deno/shim-deno-test': 0.4.0
+      which: 2.0.2
+    dev: false
 
   /@esbuild/android-arm64@0.17.18:
     resolution: {integrity: sha512-/iq0aK0eeHgSC3z55ucMAHO05OIqmQehiGay8eP5l/5l+iEr4EIbh4/MI8xD9qRFjqzgkc0JkX0LculNC9mXBw==}
@@ -3636,7 +3662,6 @@ packages:
 
   /isexe@2.0.0:
     resolution: {integrity: sha512-RHxMLp9lnKHGHRng9QFhRCMbYAcVpn69smSGcq3f36xjgVVWThj4qqLbTLlq7Ssj8B+fIQ1EuCEGI2lKsyQeIw==}
-    dev: true
 
   /jiti@1.18.2:
     resolution: {integrity: sha512-QAdOptna2NYiSSpv0O/BwoHBSmz4YhpzJHyi+fnMRTXFjp7B8i/YG5Z8IfusxB1ufjcD2Sre1F3R+nX3fvy7gg==}
@@ -4708,7 +4733,6 @@ packages:
     hasBin: true
     dependencies:
       isexe: 2.0.0
-    dev: true
 
   /word-wrap@1.2.3:
     resolution: {integrity: sha512-Hz/mrNwitNRh/HUAtM/VT/5VH+ygD6DV7mYKZAtHOrbs8U7lvPS6xf7EJKMF0uW1KJCl0H701g3ZGus+muE5vQ==}

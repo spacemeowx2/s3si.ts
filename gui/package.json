@@ -23,6 +23,7 @@
     "react-icons": "^4.8.0",
     "react-router-dom": "^6.10.0",
     "react-use": "^17.4.0",
+    "s3si-core": "workspace:*",
     "zustand": "^4.3.7"
   },
   "devDependencies": {
