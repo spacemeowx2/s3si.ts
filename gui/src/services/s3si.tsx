@@ -1,12 +1,46 @@
 import { invoke } from "@tauri-apps/api";
-import { JSONRPCClient, S3SIService, StdioTransport } from "jsonrpc";
-import { ExportOpts, Log, LoggerLevel, State } from "jsonrpc/types";
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { env } from 's3si-core';
 
-const client = new JSONRPCClient<S3SIService>({
-  transport: new StdioTransport()
-}).getProxy();
-const LOG_SUB = new Set<(logs: Log[]) => void>();
+const NODE_ENV: env.Env = {
+  prompts: {
+    promptLogin: async (url: string) => {
+      console.log("Navigate to this URL in your browser:");
+      console.log(url);
+      console.log(
+        'Log in, right click the "Select this account" button, copy the link address, and paste it below:',
+      );
+      return 'TODO';
+    },
+    prompt: async (tips: string) => {
+      console.log(tips);
+      return 'TODO';
+    },
+  },
+  logger: {
+    debug: console.debug,
+    log: console.log,
+    warn: console.warn,
+    error: console.error,
+  },
+  newFetcher: ({ cookiesJar = false } = {}) => {
+    return {
+      async get({ url, headers }) {
+        return await fetch(url, {
+          method: "GET",
+          headers,
+        });
+      },
+      async post({ url, body, headers }) {
+        return await fetch(url, {
+          method: "POST",
+          headers,
+          body,
+        });
+      },
+    };
+  },
+};
 
 async function getLogs() {
   while (true) {
