@@ -9,22 +9,19 @@ if (import.meta.main) {
     "x86_64-apple-darwin",
     "aarch64-apple-darwin",
   ];
-  const rustInfo = new TextDecoder().decode(
-    await Deno.run({
-      cmd: ["rustc", "-Vv"],
-      stdout: "piped",
-    }).output(),
-  );
-  const target = /host: (\S+)/g.exec(rustInfo)?.[1] ?? "?";
+  const rustInfo = await (new Deno.Command("rustc", {
+    args: ["-Vv"],
+  })).output();
+  const target =
+    /host: (\S+)/g.exec(new TextDecoder().decode(rustInfo.stdout))?.[1] ?? "?";
 
   if (!TARGETS.includes(target)) {
     console.error(`Unsupported target: ${target}`);
     Deno.exit(1);
   }
 
-  const p = Deno.run({
-    cmd: [
-      "deno",
+  const p = new Deno.Command("deno", {
+    args: [
       "compile",
       "--target",
       target,
@@ -35,7 +32,7 @@ if (import.meta.main) {
     ],
     cwd: __dirname,
   });
-  const status = await p.status();
+  const status = await p.output();
   if (!status.success) {
     console.error(
       "Failed to run deno compile for target",
@@ -50,18 +47,21 @@ if (import.meta.main) {
     Deno.build.os === "windows" ? ".exe" : ""
   }`;
   console.log("Test the binary");
-  const s3si = Deno.run({
-    cmd: [binPath],
+  const s3si = new Deno.Command(binPath, {
     stdin: "piped",
     stdout: "piped",
-  });
-  await s3si.stdin?.write(
+  }).spawn();
+  const s3siWriter = s3si.stdin.getWriter();
+  await s3siWriter.write(
     new TextEncoder().encode(
       '{"jsonrpc":"2.0","method":"hello","params":[],"id":1}\n',
     ),
   );
-  s3si.stdin?.close();
-  const output = new TextDecoder().decode(await s3si.output());
+
+  const output = new TextDecoder().decode(
+    (await s3si.stdout.getReader().read()).value,
+  );
+  await s3siWriter.close();
 
   assertEquals(
     output,
