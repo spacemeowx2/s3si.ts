@@ -1,3 +1,7 @@
+## 0.3.6
+
+feat: update `WEB_VIEW_VERSION` and query hashes
+
 ## 0.3.5
 
 fix: wrong ability keys in some languages
