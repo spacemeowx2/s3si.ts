@@ -175,13 +175,14 @@ export async function getGToken(
     },
   );
   const uiRespJson = await uiResp.json();
-  const { nickname, birthday, language, country } = uiRespJson;
+  const { nickname, birthday, language, country, id: userId } = uiRespJson;
 
   const getIdToken2 = async (idToken: string) => {
     const { f, request_id: requestId, timestamp } = await callImink({
       fApi,
       step: 1,
       idToken,
+      userId,
       env,
     });
     const resp = await fetch.post(
@@ -210,23 +211,28 @@ export async function getGToken(
     );
     const respJson = await resp.json();
 
-    const idToken2 = respJson?.result?.webApiServerCredential?.accessToken;
+    const idToken2: string = respJson?.result?.webApiServerCredential
+      ?.accessToken;
+    const coralUserId: number = respJson?.result?.user?.id;
 
-    if (!idToken2) {
+    if (!idToken2 || !coralUserId) {
       throw new APIError({
         response: resp,
         json: respJson,
-        message: "No idToken2 found",
+        message:
+          `No idToken2 or coralUserId found. Please try again later. ('${idToken2}', '${coralUserId}')`,
       });
     }
 
-    return idToken2 as string;
+    return [idToken2, coralUserId] as const;
   };
-  const getGToken = async (idToken: string) => {
+  const getGToken = async (idToken: string, coralUserId: number) => {
     const { f, request_id: requestId, timestamp } = await callImink({
       step: 2,
       idToken,
       fApi,
+      userId,
+      coralUserId,
       env,
     });
     const resp = await fetch.post(
@@ -266,8 +272,8 @@ export async function getGToken(
     return webServiceToken as string;
   };
 
-  const idToken2 = await retry(() => getIdToken2(idToken));
-  const webServiceToken = await retry(() => getGToken(idToken2));
+  const [idToken2, coralUserId] = await retry(() => getIdToken2(idToken));
+  const webServiceToken = await retry(() => getGToken(idToken2, coralUserId));
 
   return {
     webServiceToken,
@@ -403,13 +409,16 @@ type IminkResponse = {
   timestamp: number;
 };
 async function callImink(
-  { fApi, step, idToken, env }: {
+  params: {
     fApi: string;
     step: number;
     idToken: string;
+    userId: string;
+    coralUserId?: number;
     env: Env;
   },
 ): Promise<IminkResponse> {
+  const { fApi, step, idToken, userId, coralUserId, env } = params;
   const { post } = env.newFetcher();
   const resp = await post({
     url: fApi,
@@ -420,6 +429,8 @@ async function callImink(
     body: JSON.stringify({
       "token": idToken,
       "hash_method": step,
+      "na_id": userId,
+      "coral_user_id": coralUserId,
     }),
   });
 
