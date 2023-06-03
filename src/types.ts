@@ -204,7 +204,13 @@ export type CoopInfo = {
   };
 };
 export type Game = VsInfo | CoopInfo;
-export type VsMode = "REGULAR" | "BANKARA" | "PRIVATE" | "FEST" | "X_MATCH";
+export type VsMode =
+  | "REGULAR"
+  | "BANKARA"
+  | "PRIVATE"
+  | "FEST"
+  | "X_MATCH"
+  | "LEAGUE";
 export type VsHistoryDetail = {
   id: string;
   vsRule: {
@@ -234,6 +240,13 @@ export type VsHistoryDetail = {
     dragonMatchType: "NORMAL" | "DECUPLE" | "DRAGON" | "DOUBLE_DRAGON";
     contribution: number;
     myFestPower: number | null;
+  } | null;
+  leagueMatch: {
+    leagueMatchEvent: {
+      "name": string;
+      "id": string;
+    } | null;
+    myLeaguePower: number | null;
   } | null;
 
   myTeam: VsTeam;
@@ -749,12 +762,13 @@ export type StatInkPostBody = {
     | "xmatch"
     | "splatfest_challenge"
     | "splatfest_open"
-    | "private";
+    | "private"
+    | "event";
   rule: "nawabari" | "area" | "hoko" | "yagura" | "asari" | "tricolor";
   stage: string;
   weapon: string;
   result: "win" | "lose" | "draw" | "exempted_lose";
-  knockout?: "yes" | "no"; // for TW, set null or not sending
+  knockout?: "yes" | "no" | null; // for TW, set null or not sending
   rank_in_team: number; // position in scoreboard
   kill?: number;
   assist?: number;
@@ -806,6 +820,8 @@ export type StatInkPostBody = {
   clout_before?: number; // Splatfest Clout, before the battle
   clout_after?: number; // Splatfest Clout, after the battle
   clout_change?: number; // Splatfest Clout, equals to clout_after - clout_before if you know them
+  event?: string;
+  event_power?: number | null;
   cash_before?: number;
   cash_after?: number;
   our_team_players: StatInkPlayer[];

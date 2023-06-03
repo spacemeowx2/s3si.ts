@@ -1,3 +1,8 @@
+## 0.4.1
+
+feat: add support for Challenges
+([#72](https://github.com/spacemeowx2/s3si.ts/issues/72))
+
 ## 0.4.0
 
 feat: update `callImink`
