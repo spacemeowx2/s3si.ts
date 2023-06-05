@@ -220,7 +220,7 @@ export async function getGToken(
         response: resp,
         json: respJson,
         message:
-          `No idToken2 or coralUserId found. Please try again later. ('${idToken2}', '${coralUserId}')`,
+          `No idToken2 or coralUserId found. Please try again later. (${idToken2.length}, ${coralUserId.length})`,
       });
     }
 
