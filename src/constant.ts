@@ -10,6 +10,7 @@ export enum Queries {
   RegularBattleHistoriesQuery = "3baef04b095ad8975ea679d722bc17de",
   BankaraBattleHistoriesQuery = "0438ea6978ae8bd77c5d1250f4f84803",
   XBattleHistoriesQuery = "6796e3cd5dc3ebd51864dc709d899fc5",
+  EventBattleHistoriesQuery = "9744fcf676441873c7c8a51285b6aa4d",
   PrivateBattleHistoriesQuery = "8e5ae78b194264a6c230e262d069bd28",
   VsHistoryDetailQuery = "9ee0099fbe3d8db2a838a75cf42856dd",
   CoopHistoryQuery = "91b917becd2fa415890f5b47e15ffb15",
