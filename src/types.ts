@@ -8,6 +8,7 @@ export type VarsMap = {
   [Queries.RegularBattleHistoriesQuery]: [];
   [Queries.BankaraBattleHistoriesQuery]: [];
   [Queries.XBattleHistoriesQuery]: [];
+  [Queries.EventBattleHistoriesQuery]: [];
   [Queries.PrivateBattleHistoriesQuery]: [];
   [Queries.VsHistoryDetailQuery]: [{
     vsResultId: string;
@@ -415,6 +416,11 @@ export type RespMap = {
   };
   [Queries.BankaraBattleHistoriesQuery]: BankaraBattleHistories;
   [Queries.XBattleHistoriesQuery]: XBattleHistories;
+  [Queries.EventBattleHistoriesQuery]: {
+    eventBattleHistories: {
+      historyGroups: HistoryGroups<BattleListNode>;
+    };
+  };
   [Queries.PrivateBattleHistoriesQuery]: {
     privateBattleHistories: {
       historyGroups: HistoryGroups<BattleListNode>;

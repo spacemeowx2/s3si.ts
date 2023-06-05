@@ -10,6 +10,8 @@ import { delay, showError } from "./utils.ts";
 import { GameFetcher } from "./GameFetcher.ts";
 import { DEFAULT_ENV, Env } from "./env.ts";
 
+export type ListMethod = "latest" | "all" | "auto";
+
 export type Opts = {
   profilePath: string;
   exporter: string;
@@ -17,6 +19,7 @@ export type Opts = {
   monitor: boolean;
   withSummary: boolean;
   skipMode?: string;
+  listMethod: string;
   cache?: Cache;
   stateBackend?: StateBackend;
   env: Env;
@@ -28,6 +31,7 @@ export const DEFAULT_OPTS: Opts = {
   noProgress: false,
   monitor: false,
   withSummary: false,
+  listMethod: "auto",
   env: DEFAULT_ENV,
 };
 
