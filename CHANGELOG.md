@@ -1,3 +1,7 @@
+## 0.4.2
+
+fix: `coral_user_id` is string
+
 ## 0.4.1
 
 feat: add support for Challenges

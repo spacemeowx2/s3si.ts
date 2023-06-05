@@ -213,7 +213,7 @@ export async function getGToken(
 
     const idToken2: string = respJson?.result?.webApiServerCredential
       ?.accessToken;
-    const coralUserId: number = respJson?.result?.user?.id;
+    const coralUserId: string = respJson?.result?.user?.id?.toString();
 
     if (!idToken2 || !coralUserId) {
       throw new APIError({
@@ -226,7 +226,7 @@ export async function getGToken(
 
     return [idToken2, coralUserId] as const;
   };
-  const getGToken = async (idToken: string, coralUserId: number) => {
+  const getGToken = async (idToken: string, coralUserId: string) => {
     const { f, request_id: requestId, timestamp } = await callImink({
       step: 2,
       idToken,
@@ -414,7 +414,7 @@ async function callImink(
     step: number;
     idToken: string;
     userId: string;
-    coralUserId?: number;
+    coralUserId?: string;
     env: Env;
   },
 ): Promise<IminkResponse> {
