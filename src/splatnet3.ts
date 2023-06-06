@@ -188,7 +188,6 @@ export class Splatnet3 {
       ids.push(...await this.getBattleList(type));
     }
 
-    // battleTime()
     const timeMap = new Map<string, Date>(
       ids.map((id) => [id, battleTime(id)] as const),
     );
