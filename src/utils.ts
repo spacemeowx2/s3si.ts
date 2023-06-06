@@ -188,3 +188,14 @@ export function urlSimplify(url: string): { pathname: string } | string {
     return url;
   }
 }
+
+export const battleTime = (id: string) => {
+  const { timestamp } = parseHistoryDetailId(id);
+
+  const dateStr = timestamp.replace(
+    /(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})/,
+    "$1-$2-$3T$4:$5:$6Z",
+  );
+
+  return new Date(dateStr);
+};

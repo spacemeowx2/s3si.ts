@@ -15,7 +15,7 @@ import {
 } from "./types.ts";
 import { DEFAULT_ENV, Env } from "./env.ts";
 import { getBulletToken, getGToken } from "./iksm.ts";
-import { parseHistoryDetailId } from "./utils.ts";
+import { battleTime, parseHistoryDetailId } from "./utils.ts";
 
 export class Splatnet3 {
   protected profile: Profile;
@@ -137,6 +137,12 @@ export class Splatnet3 {
     [BattleListType.Bankara]: () =>
       this.request(Queries.BankaraBattleHistoriesQuery)
         .then((r) => getIdsFromGroups(r.bankaraBattleHistories)),
+    [BattleListType.XBattle]: () =>
+      this.request(Queries.XBattleHistoriesQuery)
+        .then((r) => getIdsFromGroups(r.xBattleHistories)),
+    [BattleListType.Event]: () =>
+      this.request(Queries.EventBattleHistoriesQuery)
+        .then((r) => getIdsFromGroups(r.eventBattleHistories)),
     [BattleListType.Private]: () =>
       this.request(Queries.PrivateBattleHistoriesQuery)
         .then((r) => getIdsFromGroups(r.privateBattleHistories)),
@@ -166,6 +172,30 @@ export class Splatnet3 {
     battleListType: BattleListType = BattleListType.Latest,
   ) {
     return await this.BATTLE_LIST_TYPE_MAP[battleListType]();
+  }
+
+  // Get all id from all battle list, sort by time, [0] is the latest
+  async getAllBattleList() {
+    const ALL_TYPE: BattleListType[] = [
+      BattleListType.Regular,
+      BattleListType.Bankara,
+      BattleListType.XBattle,
+      BattleListType.Event,
+      BattleListType.Private,
+    ];
+    const ids: string[] = [];
+    for (const type of ALL_TYPE) {
+      ids.push(...await this.getBattleList(type));
+    }
+
+    // battleTime()
+    const timeMap = new Map<string, Date>(
+      ids.map((id) => [id, battleTime(id)] as const),
+    );
+
+    return ids.sort((a, b) =>
+      timeMap.get(b)!.getTime() - timeMap.get(a)!.getTime()
+    );
   }
 
   getBattleDetail(
