@@ -613,7 +613,7 @@ export enum BattleListType {
   Coop,
 }
 
-export type ListMethod = "latest" | "all";
+export type ListMethod = "latest" | "all" | "auto";
 
 export type StatInkUuidList = {
   status: number;
