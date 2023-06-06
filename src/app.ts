@@ -1,8 +1,8 @@
 import { loginManually } from "./iksm.ts";
-import { MultiProgressBar } from "../deps.ts";
+import { MultiProgressBar, Mutex } from "../deps.ts";
 import { FileStateBackend, Profile, StateBackend } from "./state.ts";
 import { Splatnet3 } from "./splatnet3.ts";
-import { BattleListType, Game, GameExporter } from "./types.ts";
+import { BattleListType, Game, GameExporter, ListMethod } from "./types.ts";
 import { Cache, FileCache } from "./cache.ts";
 import { StatInkExporter } from "./exporters/stat.ink.ts";
 import { FileExporter } from "./exporters/file.ts";
@@ -17,7 +17,7 @@ export type Opts = {
   monitor: boolean;
   withSummary: boolean;
   skipMode?: string;
-  listMethod: string;
+  listMethod?: string;
   cache?: Cache;
   stateBackend?: StateBackend;
   env: Env;
@@ -54,6 +54,103 @@ class StepProgress {
   }
 }
 
+interface GameListFetcher {
+  /**
+   * Return not exported game list.
+   * [0] is the latest game.
+   * @param exporter GameExporter
+   */
+  fetch(exporter: GameExporter): Promise<string[]>;
+}
+
+class BattleListFetcher implements GameListFetcher {
+  protected listMethod: ListMethod;
+  protected allBattleList?: string[];
+  protected latestBattleList?: string[];
+  protected allLock = new Mutex();
+  protected latestLock = new Mutex();
+
+  constructor(
+    listMethod: string,
+    protected splatnet: Splatnet3,
+  ) {
+    if (listMethod === "all") {
+      this.listMethod = "all";
+    } else if (listMethod === "latest") {
+      this.listMethod = "latest";
+    } else {
+      this.listMethod = "auto";
+    }
+  }
+
+  protected getAllBattleList() {
+    return this.allLock.use(async () => {
+      if (!this.allBattleList) {
+        this.allBattleList = await this.splatnet.getAllBattleList();
+      }
+      return this.allBattleList;
+    });
+  }
+
+  protected getLatestBattleList() {
+    return this.latestLock.use(async () => {
+      if (!this.latestBattleList) {
+        this.latestBattleList = await this.splatnet.getBattleList();
+      }
+      return this.latestBattleList;
+    });
+  }
+
+  private async innerFetch(exporter: GameExporter) {
+    if (this.listMethod === "latest") {
+      return await exporter.notExported({
+        type: "VsInfo",
+        list: await this.getLatestBattleList(),
+      });
+    }
+    if (this.listMethod === "all") {
+      return await exporter.notExported({
+        type: "VsInfo",
+        list: await this.getAllBattleList(),
+      });
+    }
+    if (this.listMethod === "auto") {
+      const latestList = await exporter.notExported({
+        type: "VsInfo",
+        list: await this.getLatestBattleList(),
+      });
+      if (latestList.length === 50) {
+        return await exporter.notExported({
+          type: "VsInfo",
+          list: await this.getAllBattleList(),
+        });
+      }
+      return latestList;
+    }
+
+    throw new TypeError(`Unknown listMethod: ${this.listMethod}`);
+  }
+
+  async fetch(exporter: GameExporter) {
+    return [...await this.innerFetch(exporter)].reverse();
+  }
+}
+
+class CoopListFetcher implements GameListFetcher {
+  constructor(
+    protected splatnet: Splatnet3,
+  ) {}
+
+  async fetch(exporter: GameExporter) {
+    return [
+      ...await exporter.notExported({
+        type: "CoopInfo",
+        list: await this.splatnet.getBattleList(BattleListType.Coop),
+      }),
+    ].reverse();
+  }
+}
+
 function progress({ total, currentUrl, done }: StepProgress): Progress {
   return {
     total,
@@ -74,6 +171,12 @@ export class App {
       env: opts.env,
     });
     this.env = opts.env;
+
+    if (
+      opts.listMethod && !["all", "auto", "latest"].includes(opts.listMethod)
+    ) {
+      throw new TypeError(`Unknown listMethod: ${opts.listMethod}`);
+    }
   }
 
   getSkipMode(): ("vs" | "coop")[] {
@@ -164,13 +267,10 @@ export class App {
     if (skipMode.includes("vs") || exporters.length === 0) {
       this.env.logger.log("Skip exporting VS games.");
     } else {
-      this.env.logger.log("Fetching battle list...");
-      let gameList: string[];
-      if (this.opts.listMethod === "all") {
-        gameList = await splatnet.getAllBattleList();
-      } else {
-        gameList = await splatnet.getBattleList();
-      }
+      const gameListFetcher = new BattleListFetcher(
+        this.opts.listMethod ?? "auto",
+        splatnet,
+      );
 
       const { redraw, endBar } = this.exporterProgress("Export vs games");
       const fetcher = new GameFetcher({
@@ -189,7 +289,7 @@ export class App {
               type: "VsInfo",
               fetcher,
               exporter: e,
-              gameList,
+              gameListFetcher,
               stepProgress: stats[e.name],
               onStep: () => {
                 redraw(e.name, progress(stats[e.name]));
@@ -223,10 +323,7 @@ export class App {
     if (skipMode.includes("coop") || exporters.length === 0) {
       this.env.logger.log("Skip exporting coop games.");
     } else {
-      this.env.logger.log("Fetching coop battle list...");
-      const coopBattleList = await splatnet.getBattleList(
-        BattleListType.Coop,
-      );
+      const gameListFetcher = new CoopListFetcher(splatnet);
 
       const { redraw, endBar } = this.exporterProgress("Export coop games");
       const fetcher = new GameFetcher({
@@ -243,7 +340,7 @@ export class App {
               type: "CoopInfo",
               fetcher,
               exporter: e,
-              gameList: coopBattleList,
+              gameListFetcher,
               stepProgress: stats[e.name],
               onStep: () => {
                 redraw(e.name, progress(stats[e.name]));
@@ -349,30 +446,24 @@ export class App {
    * @param gameList ID list of games, sorted by date, newest first
    * @param onStep Callback function called when a game is exported
    */
-  async exportGameList({
+  private async exportGameList({
     type,
     fetcher,
     exporter,
-    gameList,
+    gameListFetcher,
     stepProgress,
     onStep,
   }: {
     type: Game["type"];
     exporter: GameExporter;
     fetcher: GameFetcher;
-    gameList: string[];
+    gameListFetcher: GameListFetcher;
     stepProgress: StepProgress;
     onStep: () => void;
   }): Promise<StepProgress> {
     onStep?.();
 
-    const workQueue = [
-      ...await exporter.notExported({
-        type,
-        list: gameList,
-      }),
-    ]
-      .reverse();
+    const workQueue = await gameListFetcher.fetch(exporter);
 
     const step = async (id: string) => {
       const detail = await fetcher.fetch(type, id);
