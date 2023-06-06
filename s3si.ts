@@ -32,8 +32,7 @@ Options:
                                  (e.g. "stat.ink,file")
     --list-method                When set to "latest", the latest 50 matches will be obtained.
                                  When set to "all", matches of all modes will be obtained with a maximum of 250 matches (5 modes x 50 matches).
-                                 When set to "auto", the latest 50 matches will be obtained. If 50 matches have not been uploaded yet, matches will be obtained from the list of all modes.
-                                 "auto" is the default setting.
+                                 "latest" is the default setting.
     --no-progress, -n            Disable progress bar
     --monitor, -m                Monitor mode
     --skip-mode <mode>, -s       Skip mode (default: null)

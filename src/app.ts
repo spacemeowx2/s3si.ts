@@ -10,8 +10,6 @@ import { delay, showError } from "./utils.ts";
 import { GameFetcher } from "./GameFetcher.ts";
 import { DEFAULT_ENV, Env } from "./env.ts";
 
-export type ListMethod = "latest" | "all" | "auto";
-
 export type Opts = {
   profilePath: string;
   exporter: string;
@@ -31,7 +29,7 @@ export const DEFAULT_OPTS: Opts = {
   noProgress: false,
   monitor: false,
   withSummary: false,
-  listMethod: "auto",
+  listMethod: "latest",
   env: DEFAULT_ENV,
 };
 
@@ -167,7 +165,12 @@ export class App {
       this.env.logger.log("Skip exporting VS games.");
     } else {
       this.env.logger.log("Fetching battle list...");
-      const gameList = await splatnet.getBattleList();
+      let gameList: string[];
+      if (this.opts.listMethod === "all") {
+        gameList = await splatnet.getAllBattleList();
+      } else {
+        gameList = await splatnet.getBattleList();
+      }
 
       const { redraw, endBar } = this.exporterProgress("Export vs games");
       const fetcher = new GameFetcher({

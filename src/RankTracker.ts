@@ -5,7 +5,7 @@ import {
   HistoryGroups,
   RankParam,
 } from "./types.ts";
-import { gameId, parseHistoryDetailId } from "./utils.ts";
+import { battleTime, gameId } from "./utils.ts";
 import { getSeason } from "./VersionData.ts";
 
 const splusParams = () => {
@@ -192,17 +192,6 @@ function addRank(
     },
   };
 }
-
-const battleTime = (id: string) => {
-  const { timestamp } = parseHistoryDetailId(id);
-
-  const dateStr = timestamp.replace(
-    /(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})/,
-    "$1-$2-$3T$4:$5:$6Z",
-  );
-
-  return new Date(dateStr);
-};
 
 type FlattenItem = {
   id: string;

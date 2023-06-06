@@ -607,9 +607,13 @@ export enum BattleListType {
   Latest,
   Regular,
   Bankara,
+  Event,
+  XBattle,
   Private,
   Coop,
 }
+
+export type ListMethod = "latest" | "all";
 
 export type StatInkUuidList = {
   status: number;
