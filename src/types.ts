@@ -236,6 +236,9 @@ export type VsHistoryDetail = {
   bankaraMatch: {
     earnedUdemaePoint: null | number;
     mode: "OPEN" | "CHALLENGE";
+    bankaraPower?: null | {
+      power?: null | number;
+    };
   } | null;
   festMatch: {
     dragonMatchType: "NORMAL" | "DECUPLE" | "DRAGON" | "DOUBLE_DRAGON";
@@ -819,6 +822,8 @@ export type StatInkPostBody = {
   challenge_lose?: number;
   x_power_before?: number | null;
   x_power_after?: number | null;
+  bankara_power_before?: number | null;
+  bankara_power_after?: number | null;
   fest_power?: number; // Splatfest Power (Pro)
   fest_dragon?:
     | "10x"

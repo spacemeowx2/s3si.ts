@@ -1,3 +1,7 @@
+## 0.4.4
+
+feat: send Anarchy (Open) Power
+
 ## 0.4.3
 
 feat: add `list-method` option
