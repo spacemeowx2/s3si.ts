@@ -587,6 +587,8 @@ export class StatInkExporter implements GameExporter {
       }
     }
 
+    result.bankara_power_after = vsDetail.bankaraMatch?.bankaraPower?.power;
+
     if (rankBeforeState && rankState) {
       result.rank_before_exp = rankBeforeState.rankPoint;
       result.rank_after_exp = rankState.rankPoint;
