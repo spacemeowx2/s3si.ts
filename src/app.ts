@@ -29,7 +29,7 @@ export const DEFAULT_OPTS: Opts = {
   noProgress: false,
   monitor: false,
   withSummary: false,
-  listMethod: "latest",
+  listMethod: "auto",
   env: DEFAULT_ENV,
 };
 
