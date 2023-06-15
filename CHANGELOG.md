@@ -1,3 +1,7 @@
+## 0.4.5
+
+fix: list method is not auto
+
 ## 0.4.4
 
 feat: send Anarchy (Open) Power
