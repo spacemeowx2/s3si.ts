@@ -16,7 +16,7 @@ export const Home: React.FC = () => {
         <Link to='/settings' className='btn'>{t('设置')}</Link>
         <div className='flex gap-2 flex-auto-all'>
           <OpenSplatnet>{t('打开鱿鱼圈3')}</OpenSplatnet>
-          <a className='btn' href={STAT_INK} target='_blank' rel='noreferrer'>{t('前往 stat.ink')}</a>
+          <a className='btn w-full' href={STAT_INK} target='_blank' rel='noreferrer'>{t('前往 stat.ink')}</a>
         </div>
       </div>
     </div>
