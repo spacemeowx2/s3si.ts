@@ -61,11 +61,11 @@ export const RunPanel: React.FC<RunPanelProps> = () => {
       <Checkbox disabled={disabled || loading} value={exportCoop} onChange={setExportCoop}>{t('导出打工数据')}</Checkbox>
       <button
         onClick={onClick}
-        className={classNames('btn w-full', {
+        className={classNames('btn btn-primary w-full', {
           'btn-disabled': disabled || (!exportBattle && !exportCoop),
-          'loading': loading,
         })}
-      >{t('导出')}</button>
+        disabled={loading}
+      >{loading ? <span className='loading' /> : t('导出')}</button>
     </div>
   </>
 }
