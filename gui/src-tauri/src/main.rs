@@ -15,14 +15,12 @@ function onSelectUserClick(e) {
   }
   e.preventDefault();
 
-  // very hacky way...
-  window.ipc.postMessage(JSON.stringify({
-    "cmd":"tauri",
-    "callback":0,
-    "error":0,
+  // a little official way...
+  window.__TAURI_INVOKE__({
     "__tauriModule":"Event",
+    "cmd": "tauri",
     "message":{"cmd":"emit","event":"login","payload":{"url":element.href}}
-  }))
+  })
 }
 function detectAndInject() {
   const element = document.getElementById('authorize-switch-approval-link');
@@ -74,18 +72,13 @@ document.addEventListener("DOMContentLoaded", () => {{
 
 #[tauri::command]
 async fn open_login_window(app: tauri::AppHandle, url: String) -> Option<String> {
-    let encoded = urlencoding::encode(&url);
-    let window = WindowBuilder::new(
-        &app,
-        "login",
-        tauri::WindowUrl::App(format!("/redirect?url={encoded}").into()),
-    )
-    .title("Login")
-    .center()
-    .inner_size(1040.0, 960.0)
-    .initialization_script(INIT_SCRIPT)
-    .build()
-    .ok()?;
+    let window = WindowBuilder::new(&app, "login", tauri::WindowUrl::App(url.into()))
+        .title("Login")
+        .center()
+        .inner_size(1040.0, 960.0)
+        .initialization_script(INIT_SCRIPT)
+        .build()
+        .ok()?;
     let result: Arc<Mutex<Option<String>>> = Arc::new(Mutex::new(None));
     let r2 = result.clone();
     let r3 = result.clone();
