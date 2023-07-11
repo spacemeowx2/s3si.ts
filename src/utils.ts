@@ -17,7 +17,6 @@ export async function readline(
       return line;
     }
   }
-  throw new Error("EOF");
 }
 
 export function urlBase64Encode(data: ArrayBuffer) {
