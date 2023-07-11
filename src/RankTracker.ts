@@ -349,6 +349,7 @@ export class RankTracker {
   ) {
 
     if (this.state === undefined) {
+      console.warn("Rank state is not defined, if you want to start tracking your rank please run initRank.ts")
       return undefined
     }
 
