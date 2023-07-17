@@ -347,6 +347,10 @@ export class RankTracker {
   async updateState(
     history: HistoryGroups<BattleListNode>["nodes"],
   ) {
+    if (history.length === 0) {
+      return;
+    }
+
     // history order by time. 0 is the oldest.
     const flatten: FlattenItem[] = await Promise.all(
       history
