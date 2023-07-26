@@ -3,17 +3,17 @@ import type { StatInkPostBody, VsHistoryDetail } from "./types.ts";
 export const AGENT_NAME = "s3si.ts";
 export const S3SI_VERSION = "0.4.5";
 export const NSOAPP_VERSION = "2.6.0";
-export const WEB_VIEW_VERSION = "4.0.0-d5178440";
+export const WEB_VIEW_VERSION = "4.0.0-22ddb0fd";
 export enum Queries {
   HomeQuery = "7dcc64ea27a08e70919893a0d3f70871",
   LatestBattleHistoriesQuery = "0d90c7576f1916469b2ae69f64292c02",
   RegularBattleHistoriesQuery = "3baef04b095ad8975ea679d722bc17de",
   BankaraBattleHistoriesQuery = "0438ea6978ae8bd77c5d1250f4f84803",
   XBattleHistoriesQuery = "6796e3cd5dc3ebd51864dc709d899fc5",
-  EventBattleHistoriesQuery = "9744fcf676441873c7c8a51285b6aa4d",
+  EventBattleHistoriesQuery = "e7bbaf1fa255305d607351da434b2d0f",
   PrivateBattleHistoriesQuery = "8e5ae78b194264a6c230e262d069bd28",
   VsHistoryDetailQuery = "9ee0099fbe3d8db2a838a75cf42856dd",
-  CoopHistoryQuery = "91b917becd2fa415890f5b47e15ffb15",
+  CoopHistoryQuery = "01fb9793ad92f91892ea713410173260",
   CoopHistoryDetailQuery = "379f0d9b78b531be53044bcac031b34b",
   myOutfitCommonDataFilteringConditionQuery =
     "d02ab22c9dccc440076055c8baa0fa7a",
