@@ -1,3 +1,10 @@
+## 0.4.6
+
+chore: update constants
+
+fix: skip updateState if history if empty
+([#81](https://github.com/spacemeowx2/s3si.ts/issues/81))
+
 ## 0.4.5
 
 fix: list method is not auto
