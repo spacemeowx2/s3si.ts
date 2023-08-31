@@ -3,23 +3,36 @@ import type { StatInkPostBody, VsHistoryDetail } from "./types.ts";
 export const AGENT_NAME = "s3si.ts";
 export const S3SI_VERSION = "0.4.7";
 export const NSOAPP_VERSION = "2.7.0";
-export const WEB_VIEW_VERSION = "4.0.0-b8c1e0fc";
+export const WEB_VIEW_VERSION = "4.0.0-091d4283";
 export enum Queries {
-  HomeQuery = "7dcc64ea27a08e70919893a0d3f70871",
-  LatestBattleHistoriesQuery = "0d90c7576f1916469b2ae69f64292c02",
-  RegularBattleHistoriesQuery = "3baef04b095ad8975ea679d722bc17de",
-  BankaraBattleHistoriesQuery = "0438ea6978ae8bd77c5d1250f4f84803",
-  XBattleHistoriesQuery = "6796e3cd5dc3ebd51864dc709d899fc5",
-  EventBattleHistoriesQuery = "e7bbaf1fa255305d607351da434b2d0f",
-  PrivateBattleHistoriesQuery = "8e5ae78b194264a6c230e262d069bd28",
-  VsHistoryDetailQuery = "9ee0099fbe3d8db2a838a75cf42856dd",
-  CoopHistoryQuery = "01fb9793ad92f91892ea713410173260",
-  CoopHistoryDetailQuery = "379f0d9b78b531be53044bcac031b34b",
+  HomeQuery =
+    "51fc56bbf006caf37728914aa8bc0e2c86a80cf195b4d4027d6822a3623098a8",
+  LatestBattleHistoriesQuery =
+    "b24d22fd6cb251c515c2b90044039698aa27bc1fab15801d83014d919cd45780",
+  RegularBattleHistoriesQuery =
+    "2fe6ea7a2de1d6a888b7bd3dbeb6acc8e3246f055ca39b80c4531bbcd0727bba",
+  BankaraBattleHistoriesQuery =
+    "9863ea4744730743268e2940396e21b891104ed40e2286789f05100b45a0b0fd",
+  XBattleHistoriesQuery =
+    "eb5996a12705c2e94813a62e05c0dc419aad2811b8d49d53e5732290105559cb",
+  EventBattleHistoriesQuery =
+    "e47f9aac5599f75c842335ef0ab8f4c640e8bf2afe588a3b1d4b480ee79198ac",
+  PrivateBattleHistoriesQuery =
+    "fef94f39b9eeac6b2fac4de43bc0442c16a9f2df95f4d367dd8a79d7c5ed5ce7",
+  VsHistoryDetailQuery =
+    "f893e1ddcfb8a4fd645fd75ced173f18b2750e5cfba41d2669b9814f6ceaec46",
+  CoopHistoryQuery =
+    "0f8c33970a425683bb1bdecca50a0ca4fb3c3641c0b2a1237aedfde9c0cb2b8f",
+  CoopHistoryDetailQuery =
+    "824a1e22c4ad4eece7ad94a9a0343ecd76784be4f77d8f6f563c165afc8cf602",
   myOutfitCommonDataFilteringConditionQuery =
-    "d02ab22c9dccc440076055c8baa0fa7a",
-  myOutfitCommonDataEquipmentsQuery = "d29cd0c2b5e6bac90dd5b817914832f8",
-  HistoryRecordQuery = "d9246baf077b2a29b5f7aac321810a77",
-  ConfigureAnalyticsQuery = "f8ae00773cc412a50dd41a6d9a159ddd",
+    "ac20c44a952131cb0c9d00eda7bc1a84c1a99546f0f1fc170212d5a6bb51a426",
+  myOutfitCommonDataEquipmentsQuery =
+    "45a4c343d973864f7bb9e9efac404182be1d48cf2181619505e9b7cd3b56a6e8",
+  HistoryRecordQuery =
+    "0a62c0152f27c4218cf6c87523377521c2cff76a4ef0373f2da3300079bf0388",
+  ConfigureAnalyticsQuery =
+    "2a9302bdd09a13f8b344642d4ed483b9464f20889ac17401e993dfa5c2bb3607",
 }
 export const S3SI_LINK = "https://github.com/spacemeowx2/s3si.ts";
 
