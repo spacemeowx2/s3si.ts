@@ -1,3 +1,9 @@
+## 0.4.8
+
+chore: update `WEB_VIEW_VERSION` and queries
+
+feat: update VersionData
+
 ## 0.4.7
 
 chore: update `WEB_VIEW_VERSION`
