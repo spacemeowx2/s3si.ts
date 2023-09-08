@@ -663,7 +663,9 @@ export type StatInkPlayer = {
   special?: number;
   gears?: StatInkGears;
   crown?: "yes" | "no";
+  crown_type?: "x" | "100x" | "333x";
   disconnected: "yes" | "no";
+  species: "inkling" | "octoling";
 };
 
 export type StatInkStage = {
@@ -713,6 +715,7 @@ export type StatInkCoopPlayer = {
   rescued: number;
   defeat_boss: number;
   disconnected: "yes" | "no";
+  species: "inkling" | "octoling";
 };
 
 export type StatInkCoopBoss = {
