@@ -393,6 +393,8 @@ export class StatInkExporter implements GameExporter {
       inked: player.paint,
       gears: await this.mapGears(player),
       crown: player.crown ? "yes" : "no",
+      crown_type: undefined,
+      species: player.species === "INKLING" ? "inkling" : "octoling",
       disconnected: player.result ? "no" : "yes",
     };
     if (player.result) {
@@ -402,6 +404,13 @@ export class StatInkExporter implements GameExporter {
       result.death = player.result.death;
       result.signal = player.result.noroshiTry ?? undefined;
       result.special = player.result.special;
+    }
+    if (player.crown) {
+      result.crown_type = "x";
+    } else if (player.festDragonCert === "DRAGON") {
+      result.crown_type = "100x";
+    } else if (player.festDragonCert === "DOUBLE_DRAGON") {
+      result.crown_type = "333x";
     }
     return result;
   };
@@ -699,6 +708,7 @@ export class StatInkExporter implements GameExporter {
       rescued: rescuedCount,
       defeat_boss: defeatEnemyCount,
       disconnected: disconnected ? "yes" : "no",
+      species: player.species === "INKLING" ? "inkling" : "octoling",
     };
   }
   mapKing(id?: string) {
