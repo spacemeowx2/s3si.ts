@@ -145,6 +145,7 @@ export type VsPlayer = {
   } | null;
   paint: number;
   crown: boolean;
+  festDragonCert: "NONE" | "DRAGON" | "DOUBLE_DRAGON";
 
   headGear: PlayerGear;
   clothingGear: PlayerGear;
@@ -270,6 +271,8 @@ export type CoopHistoryPlayerResult = {
       name: string;
       id: string;
     };
+    isMyself: boolean;
+    species: "INKLING" | "OCTOLING";
   };
   weapons: { name: string; image: Image | null }[];
   specialWeapon: null | {
