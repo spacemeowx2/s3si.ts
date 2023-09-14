@@ -1,3 +1,7 @@
+## 0.4.9
+
+feat: add species and crown_type
+
 ## 0.4.8
 
 chore: update `WEB_VIEW_VERSION` and queries

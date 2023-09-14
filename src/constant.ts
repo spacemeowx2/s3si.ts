@@ -1,7 +1,7 @@
 import type { StatInkPostBody, VsHistoryDetail } from "./types.ts";
 
 export const AGENT_NAME = "s3si.ts";
-export const S3SI_VERSION = "0.4.8";
+export const S3SI_VERSION = "0.4.9";
 export const NSOAPP_VERSION = "2.7.0";
 export const WEB_VIEW_VERSION = "4.0.0-091d4283";
 export enum Queries {
