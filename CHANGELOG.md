@@ -1,3 +1,7 @@
+## 0.4.10
+
+feat: support random primary ability
+
 ## 0.4.9
 
 feat: add species and crown_type

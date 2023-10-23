@@ -640,7 +640,7 @@ export type StatInkWeapon = {
 }[];
 
 export type StatInkGear = {
-  primary_ability: string;
+  primary_ability: string | null;
   secondary_abilities: (string | null)[];
 };
 
