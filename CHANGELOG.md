@@ -1,3 +1,7 @@
+## 0.4.11
+
+chore: update `WEB_VIEW_VERSION` and queries
+
 ## 0.4.10
 
 feat: support random primary ability
