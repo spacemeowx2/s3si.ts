@@ -36,6 +36,12 @@ export const SEASONS: Season[] = [
     start: new Date("2023-09-01T00:00:00+00:00"),
     end: new Date("2023-12-01T00:00:00+00:00"),
   },
+  {
+    id: "season202312",
+    name: "Chill Season 2023",
+    start: new Date("2023-12-01T00:00:00+00:00"),
+    end: new Date("2024-03-01T00:00:00+00:00"),
+  },
 ];
 
 export const getSeason = (date: Date): Season | undefined => {
