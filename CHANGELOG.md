@@ -1,3 +1,7 @@
+## 0.4.12
+
+feat: add 6.0.0 special
+
 ## 0.4.11
 
 chore: update `WEB_VIEW_VERSION` and queries
