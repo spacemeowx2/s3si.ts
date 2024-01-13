@@ -164,7 +164,7 @@ function progress({ total, currentUrl, done }: StepProgress): Progress {
 export class App {
   profile: Profile;
   env: Env;
-  isSplatoon3Active = false;
+  splatoon3PreviouslyActive = false;
 
   constructor(public opts: Opts) {
     const stateBackend = opts.stateBackend ??
@@ -401,24 +401,20 @@ export class App {
   async monitorWithNxapi() {
     this.env.logger.debug("Monitoring with nxapi presence");
     await this.exportOnce();
-    this.env.logger.debug("Connecting to event stream");
-    const nxapiEventStream = new EventSource(this.opts.nxapiPresenceUrl!);
-    nxapiEventStream.addEventListener("title", (event) => {
-      this.env.logger.debug("Received a new title event", event, event.data)
-      const eventData = JSON.parse(event.data)
-      const newStatus = eventData.id === SPLATOON3_TITLE_ID;
-      if (this.isSplatoon3Active !== newStatus) {
-        this.env.logger.log("Splatoon 3 presence changed, new status: ", newStatus ? "active" : "inactive");
-      }
-      this.isSplatoon3Active = newStatus;
-    })
 
     while (true) {
       await this.countDown(this.profile.state.monitorInterval);
-      if (this.isSplatoon3Active) {
+      const nxapiResponse = await fetch(this.opts.nxapiPresenceUrl!);
+      const nxapiData = await nxapiResponse.json();
+      const isSplatoon3Active = nxapiData.title?.id === SPLATOON3_TITLE_ID;
+      if (isSplatoon3Active || this.splatoon3PreviouslyActive) {
         this.env.logger.log("Splatoon 3 is active, exporting data");
         await this.exportOnce();
       }
+      if (isSplatoon3Active !== this.splatoon3PreviouslyActive) {
+        this.env.logger.debug("Splatoon 3 status has changed from", this.splatoon3PreviouslyActive, "to", isSplatoon3Active)
+      }
+      this.splatoon3PreviouslyActive = isSplatoon3Active
     }
   }
   async monitor() {
