@@ -9,6 +9,7 @@ import { FileExporter } from "./exporters/file.ts";
 import { delay, showError } from "./utils.ts";
 import { GameFetcher } from "./GameFetcher.ts";
 import { DEFAULT_ENV, Env } from "./env.ts";
+import { SPLATOON3_TITLE_ID } from "./constant.ts";
 
 export type Opts = {
   profilePath: string;
@@ -21,6 +22,7 @@ export type Opts = {
   cache?: Cache;
   stateBackend?: StateBackend;
   env: Env;
+  nxapiPresenceUrl?: string;
 };
 
 export const DEFAULT_OPTS: Opts = {
@@ -162,6 +164,7 @@ function progress({ total, currentUrl, done }: StepProgress): Progress {
 export class App {
   profile: Profile;
   env: Env;
+  isSplatoon3Active = false;
 
   constructor(public opts: Opts) {
     const stateBackend = opts.stateBackend ??
@@ -395,6 +398,29 @@ export class App {
       }
     }
   }
+  async monitorWithNxapi() {
+    this.env.logger.debug("Monitoring with nxapi presence");
+    await this.exportOnce();
+    this.env.logger.debug("Connecting to event stream");
+    const nxapiEventStream = new EventSource(this.opts.nxapiPresenceUrl!);
+    nxapiEventStream.addEventListener("title", (event) => {
+      this.env.logger.debug("Received a new title event", event, event.data)
+      const eventData = JSON.parse(event.data)
+      const newStatus = eventData.id === SPLATOON3_TITLE_ID;
+      if (this.isSplatoon3Active !== newStatus) {
+        this.env.logger.log("Splatoon 3 presence changed, new status: ", newStatus ? "active" : "inactive");
+      }
+      this.isSplatoon3Active = newStatus;
+    })
+
+    while (true) {
+      await this.countDown(this.profile.state.monitorInterval);
+      if (this.isSplatoon3Active) {
+        this.env.logger.log("Splatoon 3 is active, exporting data");
+        await this.exportOnce();
+      }
+    }
+  }
   async monitor() {
     while (true) {
       await this.exportOnce();
@@ -432,7 +458,9 @@ export class App {
       });
     }
 
-    if (this.opts.monitor) {
+    if (this.opts.nxapiPresenceUrl) {
+      await this.monitorWithNxapi();
+    } else if (this.opts.monitor) {
       await this.monitor();
     } else {
       await this.exportOnce();

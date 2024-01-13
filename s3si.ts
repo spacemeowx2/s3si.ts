@@ -4,7 +4,7 @@ import { flags } from "./deps.ts";
 
 const parseArgs = (args: string[]) => {
   const parsed = flags.parse(args, {
-    string: ["profilePath", "exporter", "skipMode", "listMethod"],
+    string: ["profilePath", "exporter", "skipMode", "listMethod", "nxapiPresenceUrl"],
     boolean: ["help", "noProgress", "monitor", "withSummary"],
     alias: {
       "help": "h",
@@ -15,6 +15,7 @@ const parseArgs = (args: string[]) => {
       "skipMode": ["s", "skip-mode"],
       "withSummary": "with-summary",
       "listMethod": "list-method",
+      "nxapiPresenceUrl": ["nxapi-presence-url", "nxapi-presence"]
     },
   });
   return parsed;
@@ -39,7 +40,8 @@ Options:
     --skip-mode <mode>, -s       Skip mode (default: null)
                                  ("vs", "coop")
     --with-summary               Include summary in the output
-    --help                       Show this help message and exit`,
+    --help                       Show this help message and exit
+    --nxapi-presence-url         Extends monitoring mode to use Nintendo Switch presence from nxapi`,
   );
   Deno.exit(0);
 }
