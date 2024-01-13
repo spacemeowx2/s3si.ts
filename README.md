@@ -30,6 +30,7 @@ Options:
                                  ("vs", "coop")
     --with-summary               Include summary in the output
     --help                       Show this help message and exit
+    --nxapi-presence             Extends monitoring mode to use Nintendo Switch presence from nxapi
 ```
 
 3. If it's your first time running this, follow the instructions to login to

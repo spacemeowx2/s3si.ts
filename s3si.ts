@@ -15,7 +15,7 @@ const parseArgs = (args: string[]) => {
       "skipMode": ["s", "skip-mode"],
       "withSummary": "with-summary",
       "listMethod": "list-method",
-      "nxapiPresenceUrl": ["nxapi-presence-url", "nxapi-presence"]
+      "nxapiPresenceUrl": ["nxapi-presence"]
     },
   });
   return parsed;
@@ -41,7 +41,7 @@ Options:
                                  ("vs", "coop")
     --with-summary               Include summary in the output
     --help                       Show this help message and exit
-    --nxapi-presence-url         Extends monitoring mode to use Nintendo Switch presence from nxapi`,
+    --nxapi-presence             Extends monitoring mode to use Nintendo Switch presence from nxapi`,
   );
   Deno.exit(0);
 }
