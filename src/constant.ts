@@ -116,3 +116,5 @@ export const SPLATNET3_STATINK_MAP: {
     2: "high",
   },
 };
+
+export const SPLATOON3_TITLE_ID = "0100c2500fc20000";
