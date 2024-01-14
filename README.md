@@ -41,7 +41,9 @@ Options:
 
 ### Splashcat Notes
 
-Due to limitations with SplatNet 3 data, Splashcat requires battles uploaded to use `en-US` (set with `userLang`). Splashcat will localize most parts of battle results into the user's language when displayed.
+Due to limitations with SplatNet 3 data, Splashcat requires battles uploaded to
+use `en-US` (set with `userLang`). Splashcat will localize most parts of battle
+results into the user's language when displayed.
 
 ### Track your rank
 
