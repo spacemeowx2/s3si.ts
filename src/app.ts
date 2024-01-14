@@ -412,9 +412,14 @@ export class App {
         await this.exportOnce();
       }
       if (isSplatoon3Active !== this.splatoon3PreviouslyActive) {
-        this.env.logger.debug("Splatoon 3 status has changed from", this.splatoon3PreviouslyActive, "to", isSplatoon3Active)
+        this.env.logger.debug(
+          "Splatoon 3 status has changed from",
+          this.splatoon3PreviouslyActive,
+          "to",
+          isSplatoon3Active,
+        );
       }
-      this.splatoon3PreviouslyActive = isSplatoon3Active
+      this.splatoon3PreviouslyActive = isSplatoon3Active;
     }
   }
   async monitor() {

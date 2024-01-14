@@ -4,7 +4,13 @@ import { flags } from "./deps.ts";
 
 const parseArgs = (args: string[]) => {
   const parsed = flags.parse(args, {
-    string: ["profilePath", "exporter", "skipMode", "listMethod", "nxapiPresenceUrl"],
+    string: [
+      "profilePath",
+      "exporter",
+      "skipMode",
+      "listMethod",
+      "nxapiPresenceUrl",
+    ],
     boolean: ["help", "noProgress", "monitor", "withSummary"],
     alias: {
       "help": "h",
@@ -15,7 +21,7 @@ const parseArgs = (args: string[]) => {
       "skipMode": ["s", "skip-mode"],
       "withSummary": "with-summary",
       "listMethod": "list-method",
-      "nxapiPresenceUrl": ["nxapi-presence"]
+      "nxapiPresenceUrl": ["nxapi-presence"],
     },
   });
   return parsed;
