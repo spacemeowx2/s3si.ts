@@ -9,6 +9,7 @@ import { FileExporter } from "./exporters/file.ts";
 import { delay, showError } from "./utils.ts";
 import { GameFetcher } from "./GameFetcher.ts";
 import { DEFAULT_ENV, Env } from "./env.ts";
+import { SplashcatExporter } from "./exporters/splashcat.ts";
 
 export type Opts = {
   profilePath: string;
@@ -218,6 +219,29 @@ export class App {
 
     if (exporters.includes("file")) {
       out.push(new FileExporter(state.fileExportPath));
+    }
+
+    if (exporters.includes("splashcat")) {
+      if (!state.splashcatApiKey) {
+        const key = (await this.env.prompts.prompt(
+          "Splashcat API key is not set. Please enter below.",
+        )).trim();
+        if (!key) {
+          this.env.logger.error("API key is required.");
+          Deno.exit(1);
+        }
+        await this.profile.writeState({
+          ...state,
+          splashcatApiKey: key,
+        });
+      }
+      out.push(
+        new SplashcatExporter({
+          splashcatApiKey: this.profile.state.splashcatApiKey!,
+          uploadMode: this.opts.monitor ? "Monitoring" : "Manual",
+          env: this.env,
+        }),
+      );
     }
 
     return out;
