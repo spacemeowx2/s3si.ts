@@ -10,6 +10,7 @@ import { delay, showError } from "./utils.ts";
 import { GameFetcher } from "./GameFetcher.ts";
 import { DEFAULT_ENV, Env } from "./env.ts";
 import { SplashcatExporter } from "./exporters/splashcat.ts";
+import { SPLATOON3_TITLE_ID } from "./constant.ts";
 
 export type Opts = {
   profilePath: string;
@@ -22,6 +23,7 @@ export type Opts = {
   cache?: Cache;
   stateBackend?: StateBackend;
   env: Env;
+  nxapiPresenceUrl?: string;
 };
 
 export const DEFAULT_OPTS: Opts = {
@@ -163,6 +165,7 @@ function progress({ total, currentUrl, done }: StepProgress): Progress {
 export class App {
   profile: Profile;
   env: Env;
+  splatoon3PreviouslyActive = false;
 
   constructor(public opts: Opts) {
     const stateBackend = opts.stateBackend ??
@@ -419,6 +422,30 @@ export class App {
       }
     }
   }
+  async monitorWithNxapi() {
+    this.env.logger.debug("Monitoring with nxapi presence");
+    await this.exportOnce();
+
+    while (true) {
+      await this.countDown(this.profile.state.monitorInterval);
+      const nxapiResponse = await fetch(this.opts.nxapiPresenceUrl!);
+      const nxapiData = await nxapiResponse.json();
+      const isSplatoon3Active = nxapiData.title?.id === SPLATOON3_TITLE_ID;
+      if (isSplatoon3Active || this.splatoon3PreviouslyActive) {
+        this.env.logger.log("Splatoon 3 is active, exporting data");
+        await this.exportOnce();
+      }
+      if (isSplatoon3Active !== this.splatoon3PreviouslyActive) {
+        this.env.logger.debug(
+          "Splatoon 3 status has changed from",
+          this.splatoon3PreviouslyActive,
+          "to",
+          isSplatoon3Active,
+        );
+      }
+      this.splatoon3PreviouslyActive = isSplatoon3Active;
+    }
+  }
   async monitor() {
     while (true) {
       await this.exportOnce();
@@ -456,7 +483,9 @@ export class App {
       });
     }
 
-    if (this.opts.monitor) {
+    if (this.opts.nxapiPresenceUrl) {
+      await this.monitorWithNxapi();
+    } else if (this.opts.monitor) {
       await this.monitor();
     } else {
       await this.exportOnce();
