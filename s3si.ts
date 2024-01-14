@@ -29,7 +29,7 @@ Options:
     --profile-path <path>, -p    Path to config file (default: ./profile.json)
     --exporter <exporter>, -e    Exporter list to use (default: stat.ink)
                                  Multiple exporters can be separated by commas
-                                 (e.g. "stat.ink,file")
+                                 (e.g. "stat.ink,file,splashcat")
     --list-method                When set to "latest", the latest 50 matches will be obtained.
                                  When set to "all", matches of all modes will be obtained with a maximum of 250 matches (5 modes x 50 matches).
                                  When set to "auto", the latest 50 matches will be obtained. If 50 matches have not been uploaded yet, matches will be obtained from the list of all modes.
