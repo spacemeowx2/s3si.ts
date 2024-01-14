@@ -11,6 +11,7 @@ import { GameFetcher } from "./GameFetcher.ts";
 import { DEFAULT_ENV, Env } from "./env.ts";
 import { SplashcatExporter } from "./exporters/splashcat.ts";
 import { SPLATOON3_TITLE_ID } from "./constant.ts";
+import { USERAGENT } from "./constant.ts";
 
 export type Opts = {
   profilePath: string;
@@ -424,11 +425,17 @@ export class App {
   }
   async monitorWithNxapi() {
     this.env.logger.debug("Monitoring with nxapi presence");
+    const fetcher = this.env.newFetcher();
     await this.exportOnce();
 
     while (true) {
       await this.countDown(this.profile.state.monitorInterval);
-      const nxapiResponse = await fetch(this.opts.nxapiPresenceUrl!);
+      const nxapiResponse = await fetcher.get({
+        url: this.opts.nxapiPresenceUrl!,
+        headers: {
+          "User-Agent": USERAGENT,
+        },
+      });
       const nxapiData = await nxapiResponse.json();
       const isSplatoon3Active = nxapiData.title?.id === SPLATOON3_TITLE_ID;
       if (isSplatoon3Active || this.splatoon3PreviouslyActive) {
