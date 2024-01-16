@@ -15,8 +15,10 @@ jobs:
           deno-version: ${{ matrix.deno }}
       - name: Check fmt
         run: deno fmt --check
+        if: ${{ matrix.deno != '1.31.x' }}
       - name: Run lint
         run: deno lint
+        if: ${{ matrix.deno != '1.31.x' }}
       - name: All entries
         uses: tj-actions/glob@v16
         id: entries
