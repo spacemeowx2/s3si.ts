@@ -30,6 +30,7 @@ export type State = {
   statInkApiKey?: string;
   fileExportPath: string;
   monitorInterval: number;
+  splashcatApiKey?: string;
 };
 
 export const DEFAULT_STATE: State = {

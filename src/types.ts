@@ -129,6 +129,7 @@ export type PlayerWeapon = {
   };
 };
 export type VsPlayer = {
+  nameplate: Nameplate;
   id: string;
   nameId: string | null;
   name: string;
@@ -158,6 +159,11 @@ export type Color = {
   r: number;
 };
 export type VsTeam = {
+  festUniformName?: string;
+  festStreakWinCount?: number;
+  festUniformBonusRate?: number;
+  order: number;
+  judgement: string;
   players: VsPlayer[];
   color: Color;
   tricolorRole: null | "DEFENSE" | "ATTACK1" | "ATTACK2";
@@ -165,6 +171,7 @@ export type VsTeam = {
   result: null | {
     paintRatio: null | number;
     score: null | number;
+    noroshi: null | number;
   };
 };
 export type VsRule =

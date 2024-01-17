@@ -3,7 +3,7 @@
 [![Build status](https://github.com/spacemeowx2/s3si.ts/workflows/Build/badge.svg)](https://github.com/spacemeowx2/s3si.ts/actions/workflows/ci.yaml)
 [![Constant check status](https://github.com/spacemeowx2/s3si.ts/workflows/Constant%20Check/badge.svg)](https://github.com/spacemeowx2/s3si.ts/actions/workflows/constant-check.yaml)
 
-Export your battles from SplatNet to stat.ink.
+Export your battles from SplatNet to stat.ink and Splashcat.
 
 If you have used s3s, please see [here](#migrate-from-s3s).
 
@@ -19,7 +19,7 @@ Options:
     --profile-path <path>, -p    Path to config file (default: ./profile.json)
     --exporter <exporter>, -e    Exporter list to use (default: stat.ink)
                                  Multiple exporters can be separated by commas
-                                 (e.g. "stat.ink,file")
+                                 (e.g. "stat.ink,file,splashcat")
     --list-method                When set to "latest", the latest 50 matches will be obtained.
                                  When set to "all", matches of all modes will be obtained with a maximum of 250 matches (5 modes x 50 matches).
                                  When set to "auto", the latest 50 matches will be obtained. If 50 matches have not been uploaded yet, matches will be obtained from the list of all modes.
@@ -38,6 +38,12 @@ Options:
 
 - If you want to use a different profile, use `-p` to specify the path to the
   profile file.
+
+### Splashcat Notes
+
+Due to limitations with SplatNet 3 data, Splashcat requires battles uploaded to
+use `en-US` (set with `userLang`). Splashcat will localize most parts of battle
+results into the user's language when displayed.
 
 ### Track your rank
 
@@ -72,7 +78,8 @@ Options:
   // userLang will effect the language of the exported games to stat.ink
   "userLang": "zh-CN",
   "userCountry": "JP",
-  "statInkApiKey": "..."
+  "statInkApiKey": "...",
+  "splashcatApiKey": "..."
 }
 ```
 
