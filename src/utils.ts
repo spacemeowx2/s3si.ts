@@ -12,12 +12,16 @@ const stdinLines = io.readLines(Deno.stdin);
 export async function readline(
   { skipEmpty = true }: { skipEmpty?: boolean } = {},
 ) {
-  for await (const line of stdinLines) {
+  while (true) {
+    const result = await stdinLines.next();
+    if (result.done) {
+      throw new Error("EOF");
+    }
+    const line = result.value;
     if (!skipEmpty || line !== "") {
       return line;
     }
   }
-  throw new Error("EOF");
 }
 
 export function urlBase64Encode(data: ArrayBuffer) {
