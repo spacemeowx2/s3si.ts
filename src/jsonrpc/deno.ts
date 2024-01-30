@@ -1,4 +1,4 @@
-import { io } from "../../deps.ts";
+import { readLines } from "../utils.ts";
 import { Transport } from "./types.ts";
 
 export class DenoIO implements Transport {
@@ -8,7 +8,7 @@ export class DenoIO implements Transport {
     reader: ReadableStream<Uint8Array>;
     writer: WritableStream<Uint8Array>;
   }) {
-    this.lines = io.readLines(reader);
+    this.lines = readLines(reader);
     this.writer = writer;
   }
   async recv(): Promise<string | undefined> {
@@ -21,10 +21,13 @@ export class DenoIO implements Transport {
     return undefined;
   }
   async send(data: string) {
-    await writeAll(
-      this.writer,
-      new TextEncoder().encode(data + "\n"),
-    );
+    const writer = this.writer.getWriter();
+    try {
+      await writer.ready;
+      await writer.write(new TextEncoder().encode(data + "\n"));
+    } finally {
+      writer.releaseLock();
+    }
   }
   async close() {
     await this.writer.close();

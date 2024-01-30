@@ -7,11 +7,11 @@ import {
 import { base64, uuid } from "../deps.ts";
 import { Env } from "./env.ts";
 
-async function* _readlines() {
+export async function* readLines(readable: ReadableStream<Uint8Array>) {
   const decoder = new TextDecoder();
   let buffer = "";
 
-  for await (const chunk of Deno.stdin.readable) {
+  for await (const chunk of readable) {
     buffer += decoder.decode(chunk);
     let lineEndIndex;
 
@@ -28,7 +28,7 @@ async function* _readlines() {
   }
 }
 
-const stdinLines = _readlines();
+const stdinLines = readLines(Deno.stdin.readable);
 export async function readline(
   { skipEmpty = true }: { skipEmpty?: boolean } = {},
 ) {
