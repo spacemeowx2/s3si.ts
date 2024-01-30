@@ -3,13 +3,13 @@ import { Transport } from "./types.ts";
 
 export class DenoIO implements Transport {
   lines: AsyncIterableIterator<string>;
-  writer: WritableStream<Uint8Array>;
+  writer: WritableStreamDefaultWriter<Uint8Array>;
   constructor({ reader, writer }: {
     reader: ReadableStream<Uint8Array>;
     writer: WritableStream<Uint8Array>;
   }) {
     this.lines = readLines(reader);
-    this.writer = writer;
+    this.writer = writer.getWriter();
   }
   async recv(): Promise<string | undefined> {
     const result = await this.lines.next();
@@ -21,13 +21,8 @@ export class DenoIO implements Transport {
     return undefined;
   }
   async send(data: string) {
-    const writer = this.writer.getWriter();
-    try {
-      await writer.ready;
-      await writer.write(new TextEncoder().encode(data + "\n"));
-    } finally {
-      writer.releaseLock();
-    }
+    await this.writer.ready;
+    await this.writer.write(new TextEncoder().encode(data + "\n"));
   }
   async close() {
     await this.writer.close();

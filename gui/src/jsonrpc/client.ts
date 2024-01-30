@@ -21,7 +21,7 @@ export class JSONRPCClient<S extends Service> {
   protected transport: Transport;
   protected requestMap: Map<
     ID,
-    (result: RPCResult<any, ResponseError>) => void
+    (result: RPCResult<unknown, ResponseError>) => void
   > = new Map();
   protected fatal: unknown = undefined;
   protected task: Promise<void>;
@@ -55,6 +55,7 @@ export class JSONRPCClient<S extends Service> {
   // receive response from server
   protected async run() {
     try {
+      // eslint-disable-next-line no-constant-condition
       while (true) {
         const data = await this.transport.recv();
         if (data === undefined) {
@@ -111,7 +112,7 @@ export class JSONRPCClient<S extends Service> {
         if (result.error) {
           rej(new JSONRPCError(result.error));
         } else {
-          res(result.result);
+          res(result.result as R);
         }
       });
     });
@@ -120,6 +121,7 @@ export class JSONRPCClient<S extends Service> {
   getProxy(): S {
     const proxy = new Proxy({}, {
       get: (_, method: string) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return (...params: unknown[]) => this.call(method, ...params as any);
       },
     });

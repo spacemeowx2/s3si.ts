@@ -1,9 +1,10 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { AiOutlineWarning } from 'react-icons/ai'
+import { FallbackProps } from 'react-error-boundary'
 
 type ErrorContentProps = {
-  error: any
+  error: unknown
   retry?: () => void
 }
 
@@ -23,4 +24,9 @@ export const ErrorContent: React.FC<ErrorContentProps> = ({ error, retry }) => {
       </div>
     </span>
   </div>
+}
+
+export const FallbackComponent: React.FC<FallbackProps> = ({ error, resetErrorBoundary }) => {
+  console.error('FallbackComponent', error)
+  return <ErrorContent error={error} retry={resetErrorBoundary} />
 }

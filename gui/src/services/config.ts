@@ -1,6 +1,6 @@
 import { fs } from "@tauri-apps/api"
 import { appConfigDir, join } from '@tauri-apps/api/path'
-import { State } from '../../../src/state';
+import type { State } from '../../../src/state';
 
 const configFile = appConfigDir().then(c => join(c, 'config.json'));
 const profileDir = appConfigDir().then(c => join(c, 'profile'));
@@ -9,8 +9,7 @@ export type Profile = {
   state: State,
 }
 
-export type Config = {
-}
+export type Config = Record<string, never>
 
 // TODO: import from state.ts.
 const DEFAULT_STATE: State = {
