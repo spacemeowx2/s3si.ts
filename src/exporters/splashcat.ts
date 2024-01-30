@@ -169,7 +169,7 @@ export class SplashcatExporter implements GameExporter {
   }
 
   static getGameId(id: string) {
-    const plainText = new TextDecoder().decode(base64.decode(id));
+    const plainText = new TextDecoder().decode(base64.decodeBase64(id));
 
     return plainText.split(":").at(-1);
   }
@@ -200,12 +200,14 @@ export class SplashcatExporter implements GameExporter {
     const result: Player = {
       badges: (player.nameplate as Nameplate).badges.map((i) =>
         i
-          ? Number(new TextDecoder().decode(base64.decode(i.id)).split("-")[1])
+          ? Number(
+            new TextDecoder().decode(base64.decodeBase64(i.id)).split("-")[1],
+          )
           : null
       ),
       splashtagBackgroundId: Number(
         new TextDecoder().decode(
-          base64.decode((player.nameplate as Nameplate).background.id),
+          base64.decodeBase64((player.nameplate as Nameplate).background.id),
         ).split("-")[1],
       ),
       clothingGear: this.mapGear(player.clothingGear),
@@ -215,13 +217,17 @@ export class SplashcatExporter implements GameExporter {
       isMe: player.isMyself,
       name: player.name,
       nameId: player.nameId ?? "",
-      nplnId: new TextDecoder().decode(base64.decode(player.id)).split(":").at(
+      nplnId: new TextDecoder().decode(base64.decodeBase64(player.id)).split(
+        ":",
+      ).at(
         -1,
       )!,
       paint: player.paint,
       species: player.species,
       weaponId: Number(
-        new TextDecoder().decode(base64.decode(player.weapon.id)).split("-")[1],
+        new TextDecoder().decode(base64.decodeBase64(player.weapon.id)).split(
+          "-",
+        )[1],
       ),
       assists: player.result?.assist,
       deaths: player.result?.death,
@@ -270,9 +276,10 @@ export class SplashcatExporter implements GameExporter {
         : vsDetail.vsMode.mode,
       vsRule: vsDetail.vsRule.rule,
       vsStageId: Number(
-        new TextDecoder().decode(base64.decode(vsDetail.vsStage.id)).split(
-          "-",
-        )[1],
+        new TextDecoder().decode(base64.decodeBase64(vsDetail.vsStage.id))
+          .split(
+            "-",
+          )[1],
       ),
       anarchy: vsDetail.vsMode.mode === "BANKARA"
         ? {
@@ -301,7 +308,7 @@ export class SplashcatExporter implements GameExporter {
       challenge: vsDetail.vsMode.mode === "LEAGUE"
         ? {
           id: new TextDecoder().decode(
-            base64.decode(vsDetail.leagueMatch?.leagueMatchEvent?.id!),
+            base64.decodeBase64(vsDetail.leagueMatch?.leagueMatchEvent?.id!),
           ).split("-")[1],
           power: vsDetail.leagueMatch?.myLeaguePower ?? undefined,
         }

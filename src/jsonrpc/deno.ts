@@ -1,12 +1,12 @@
-import { io, writeAll } from "../../deps.ts";
+import { io } from "../../deps.ts";
 import { Transport } from "./types.ts";
 
 export class DenoIO implements Transport {
   lines: AsyncIterableIterator<string>;
-  writer: Deno.Writer & Deno.Closer;
+  writer: WritableStream<Uint8Array>;
   constructor({ reader, writer }: {
-    reader: Deno.Reader;
-    writer: Deno.Writer & Deno.Closer;
+    reader: ReadableStream<Uint8Array>;
+    writer: WritableStream<Uint8Array>;
   }) {
     this.lines = io.readLines(reader);
     this.writer = writer;

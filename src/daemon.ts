@@ -126,8 +126,8 @@ if (import.meta.main) {
   const service = new S3SIServiceImplement();
   const server = new JSONRPCServer({
     transport: new DenoIO({
-      reader: Deno.stdin,
-      writer: Deno.stdout,
+      reader: Deno.stdin.readable,
+      writer: Deno.stdout.writable,
     }),
     service,
   });
