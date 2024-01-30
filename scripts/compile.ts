@@ -39,6 +39,8 @@ if (import.meta.main) {
       target,
       "code:",
       status.code,
+      "stderr:",
+      new TextDecoder().decode(status.stderr),
     );
     Deno.exit(status.code);
   }

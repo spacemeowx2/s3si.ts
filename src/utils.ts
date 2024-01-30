@@ -6,9 +6,29 @@ import {
 } from "./constant.ts";
 import { base64, uuid } from "../deps.ts";
 import { Env } from "./env.ts";
-import { io } from "../deps.ts";
 
-const stdinLines = io.readLines(Deno.stdin);
+async function* _readlines() {
+  const decoder = new TextDecoder();
+  let buffer = "";
+
+  for await (const chunk of Deno.stdin.readable) {
+    buffer += decoder.decode(chunk);
+    let lineEndIndex;
+
+    while ((lineEndIndex = buffer.indexOf("\n")) !== -1) {
+      const line = buffer.slice(0, lineEndIndex).trim();
+      buffer = buffer.slice(lineEndIndex + 1);
+
+      yield line;
+    }
+  }
+
+  if (buffer.length > 0) {
+    yield buffer;
+  }
+}
+
+const stdinLines = _readlines();
 export async function readline(
   { skipEmpty = true }: { skipEmpty?: boolean } = {},
 ) {
@@ -25,14 +45,14 @@ export async function readline(
 }
 
 export function urlBase64Encode(data: ArrayBuffer) {
-  return base64.encode(data)
+  return base64.encodeBase64(data)
     .replaceAll("+", "-")
     .replaceAll("/", "_")
     .replaceAll("=", "");
 }
 
 export function urlBase64Decode(data: string) {
-  return base64.decode(
+  return base64.encodeBase64(
     data
       .replaceAll("_", "/")
       .replaceAll("-", "+"),
@@ -107,14 +127,14 @@ export function gameId(
     );
     return uuid.v5.generate(BATTLE_NAMESPACE, content);
   } else if (parsed.type === "CoopHistoryDetail") {
-    return uuid.v5.generate(COOP_NAMESPACE, base64.decode(id));
+    return uuid.v5.generate(COOP_NAMESPACE, base64.decodeBase64(id));
   } else {
     throw new Error("Unknown type");
   }
 }
 
 export function s3siGameId(id: string) {
-  const fullId = base64.decode(id);
+  const fullId = base64.decodeBase64(id);
   const tsUuid = fullId.slice(fullId.length - 52, fullId.length);
   return uuid.v5.generate(S3SI_NAMESPACE, tsUuid);
 }
@@ -126,7 +146,7 @@ export function s3siGameId(id: string) {
  * @returns uuid used in stat.ink
  */
 export function s3sCoopGameId(id: string) {
-  const fullId = base64.decode(id);
+  const fullId = base64.decodeBase64(id);
   const tsUuid = fullId.slice(fullId.length - 52, fullId.length);
   return uuid.v5.generate(COOP_NAMESPACE, tsUuid);
 }
@@ -135,7 +155,7 @@ export function s3sCoopGameId(id: string) {
  * @param id VsHistoryDetail id or CoopHistoryDetail id
  */
 export function parseHistoryDetailId(id: string) {
-  const plainText = new TextDecoder().decode(base64.decode(id));
+  const plainText = new TextDecoder().decode(base64.decodeBase64(id));
 
   const vsRE =
     /VsHistoryDetail-([a-z0-9-]+):(\w+):(\d{8}T\d{6})_([0-9a-f-]{36})/;
@@ -171,7 +191,7 @@ export const delay = (ms: number) =>
  * Decode ID and get number after '-'
  */
 export function b64Number(id: string): number {
-  const text = new TextDecoder().decode(base64.decode(id));
+  const text = new TextDecoder().decode(base64.decodeBase64(id));
   const [_, num] = text.split("-");
   return parseInt(num);
 }
