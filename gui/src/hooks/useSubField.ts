@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/ban-types */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 type Maybe<T> = T | null | undefined;
 type KeyOf<T extends Record<string, any>, K = keyof T> = K extends string ? (T[K] extends Function ? never : K) : never;
 type DotField<T extends Maybe<Record<string, any>>, K = KeyOf<NonNullable<T>>> = K extends string

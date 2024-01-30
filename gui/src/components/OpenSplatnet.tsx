@@ -1,10 +1,8 @@
 import { invoke } from '@tauri-apps/api';
-import classNames from 'classnames';
-import { usePromise } from 'hooks/usePromise';
+import clsx from 'clsx';
+import { useService, useServiceMutation } from 'services/useService';
 import React, { useState } from 'react'
-import { getConfig, getProfile, setProfile } from 'services/config';
 import { ensureTokenValid } from 'services/s3si';
-import { composeLoadable } from 'utils/composeLoadable';
 import { ErrorContent } from './ErrorContent';
 
 type OpenSplatnetProps = {
@@ -12,30 +10,29 @@ type OpenSplatnetProps = {
 }
 
 export const OpenSplatnet: React.FC<OpenSplatnetProps> = ({ children }) => {
-  let { loading, error, retry, result } = composeLoadable({
-    config: usePromise(getConfig),
-    profile: usePromise(() => getProfile(0)),
-  });
+  const profileResult = useService('profile', 0)
+  const { trigger: setProfile } = useServiceMutation('profile', 0)
+
   const [doing, setDoing] = useState(false);
-  const [err, setError] = useState<any>();
+  const [err, setError] = useState<unknown>();
 
   const onClick = async () => {
     setDoing(true);
     try {
-      if (!result) {
+      if (!profileResult.data) {
         return;
       }
-      const state = result.profile.state;
+      const state = profileResult.data.state;
       const newState = await ensureTokenValid(state);
-      await setProfile(0, {
-        ...result.profile,
+      await setProfile({
+        ...profileResult.data,
         state: newState,
       });
-      retry?.();
+
       const gtoken = newState.loginState?.gToken;
       await invoke('open_splatnet', {
         gtoken,
-        lang: result.profile.state.userLang,
+        lang: profileResult.data.state.userLang,
       });
     } catch (e) {
       setError(e);
@@ -45,18 +42,18 @@ export const OpenSplatnet: React.FC<OpenSplatnetProps> = ({ children }) => {
   };
 
 
-  if (error || err) {
+  if (err) {
     return <>
-      <ErrorContent error={error || err} retry={retry} />
+      <ErrorContent error={err} />
     </>
   }
 
-  const btnLoading = loading || doing;
+  const btnLoading = profileResult.isLoading || doing;
   return <>
     <button
       type='button'
-      className={classNames('btn w-full', {
-        'btn-disabled': !result?.profile.state.loginState?.sessionToken,
+      className={clsx('btn w-full', {
+        'btn-disabled': !profileResult.data?.state?.loginState?.sessionToken,
       })}
       onClick={onClick}
       disabled={btnLoading}

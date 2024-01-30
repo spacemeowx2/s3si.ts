@@ -9,6 +9,7 @@ const client = new JSONRPCClient<S3SIService>({
 const LOG_SUB = new Set<(logs: Log[]) => void>();
 
 async function getLogs() {
+  // eslint-disable-next-line no-constant-condition
   while (true) {
     const r = await client.getLogs()
 
@@ -57,7 +58,7 @@ export const useLog = () => {
   return useContext(LOG_CONTEXT);
 }
 
-function renderMsg(i: any) {
+function renderMsg(i: unknown) {
   if (i instanceof Error) {
     return i.message
   }

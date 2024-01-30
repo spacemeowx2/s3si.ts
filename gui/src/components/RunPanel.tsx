@@ -1,72 +1,39 @@
-import classNames from 'classnames';
-import { usePromise } from 'hooks/usePromise';
+import clsx from 'clsx';
 import React, { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next';
-import { canExport, getProfile, setProfile } from 'services/config';
-import { addLog, run, useLog } from 'services/s3si';
+import { useLog } from 'services/s3si';
 import { Checkbox } from './Checkbox';
 import { Loading } from './Loading';
+import { useService } from 'services/useService';
+import { useAppContext } from 'context/app'
 
-type RunPanelProps = {
-}
+type RunPanelProps = Record<string, never>
 
 export const RunPanel: React.FC<RunPanelProps> = () => {
   const { t } = useTranslation();
-  const { result } = usePromise(() => getProfile(0));
+  const { data: result } = useService('profile', 0)
   const [exportBattle, setExportBattle] = useState(true);
   const [exportCoop, setExportCoop] = useState(true);
-  const [loading, setLoading] = useState(false);
+  const { exports } = useAppContext()
+  const disabled = !exports
+  const isExporting = exports?.isExporting ?? false
 
   if (!result) {
     return <Loading />
   }
 
-  const onClick = async () => {
-    setLoading(true);
-    try {
-      addLog({
-        level: 'log',
-        msg: ['Export started at', new Date().toLocaleString()],
-      })
-      const { state } = result;
-      const newState = await run(state, {
-        exporter: "stat.ink",
-        monitor: false,
-        withSummary: false,
-        skipMode: exportBattle === false ? 'vs' : exportCoop === false ? 'coop' : undefined,
-      });
-      await setProfile(0, {
-        ...result,
-        state: newState,
-      })
-    } catch (e) {
-      console.error(e)
-      addLog({
-        level: 'error',
-        msg: [e],
-      })
-    } finally {
-      addLog({
-        level: 'log',
-        msg: ['Export ended at', new Date().toLocaleString()],
-      })
-      setLoading(false);
-    }
-  }
-  const disabled = !canExport(result);
-
   return <>
     <div className="tooltip" data-tip={disabled ? t('请先在设置中完成Nintendo Account登录和stat.ink的API密钥') : undefined}>
-      <Checkbox disabled={disabled || loading} value={exportBattle} onChange={setExportBattle}>{t('导出对战数据')}</Checkbox>
-      <Checkbox disabled={disabled || loading} value={exportCoop} onChange={setExportCoop}>{t('导出打工数据')}</Checkbox>
+      <Checkbox disabled={disabled || isExporting} value={exportBattle} onChange={setExportBattle}>{t('导出对战数据')}</Checkbox>
+      <Checkbox disabled={disabled || isExporting} value={exportCoop} onChange={setExportCoop}>{t('导出打工数据')}</Checkbox>
       <button
         type='button'
-        onClick={onClick}
-        className={classNames('btn btn-primary w-full', {
+        onClick={() => exports?.trigger({ exportBattle, exportCoop })}
+        className={clsx('btn btn-primary w-full', {
           'btn-disabled': disabled || (!exportBattle && !exportCoop),
         })}
-        disabled={loading}
-      >{loading ? <span className='loading' /> : t('导出')}</button>
+        disabled={isExporting}
+      >{isExporting ? <span className='loading' /> : t('导出')}</button>
     </div>
   </>
 }

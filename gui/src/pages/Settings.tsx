@@ -1,16 +1,17 @@
-import { ErrorContent } from 'components/ErrorContent';
+import { ErrorContent, FallbackComponent } from 'components/ErrorContent';
 import { Loading } from 'components/Loading';
-import { usePromise, usePromiseLazy } from 'hooks/usePromise';
-import React, { useState } from 'react'
+import React, { Suspense, useState } from 'react'
 import { useTranslation } from 'react-i18next';
-import { Config, getConfig, getProfile, Profile, setConfig, setProfile } from 'services/config';
-import { composeLoadable } from 'utils/composeLoadable';
-import classNames from 'classnames';
+import { Config, Profile } from 'services/config';
+import clsx from 'clsx';
 import { useLogin } from 'services/s3si';
 import { STAT_INK } from 'constant';
 import { Header } from 'components/Header';
 import { useSubField } from 'hooks/useSubField';
 import { useNavigate } from 'react-router-dom';
+import useSWRMutation from 'swr/mutation'
+import { useService, useServiceMutation } from 'services/useService';
+import { ErrorBoundary } from 'react-error-boundary';
 
 const STAT_INK_KEY_LENGTH = 43;
 
@@ -57,6 +58,8 @@ const Form: React.FC<{
   const { t, i18n } = useTranslation();
   const [value, setValue] = useState(oldValue);
   const { subField } = useSubField({ value, onChange: setValue });
+  const { trigger: setProfile } = useServiceMutation('profile', 0)
+  const { trigger: setConfig } = useServiceMutation('config')
 
   const changed = JSON.stringify(value) !== JSON.stringify(oldValue);
 
@@ -64,12 +67,12 @@ const Form: React.FC<{
   const statInkApiKey = subField('profile.state.statInkApiKey')
   const splatnet3Lang = subField('profile.state.userLang')
 
-  const [onSave, { loading, error }] = usePromiseLazy(async () => {
-    await setProfile(0, value.profile);
+  const { trigger: onSave, isMutating: loading, error } = useSWRMutation('saveSettings', async () => {
+    await setProfile(value.profile);
     await setConfig(value.config);
     onSaved?.();
   })
-  const [onLogin, loginState] = usePromiseLazy(async () => {
+  const loginState = useSWRMutation('login', async () => {
     const result = await login();
     if (!result) {
       return;
@@ -86,11 +89,11 @@ const Form: React.FC<{
           <span className="label-text">{t('Nintendo Account 会话令牌')}</span>
           <span className="label-text-alt"><button
             type='button'
-            className={classNames('link', {
-              loading: loginState.loading,
+            className={clsx('link', {
+              loading: loginState.isMutating,
             })}
-            onClick={onLogin}
-            disabled={loginState.loading}
+            onClick={() => loginState.trigger()}
+            disabled={loginState.isMutating}
           >{t('网页登录')}</button></span>
         </label>
         <input
@@ -114,7 +117,7 @@ const Form: React.FC<{
         </label>
         <div className='tooltip' data-tip={statInkKeyError ? t('密钥的长度应该为{{length}}, 请检查', { length: STAT_INK_KEY_LENGTH }) : null}>
           <input
-            className={classNames("input input-bordered w-full", {
+            className={clsx("input input-bordered w-full", {
               'input-error': statInkKeyError,
             })}
             type="text"
@@ -149,19 +152,19 @@ const Form: React.FC<{
     </div>
     <ErrorContent error={error} />
     <div className='flex gap-4 max-w-md justify-between flex-auto-all'>
-      <div className="tooltip" data-tip={changed ? undefined : t('没有更改')}>
+      <div className='tooltip' data-tip={changed ? undefined : t('没有更改')}>
         <button
           type='button'
-          className={classNames('btn btn-primary w-full', {
+          className={clsx('btn btn-primary w-full', {
             loading,
           })}
-          onClick={onSave}
+          onClick={() => onSave()}
           disabled={!changed || statInkKeyError}
         >{t('保存')}</button>
       </div>
       <button
         type='button'
-        className={classNames('btn', {
+        className={clsx('btn', {
           loading,
         })}
         onClick={() => setValue(oldValue)}
@@ -170,26 +173,28 @@ const Form: React.FC<{
   </>
 }
 
-export const Settings: React.FC = () => {
+const SettingsLoader: React.FC = () => {
   const navigate = useNavigate();
-  let { loading, error, retry, result } = composeLoadable({
-    config: usePromise(getConfig),
-    profile: usePromise(() => getProfile(0)),
-  });
+  const { data: config } = useService('config')
+  const { data: profile } = useService('profile', 0)
 
-  if (loading) {
-    return <Page>
-      <div className='h-full flex items-center justify-center'><Loading /></div>
-    </Page>
+  if (!config || !profile) {
+    return <>
+      Error
+    </>
   }
 
-  if (error) {
-    return <Page>
-      <ErrorContent error={error} retry={retry} />
-    </Page>
-  }
+  return <>
+    <Form oldValue={{ config, profile }} onSaved={() => navigate(-1)} />
+  </>
+}
 
+export const Settings: React.FC = () => {
   return <Page>
-    {result && <Form oldValue={result} onSaved={() => navigate(-1)} />}
+    <ErrorBoundary FallbackComponent={FallbackComponent}>
+      <Suspense fallback={<div className='h-full flex items-center justify-center'><Loading /></div>}>
+        <SettingsLoader />
+      </Suspense>
+    </ErrorBoundary>
   </Page>
 }

@@ -12,28 +12,32 @@
   },
   "dependencies": {
     "@tauri-apps/api": "^1.5.3",
-    "classnames": "^2.5.1",
+    "clsx": "^2.1.0",
     "daisyui": "^4.6.1",
     "i18next": "^23.8.1",
     "i18next-browser-languagedetector": "^7.2.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-error-boundary": "^4.0.12",
     "react-i18next": "^14.0.1",
     "react-icons": "^5.0.1",
     "react-router-dom": "^6.21.3",
-    "react-use": "^17.5.0"
+    "react-use": "^17.5.0",
+    "swr": "^2.2.4"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^1.5.9",
     "@types/node": "^20.11.10",
     "@types/react": "^18.0.15",
     "@types/react-dom": "^18.0.6",
+    "@typescript-eslint/eslint-plugin": "^6.20.0",
     "@typescript-eslint/parser": "^6.20.0",
     "@typescript-eslint/typescript-estree": "^6.20.0",
     "@vitejs/plugin-react": "^4.2.1",
     "autoprefixer": "^10.4.17",
     "eslint": "^8.56.0",
-    "eslint-config-react-app": "^7.0.1",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-refresh": "^0.4.5",
     "i18next-http-backend": "^2.4.2",
     "postcss": "^8.4.33",
     "tailwindcss": "^3.4.1",
@@ -41,22 +45,5 @@
     "vite": "^5.0.12",
     "vite-plugin-eslint": "^1.8.1",
     "vite-tsconfig-paths": "^4.3.1"
-  },
-  "eslintConfig": {
-    "extends": "react-app"
-  },
-  "pnpm": {
-    "packageExtensions": {
-      "eslint-plugin-flowtype": {
-        "peerDependenciesMeta": {
-          "@babel/plugin-syntax-flow": {
-            "optional": true
-          },
-          "@babel/plugin-transform-react-jsx": {
-            "optional": true
-          }
-        }
-      }
-    }
   }
 }

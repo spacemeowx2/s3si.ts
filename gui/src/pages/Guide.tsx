@@ -1,4 +1,4 @@
-import classNames from 'classnames';
+import clsx from 'clsx';
 import { Header } from 'components/Header';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -32,14 +32,14 @@ const Steps: React.FC<{ steps: Step[], className?: string }> = ({ className, ste
       <button
         type='button'
         onClick={() => setStep(s => s - 1)}
-        className={classNames('btn', {
+        className={clsx('btn', {
           'btn-disabled': !hasPrev || !state.prev,
         })}
       >{t('上一步')}</button>
       <button
         type='button'
         onClick={() => setStep(s => s + 1)}
-        className={classNames('btn', {
+        className={clsx('btn', {
           'btn-disabled': !hasNext || !state.next,
         })}
       >{t('下一步')}</button>

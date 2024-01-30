@@ -10,10 +10,10 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [build-dependencies]
-tauri-build = { version = "1.4.0", features = [] }
+tauri-build = { version = "1.5.1", features = [] }
 
 [dependencies]
-tauri = { version = "1.4.1", features = [
+tauri = { version = "1.5.4", features = [
   "fs-all",
   "path-all",
   "process-relaunch",
@@ -22,9 +22,9 @@ tauri = { version = "1.4.1", features = [
   "shell-sidecar",
   "window-all",
 ] }
-serde = { version = "1.0.164", features = ["derive"] }
-serde_json = "1.0.97"
-tokio = { version = "1.28.2", features = ["time"] }
+serde = { version = "1.0.196", features = ["derive"] }
+serde_json = "1.0.113"
+tokio = { version = "1.35.1", features = ["time"] }
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem
