@@ -9,6 +9,6 @@ type HeaderProps = {
 export const Header: React.FC<HeaderProps> = ({ title }) => {
   const navigate = useNavigate();
   return <>
-    <h2 className="card-title" data-tauri-drag-region><button onClick={() => navigate(-1)}><AiOutlineLeft /></button>{title}</h2>
+    <h2 className="card-title" data-tauri-drag-region><button type='button' onClick={() => navigate(-1)}><AiOutlineLeft /></button>{title}</h2>
   </>
 }

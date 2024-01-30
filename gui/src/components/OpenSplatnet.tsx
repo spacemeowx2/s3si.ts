@@ -53,8 +53,13 @@ export const OpenSplatnet: React.FC<OpenSplatnetProps> = ({ children }) => {
 
   const btnLoading = loading || doing;
   return <>
-    <button className={classNames('btn w-full', {
-      'btn-disabled': !result?.profile.state.loginState?.sessionToken,
-    })} onClick={onClick} disabled={btnLoading}>{btnLoading ? <span className='loading' /> : children}</button>
+    <button
+      type='button'
+      className={classNames('btn w-full', {
+        'btn-disabled': !result?.profile.state.loginState?.sessionToken,
+      })}
+      onClick={onClick}
+      disabled={btnLoading}
+    >{btnLoading ? <span className='loading' /> : children}</button>
   </>
 }

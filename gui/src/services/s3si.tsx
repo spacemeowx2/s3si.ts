@@ -91,14 +91,15 @@ export const LogProvider: React.FC<{ limit?: number, children?: React.ReactNode 
       LOG_SUB.delete(cb);
     }
   }, [limit])
+  const value = useMemo(() => {
+    const renderedLogs = logs.map(renderLog)
+    return {
+      logs,
+      renderedLogs,
+    }
+  }, [logs])
 
-
-  const renderedLogs = useMemo(() => logs.map(renderLog), [logs])
-
-  return <LOG_CONTEXT.Provider value={{
-    logs,
-    renderedLogs,
-  }}>
+  return <LOG_CONTEXT.Provider value={value}>
     {children}
   </LOG_CONTEXT.Provider>
 }
