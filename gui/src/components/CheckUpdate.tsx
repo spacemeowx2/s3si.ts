@@ -11,6 +11,6 @@ export const CheckUpdate: React.FC<{ className?: string, children?: ReactNode }>
   }
 
   return <>
-    <button className={className} onClick={onClick}>{children}</button>
+    <button type='button' className={className} onClick={onClick}>{children}</button>
   </>;
 }

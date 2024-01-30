@@ -85,6 +85,7 @@ const Form: React.FC<{
         <label className="label">
           <span className="label-text">{t('Nintendo Account 会话令牌')}</span>
           <span className="label-text-alt"><button
+            type='button'
             className={classNames('link', {
               loading: loginState.loading,
             })}
@@ -149,13 +150,22 @@ const Form: React.FC<{
     <ErrorContent error={error} />
     <div className='flex gap-4 max-w-md justify-between flex-auto-all'>
       <div className="tooltip" data-tip={changed ? undefined : t('没有更改')}>
-        <button className={classNames('btn btn-primary w-full', {
-          loading,
-        })} onClick={onSave} disabled={!changed || statInkKeyError}>{t('保存')}</button>
+        <button
+          type='button'
+          className={classNames('btn btn-primary w-full', {
+            loading,
+          })}
+          onClick={onSave}
+          disabled={!changed || statInkKeyError}
+        >{t('保存')}</button>
       </div>
-      <button className={classNames('btn', {
-        loading,
-      })} onClick={() => setValue(oldValue)}>{t('重置')}</button>
+      <button
+        type='button'
+        className={classNames('btn', {
+          loading,
+        })}
+        onClick={() => setValue(oldValue)}
+      >{t('重置')}</button>
     </div>
   </>
 }

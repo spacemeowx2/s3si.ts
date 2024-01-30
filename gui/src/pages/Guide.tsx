@@ -30,12 +30,14 @@ const Steps: React.FC<{ steps: Step[], className?: string }> = ({ className, ste
     {Content && <Content onChange={setState} />}
     <div className='mt-4 flex gap-2'>
       <button
+        type='button'
         onClick={() => setStep(s => s - 1)}
         className={classNames('btn', {
           'btn-disabled': !hasPrev || !state.prev,
         })}
       >{t('上一步')}</button>
       <button
+        type='button'
         onClick={() => setStep(s => s + 1)}
         className={classNames('btn', {
           'btn-disabled': !hasNext || !state.next,
@@ -49,7 +51,11 @@ const LoginNintendoAccount: React.FC<{ onChange: (v: StepState) => void }> = ({ 
   const { t } = useTranslation();
 
   return <div className='my-3'>
-    <button className='btn' onClick={() => onChange({ next: true, prev: true })}>{t('点击登录')}</button>
+    <button
+      type='button'
+      className='btn'
+      onClick={() => onChange({ next: true, prev: true })}
+    >{t('点击登录')}</button>
   </div>
 }
 

@@ -60,6 +60,7 @@ export const RunPanel: React.FC<RunPanelProps> = () => {
       <Checkbox disabled={disabled || loading} value={exportBattle} onChange={setExportBattle}>{t('导出对战数据')}</Checkbox>
       <Checkbox disabled={disabled || loading} value={exportCoop} onChange={setExportCoop}>{t('导出打工数据')}</Checkbox>
       <button
+        type='button'
         onClick={onClick}
         className={classNames('btn btn-primary w-full', {
           'btn-disabled': disabled || (!exportBattle && !exportCoop),
