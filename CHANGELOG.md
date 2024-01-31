@@ -1,3 +1,8 @@
+## 0.4.13
+
+refactor: upgraded the version of dependencies and fixed the deprecated API
+([#92](https://github.com/spacemeowx2/s3si.ts/issues/92))
+
 ## 0.4.12
 
 feat: add 6.0.0 special
