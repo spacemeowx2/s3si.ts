@@ -1,4 +1,4 @@
-import * as path from "https://deno.land/std@0.178.0/path/mod.ts";
+import * as path from "https://deno.land/std@0.213.0/path/mod.ts";
 import { assertEquals } from "../dev_deps.ts";
 
 if (import.meta.main) {
