@@ -9,12 +9,12 @@ const COOP_ID =
 
 Deno.test("gameId", async () => {
   assertEquals(
-    await gameId(base64.encode(VS_ID)),
+    await gameId(base64.encodeBase64(VS_ID)),
     "042bcac9-6b25-5d2e-a5ea-800939a6dea1",
   );
 
   assertEquals(
-    await gameId(base64.encode(COOP_ID)),
+    await gameId(base64.encodeBase64(COOP_ID)),
     "58329d62-737d-5b43-ac22-e35e6e44b077",
   );
 });
@@ -22,7 +22,7 @@ Deno.test("gameId", async () => {
 Deno.test("s3sCoopGameId", async () => {
   const S3S_COOP_UUID = "be4435b1-0ac5-577b-81bb-766585bec028";
   assertEquals(
-    await s3sCoopGameId(base64.encode(COOP_ID)),
+    await s3sCoopGameId(base64.encodeBase64(COOP_ID)),
     S3S_COOP_UUID,
   );
 });

@@ -22,7 +22,7 @@ class TestRankTracker extends RankTracker {
 }
 
 function genId(id: number, date = "20220101"): string {
-  return base64.encode(
+  return base64.encodeBase64(
     `VsHistoryDetail-asdf:asdf:${date}T${
       id.toString().padStart(6, "0")
     }_------------------------------------`,
