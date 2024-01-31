@@ -23,7 +23,7 @@ function encryptKey(uid: string) {
   hasher.hash(uid);
   const hash = hasher.result();
   const key = hash & 0xff;
-  const encrypted = base64.encode(
+  const encrypted = base64.encodeBase64(
     new TextEncoder().encode(uid).map((i) => i ^ key),
   );
   return {

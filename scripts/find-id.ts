@@ -20,7 +20,7 @@ for (const file of files) {
     const content: FileExporterType = JSON.parse(await Deno.readTextFile(file));
     if (content.type === "SUMMARY") continue;
     const id = content.data.detail.id;
-    const rawId = base64.decode(id);
+    const rawId = base64.decodeBase64(id);
     const uuid = new TextDecoder().decode(rawId.slice(rawId.length - 36));
     if (ids.has(uuid)) {
       console.log(
