@@ -12,7 +12,7 @@ export async function* readLines(readable: ReadableStream<Uint8Array>) {
   let buffer = "";
 
   for await (const chunk of readable) {
-    buffer += decoder.decode(chunk);
+    buffer += decoder.decode(chunk, { stream: true });
     let lineEndIndex;
 
     while ((lineEndIndex = buffer.indexOf("\n")) !== -1) {

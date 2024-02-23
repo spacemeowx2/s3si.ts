@@ -1,3 +1,9 @@
+## 0.4.14
+
+chore: update `WEB_VIEW_VERSION` and queries
+
+fix: readLines may read corrupted data
+
 ## 0.4.13
 
 refactor: upgraded the version of dependencies and fixed the deprecated API
