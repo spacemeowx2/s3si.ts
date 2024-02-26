@@ -140,7 +140,8 @@ export async function getGToken(
         "Content-Type": "application/json",
         "Accept": "application/json",
         "Connection": "Keep-Alive",
-        "User-Agent": "Dalvik/2.1.0 (Linux; U; Android 14; Pixel 7a Build/UQ1A.240105.004)",
+        "User-Agent":
+          "Dalvik/2.1.0 (Linux; U; Android 14; Pixel 7a Build/UQ1A.240105.004)",
       },
       body: JSON.stringify({
         "client_id": "71b963c1b7b6d119",
