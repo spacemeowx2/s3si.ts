@@ -38,9 +38,9 @@ export const S3SI_LINK = "https://github.com/spacemeowx2/s3si.ts";
 
 export const USERAGENT = `${AGENT_NAME}/${S3SI_VERSION} (${S3SI_LINK})`;
 export const DEFAULT_APP_USER_AGENT =
-  "Mozilla/5.0 (Linux; Android 11; Pixel 5) " +
+  "Mozilla/5.0 (Linux; Android 14; Pixel 7a) " +
   "AppleWebKit/537.36 (KHTML, like Gecko) " +
-  "Chrome/94.0.4606.61 Mobile Safari/537.36";
+  "Chrome/120.0.6099.230 Mobile Safari/537.36";
 export const SPLATNET3_URL = "https://api.lp1.av5ja.srv.nintendo.net";
 export const SPLATNET3_ENDPOINT =
   "https://api.lp1.av5ja.srv.nintendo.net/api/graphql";

@@ -140,7 +140,7 @@ export async function getGToken(
         "Content-Type": "application/json",
         "Accept": "application/json",
         "Connection": "Keep-Alive",
-        "User-Agent": "Dalvik/2.1.0 (Linux; U; Android 7.1.2)",
+        "User-Agent": "Dalvik/2.1.0 (Linux; U; Android 14; Pixel 7a Build/UQ1A.240105.004)",
       },
       body: JSON.stringify({
         "client_id": "71b963c1b7b6d119",
@@ -194,7 +194,7 @@ export async function getGToken(
           "Content-Type": "application/json; charset=utf-8",
           "Connection": "Keep-Alive",
           "Accept-Encoding": "gzip",
-          "User-Agent": `com.nintendo.znca/${NSOAPP_VERSION}(Android/7.1.2)`,
+          "User-Agent": `com.nintendo.znca/${NSOAPP_VERSION}(Android/14)`,
         },
         body: JSON.stringify({
           parameter: {
@@ -244,7 +244,7 @@ export async function getGToken(
           "Authorization": `Bearer ${idToken}`,
           "Content-Type": "application/json; charset=utf-8",
           "Accept-Encoding": "gzip",
-          "User-Agent": `com.nintendo.znca/${NSOAPP_VERSION}(Android/7.1.2)`,
+          "User-Agent": `com.nintendo.znca/${NSOAPP_VERSION}(Android/14)`,
         },
         body: JSON.stringify({
           parameter: {
