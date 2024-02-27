@@ -1,3 +1,9 @@
+## 0.4.15
+
+feat: add znca headers ([#95](https://github.com/spacemeowx2/s3si.ts/issues/95))
+
+feat: update User-Agent ([#94](https://github.com/spacemeowx2/s3si.ts/pull/94))
+
 ## 0.4.14
 
 chore: update `WEB_VIEW_VERSION` and queries

@@ -9,7 +9,7 @@
   },
   "package": {
     "productName": "s3si-ts",
-    "version": "0.4.14"
+    "version": "0.4.15"
   },
   "tauri": {
     "allowlist": {
