@@ -302,7 +302,7 @@ export class App {
         splatnet,
       );
 
-      using bar = this.exporterProgress("Export vs games");
+      using bar1 = this.exporterProgress("Export vs games");
       const fetcher = new GameFetcher({
         cache: this.opts.cache ?? new FileCache(this.profile.state.cacheDir),
         state: this.profile.state,
@@ -322,7 +322,7 @@ export class App {
               gameListFetcher,
               stepProgress: stats[e.name],
               onStep: () => {
-                bar.redraw(e.name, progress(stats[e.name]));
+                bar1.redraw(e.name, progress(stats[e.name]));
               },
             }),
           )
@@ -333,7 +333,7 @@ export class App {
         ),
       );
 
-      await bar.end();
+      await bar1.end();
 
       this.printStats(stats);
       if (errors.length > 0) {
@@ -355,7 +355,7 @@ export class App {
     } else {
       const gameListFetcher = new CoopListFetcher(splatnet);
 
-      using bar = this.exporterProgress("Export coop games");
+      using bar2 = this.exporterProgress("Export coop games");
       const fetcher = new GameFetcher({
         cache: this.opts.cache ?? new FileCache(this.profile.state.cacheDir),
         state: this.profile.state,
@@ -373,7 +373,7 @@ export class App {
               gameListFetcher,
               stepProgress: stats[e.name],
               onStep: () => {
-                bar.redraw(e.name, progress(stats[e.name]));
+                bar2.redraw(e.name, progress(stats[e.name]));
               },
             }),
           )
@@ -384,7 +384,7 @@ export class App {
         ),
       );
 
-      await bar.end();
+      await bar2.end();
 
       this.printStats(stats);
       if (errors.length > 0) {
