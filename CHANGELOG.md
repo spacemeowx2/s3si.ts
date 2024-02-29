@@ -1,3 +1,9 @@
+## 0.4.16
+
+fix: `The stream is already locked` in monitor mode
+
+feat: add Fresh Season 2024
+
 ## 0.4.15
 
 feat: add znca headers ([#95](https://github.com/spacemeowx2/s3si.ts/issues/95))
