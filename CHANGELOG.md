@@ -1,3 +1,7 @@
+## 0.4.17
+
+feat: update `WEB_VIEW_VERSION` and `NSOAPP_VERSION`
+
 ## 0.4.16
 
 fix: `The stream is already locked` in monitor mode
