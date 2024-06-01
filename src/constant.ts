@@ -1,9 +1,9 @@
 import type { StatInkPostBody, VsHistoryDetail } from "./types.ts";
 
 export const AGENT_NAME = "s3si.ts";
-export const S3SI_VERSION = "0.4.17";
+export const S3SI_VERSION = "0.4.18";
 export const NSOAPP_VERSION = "2.10.0";
-export const WEB_VIEW_VERSION = "6.0.0-2ba8cb04";
+export const WEB_VIEW_VERSION = "6.0.0-9f87c815";
 export enum Queries {
   HomeQuery =
     "51fc56bbf006caf37728914aa8bc0e2c86a80cf195b4d4027d6822a3623098a8",
@@ -20,11 +20,11 @@ export enum Queries {
   PrivateBattleHistoriesQuery =
     "fef94f39b9eeac6b2fac4de43bc0442c16a9f2df95f4d367dd8a79d7c5ed5ce7",
   VsHistoryDetailQuery =
-    "f893e1ddcfb8a4fd645fd75ced173f18b2750e5cfba41d2669b9814f6ceaec46",
+    "20f88b10d0b1d264fcb2163b0866de26bbf6f2b362f397a0258a75b7fa900943",
   CoopHistoryQuery =
     "0f8c33970a425683bb1bdecca50a0ca4fb3c3641c0b2a1237aedfde9c0cb2b8f",
   CoopHistoryDetailQuery =
-    "42262d241291d7324649e21413b29da88c0314387d8fdf5f6637a2d9d29954ae",
+    "f2d55873a9281213ae27edc171e2b19131b3021a2ae263757543cdd3bf015cc8",
   myOutfitCommonDataFilteringConditionQuery =
     "ac20c44a952131cb0c9d00eda7bc1a84c1a99546f0f1fc170212d5a6bb51a426",
   myOutfitCommonDataEquipmentsQuery =

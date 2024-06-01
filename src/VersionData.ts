@@ -48,6 +48,48 @@ export const SEASONS: Season[] = [
     start: new Date("2024-03-01T00:00:00+00:00"),
     end: new Date("2024-06-01T00:00:00+00:00"),
   },
+  {
+    id: "season202406",
+    name: "Sizzle Season 2024",
+    start: new Date("2024-06-01T00:00:00+00:00"),
+    end: new Date("2024-09-01T00:00:00+00:00"),
+  },
+  {
+    id: "season202409",
+    name: "Drizzle Season 2024",
+    start: new Date("2024-09-01T00:00:00+00:00"),
+    end: new Date("2024-12-01T00:00:00+00:00"),
+  },
+  {
+    id: "season202412",
+    name: "Chill Season 2024",
+    start: new Date("2024-12-01T00:00:00+00:00"),
+    end: new Date("2025-03-01T00:00:00+00:00"),
+  },
+  {
+    id: "season202503",
+    name: "Fresh Season 2025",
+    start: new Date("2025-03-01T00:00:00+00:00"),
+    end: new Date("2025-06-01T00:00:00+00:00"),
+  },
+  {
+    id: "season202506",
+    name: "Sizzle Season 2025",
+    start: new Date("2025-06-01T00:00:00+00:00"),
+    end: new Date("2025-09-01T00:00:00+00:00"),
+  },
+  {
+    id: "season202509",
+    name: "Drizzle Season 2025",
+    start: new Date("2025-09-01T00:00:00+00:00"),
+    end: new Date("2025-12-01T00:00:00+00:00"),
+  },
+  {
+    id: "season202512",
+    name: "Chill Season 2025",
+    start: new Date("2025-12-01T00:00:00+00:00"),
+    end: new Date("2026-03-01T00:00:00+00:00"),
+  },
 ];
 
 export const getSeason = (date: Date): Season | undefined => {

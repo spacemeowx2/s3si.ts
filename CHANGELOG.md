@@ -1,3 +1,7 @@
+## 0.4.18
+
+feat: update `WEB_VIEW_VERSION` and `NSOAPP_VERSION`, update VersionData
+
 ## 0.4.17
 
 feat: update `WEB_VIEW_VERSION` and `NSOAPP_VERSION`
