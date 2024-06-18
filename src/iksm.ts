@@ -212,16 +212,18 @@ export async function getGToken(
     );
     const respJson = await resp.json();
 
-    const idToken2: string = respJson?.result?.webApiServerCredential
+    const idToken2: string | undefined = respJson?.result
+      ?.webApiServerCredential
       ?.accessToken;
-    const coralUserId: string = respJson?.result?.user?.id?.toString();
+    const coralUserId: string | undefined = respJson?.result?.user?.id
+      ?.toString();
 
     if (!idToken2 || !coralUserId) {
       throw new APIError({
         response: resp,
         json: respJson,
         message:
-          `No idToken2 or coralUserId found. Please try again later. (${idToken2.length}, ${coralUserId.length})`,
+          `No idToken2 or coralUserId found. Please try again later. (${idToken2?.length}, ${coralUserId?.length})`,
       });
     }
 
