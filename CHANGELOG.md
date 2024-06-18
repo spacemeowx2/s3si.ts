@@ -1,3 +1,7 @@
+## 0.4.20
+
+fix: update `NSOAPP_VERSION`
+
 ## 0.4.19
 
 feat: update `NSOAPP_VERSION`
