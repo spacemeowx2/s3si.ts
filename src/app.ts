@@ -275,11 +275,13 @@ export class App {
         );
       }
     };
-    const endBar = () => {
-      bar?.end();
-    };
+    const end = () => bar?.end();
 
-    return { redraw, endBar };
+    return {
+      redraw,
+      end,
+      [Symbol.dispose]: end,
+    };
   }
   private async exportOnce() {
     const splatnet = new Splatnet3({ profile: this.profile, env: this.env });
@@ -300,7 +302,7 @@ export class App {
         splatnet,
       );
 
-      const { redraw, endBar } = this.exporterProgress("Export vs games");
+      using bar1 = this.exporterProgress("Export vs games");
       const fetcher = new GameFetcher({
         cache: this.opts.cache ?? new FileCache(this.profile.state.cacheDir),
         state: this.profile.state,
@@ -320,7 +322,7 @@ export class App {
               gameListFetcher,
               stepProgress: stats[e.name],
               onStep: () => {
-                redraw(e.name, progress(stats[e.name]));
+                bar1.redraw(e.name, progress(stats[e.name]));
               },
             }),
           )
@@ -331,7 +333,7 @@ export class App {
         ),
       );
 
-      endBar();
+      await bar1.end();
 
       this.printStats(stats);
       if (errors.length > 0) {
@@ -353,7 +355,7 @@ export class App {
     } else {
       const gameListFetcher = new CoopListFetcher(splatnet);
 
-      const { redraw, endBar } = this.exporterProgress("Export coop games");
+      using bar2 = this.exporterProgress("Export coop games");
       const fetcher = new GameFetcher({
         cache: this.opts.cache ?? new FileCache(this.profile.state.cacheDir),
         state: this.profile.state,
@@ -371,7 +373,7 @@ export class App {
               gameListFetcher,
               stepProgress: stats[e.name],
               onStep: () => {
-                redraw(e.name, progress(stats[e.name]));
+                bar2.redraw(e.name, progress(stats[e.name]));
               },
             }),
           )
@@ -382,7 +384,7 @@ export class App {
         ),
       );
 
-      endBar();
+      await bar2.end();
 
       this.printStats(stats);
       if (errors.length > 0) {
@@ -466,14 +468,17 @@ export class App {
         display: "[:bar] :completed/:total",
       })
       : undefined;
-    for (const i of Array(sec).keys()) {
-      bar?.render([{
-        completed: i,
-        total: sec,
-      }]);
-      await delay(1000);
+    try {
+      for (const i of Array(sec).keys()) {
+        bar?.render([{
+          completed: i,
+          total: sec,
+        }]);
+        await delay(1000);
+      }
+    } finally {
+      await bar?.end();
     }
-    bar?.end();
   }
   async run() {
     await this.profile.readState();
@@ -560,7 +565,7 @@ export class App {
   }
   printStats(stats: Record<string, StepProgress>) {
     this.env.logger.log(
-      `Exported ${
+      `\nExported ${
         Object.entries(stats)
           .map(([name, { exported }]) => `${name}: ${exported}`)
           .join(", ")

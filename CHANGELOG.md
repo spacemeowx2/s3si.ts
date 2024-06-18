@@ -1,3 +1,31 @@
+## 0.4.20
+
+fix: update `NSOAPP_VERSION`
+
+## 0.4.19
+
+feat: update `NSOAPP_VERSION`
+
+## 0.4.18
+
+feat: update `WEB_VIEW_VERSION` and `NSOAPP_VERSION`, update VersionData
+
+## 0.4.17
+
+feat: update `WEB_VIEW_VERSION` and `NSOAPP_VERSION`
+
+## 0.4.16
+
+fix: `The stream is already locked` in monitor mode
+
+feat: add Fresh Season 2024
+
+## 0.4.15
+
+feat: add znca headers ([#95](https://github.com/spacemeowx2/s3si.ts/issues/95))
+
+feat: update User-Agent ([#94](https://github.com/spacemeowx2/s3si.ts/pull/94))
+
 ## 0.4.14
 
 chore: update `WEB_VIEW_VERSION` and queries
