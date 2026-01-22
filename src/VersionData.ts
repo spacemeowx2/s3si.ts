@@ -5,93 +5,42 @@ export type Season = {
   end: Date;
 };
 
-export const SEASONS: Season[] = [
-  {
-    id: "season202209",
-    name: "Drizzle Season 2022",
-    start: new Date("2022-09-01T00:00:00+00:00"),
-    end: new Date("2022-12-01T00:00:00+00:00"),
-  },
-  {
-    id: "season202212",
-    name: "Chill Season 2022",
-    start: new Date("2022-12-01T00:00:00+00:00"),
-    end: new Date("2023-03-01T00:00:00+00:00"),
-  },
-  {
-    id: "season202303",
-    name: "Fresh Season 2023",
-    start: new Date("2023-03-01T00:00:00+00:00"),
-    end: new Date("2023-06-01T00:00:00+00:00"),
-  },
-  {
-    id: "season202306",
-    name: "Sizzle Season 2023",
-    start: new Date("2023-06-01T00:00:00+00:00"),
-    end: new Date("2023-09-01T00:00:00+00:00"),
-  },
-  {
-    id: "season202309",
-    name: "Drizzle Season 2023",
-    start: new Date("2023-09-01T00:00:00+00:00"),
-    end: new Date("2023-12-01T00:00:00+00:00"),
-  },
-  {
-    id: "season202312",
-    name: "Chill Season 2023",
-    start: new Date("2023-12-01T00:00:00+00:00"),
-    end: new Date("2024-03-01T00:00:00+00:00"),
-  },
-  {
-    id: "season202403",
-    name: "Fresh Season 2024",
-    start: new Date("2024-03-01T00:00:00+00:00"),
-    end: new Date("2024-06-01T00:00:00+00:00"),
-  },
-  {
-    id: "season202406",
-    name: "Sizzle Season 2024",
-    start: new Date("2024-06-01T00:00:00+00:00"),
-    end: new Date("2024-09-01T00:00:00+00:00"),
-  },
-  {
-    id: "season202409",
-    name: "Drizzle Season 2024",
-    start: new Date("2024-09-01T00:00:00+00:00"),
-    end: new Date("2024-12-01T00:00:00+00:00"),
-  },
-  {
-    id: "season202412",
-    name: "Chill Season 2024",
-    start: new Date("2024-12-01T00:00:00+00:00"),
-    end: new Date("2025-03-01T00:00:00+00:00"),
-  },
-  {
-    id: "season202503",
-    name: "Fresh Season 2025",
-    start: new Date("2025-03-01T00:00:00+00:00"),
-    end: new Date("2025-06-01T00:00:00+00:00"),
-  },
-  {
-    id: "season202506",
-    name: "Sizzle Season 2025",
-    start: new Date("2025-06-01T00:00:00+00:00"),
-    end: new Date("2025-09-01T00:00:00+00:00"),
-  },
-  {
-    id: "season202509",
-    name: "Drizzle Season 2025",
-    start: new Date("2025-09-01T00:00:00+00:00"),
-    end: new Date("2025-12-01T00:00:00+00:00"),
-  },
-  {
-    id: "season202512",
-    name: "Chill Season 2025",
-    start: new Date("2025-12-01T00:00:00+00:00"),
-    end: new Date("2026-03-01T00:00:00+00:00"),
-  },
+const SEASON_PREFIXES = [
+  "Chill",
+  "Fresh",
+  "Sizzle",
+  "Drizzle",
 ];
 
 export const getSeason = (date: Date): Season | undefined => {
-  return SEASONS.find((s) => s.start <= date && date < s.end);
+  const year = date.getUTCFullYear();
+  const month = date.getUTCMonth();
+
+  const season = Math.floor((month + 1) % 12 / 3);
+
+  const startYear = season === 0 && month < 2 ? year - 1 : year;
+  const endYear = season === 0 ? year + 1 : year;
+
+  if (startYear < 2022 || (endYear === 2022 && season !== 3)) {
+    return undefined;
+  }
+
+  const startMonth = (season * 3 - 1 + 12) % 12;
+  const endMonth = (season * 3 + 2 + 12) % 12;
+
+  const start = new Date(Date.UTC(startYear, startMonth));
+  const end = new Date(Date.UTC(endYear, endMonth));
+
+  const monthId = (startMonth + 1).toString().padStart(2, "0");
+  const id = `season${startYear}${monthId}`;
+
+  const prefix = SEASON_PREFIXES[season];
+  const name = `${prefix} Season ${startYear}`;
+
+  return {
+    id,
+    name,
+    start,
+    end,
+  };
 };
