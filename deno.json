@@ -15,7 +15,7 @@
         ".vscode/",
         ".github/",
         "profile.json",
-        "gui/"
+        "gui/**"
       ]
     }
   },
@@ -27,7 +27,7 @@
         ".vscode/",
         ".github/",
         "profile.json",
-        "gui/"
+        "gui/**"
       ]
     }
   }
