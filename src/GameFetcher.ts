@@ -8,6 +8,9 @@ import {
   CoopInfo,
   Game,
   HistoryGroupItem,
+  SideOrderInfo,
+  SideOrderTryResult,
+  SideOrderTryResultPointPage,
   VsInfo,
   VsMode,
 } from "./types.ts";
@@ -263,6 +266,8 @@ export class GameFetcher {
         return this.fetchBattle(id);
       case "CoopInfo":
         return this.fetchCoop(id);
+      case "SideOrderInfo":
+        return this.fetchSideOrder(id);
       default:
         throw new Error(`Unknown game type: ${type}`);
     }
@@ -291,6 +296,38 @@ export class GameFetcher {
     const game: CoopInfo = {
       ...metadata,
       detail,
+    };
+
+    return game;
+  }
+  private async fetchSideOrder(id: string): Promise<SideOrderInfo> {
+    const detail = await this.cacheDetail(
+      id,
+      () => this.splatnet.getSideOrderDetail(id).then((r) => r.node),
+    );
+
+    const clonedDetail: SideOrderTryResult = {
+      ...detail,
+      points: {
+        ...detail.points,
+        edges: [...detail.points.edges],
+      },
+    };
+
+    let cursor: string | null = null;
+
+    do {
+      const page = await this.splatnet.getSideOrderPointPage(id, cursor);
+
+      clonedDetail.points.edges.push(...page.node.points.edges);
+      clonedDetail.points.pageInfo = page.node.points.pageInfo;
+
+      cursor = page.node.points.pageInfo.endCursor;
+    } while (clonedDetail.points.pageInfo.hasNextPage);
+
+    const game: SideOrderInfo = {
+      type: "SideOrderInfo",
+      detail: clonedDetail,
     };
 
     return game;

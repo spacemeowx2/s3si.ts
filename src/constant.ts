@@ -25,6 +25,12 @@ export enum Queries {
     "e11a8cf2c3de7348495dea5cdcaa25e0c153541c4ed63f044b6c174bc5b703df",
   CoopHistoryDetailQuery =
     "f2d55873a9281213ae27edc171e2b19131b3021a2ae263757543cdd3bf015cc8",
+  SideOrderRecordChallengeQuery =
+    "ce1ed302f8cc7c050751fa73ac2a8ae96d4795b1e8a25d27b9cea574983e837b",
+  SideOrderChallengeDetailQuery =
+    "79c6ed209d1725f701cf76a719e581be5f6cff76128d4f47993f85384c874393",
+  SideOrderChallengeDetailPointContainerPaginationQuery =
+    "7f8793e70c0e145b84fd21d2ae776d0603f608d16a5cfb50aeaad024bdd835d1",
   myOutfitCommonDataFilteringConditionQuery =
     "ac20c44a952131cb0c9d00eda7bc1a84c1a99546f0f1fc170212d5a6bb51a426",
   myOutfitCommonDataEquipmentsQuery =

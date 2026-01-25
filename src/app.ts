@@ -155,6 +155,21 @@ class CoopListFetcher implements GameListFetcher {
   }
 }
 
+class SideOrderListFetcher implements GameListFetcher {
+  constructor(
+    protected splatnet: Splatnet3,
+  ) {}
+
+  async fetch(exporter: GameExporter) {
+    return [
+      ...await exporter.notExported({
+        type: "SideOrderInfo",
+        list: await this.splatnet.getAllSideOrderList(),
+      }),
+    ].reverse();
+  }
+}
+
 function progress({ total, currentUrl, done }: StepProgress): Progress {
   return {
     total,
@@ -184,14 +199,12 @@ export class App {
     }
   }
 
-  getSkipMode(): ("vs" | "coop")[] {
-    const mode = this.opts.skipMode;
-    if (mode === "vs") {
-      return ["vs"];
-    } else if (mode === "coop") {
-      return ["coop"];
+  getSkipMode(): string[] {
+    if (!this.opts.skipMode) {
+      return [];
     }
-    return [];
+
+    return this.opts.skipMode.split(",");
   }
   async getExporters(): Promise<GameExporter[]> {
     const state = this.profile.state;
@@ -368,6 +381,50 @@ export class App {
             this.env,
             this.exportGameList({
               type: "CoopInfo",
+              fetcher,
+              exporter: e,
+              gameListFetcher,
+              stepProgress: stats[e.name],
+              onStep: () => {
+                bar2.redraw(e.name, progress(stats[e.name]));
+              },
+            }),
+          )
+            .catch((err) => {
+              errors.push(err);
+              this.env.logger.error(`\nFailed to export to ${e.name}:`, err);
+            })
+        ),
+      );
+
+      await bar2.end();
+
+      this.printStats(stats);
+      if (errors.length > 0) {
+        throw errors[0];
+      }
+    }
+
+    stats = initStats();
+
+    if (skipMode.includes("sideorder") || exporters.length === 0) {
+      this.env.logger.log("Skip exporting Side Order runs.");
+    } else {
+      const gameListFetcher = new SideOrderListFetcher(splatnet);
+
+      using bar2 = this.exporterProgress("Export Side Order runs");
+      const fetcher = new GameFetcher({
+        cache: this.opts.cache ?? new FileCache(this.profile.state.cacheDir),
+        state: this.profile.state,
+        splatnet,
+      });
+
+      await Promise.all(
+        exporters.map((e) =>
+          showError(
+            this.env,
+            this.exportGameList({
+              type: "SideOrderInfo",
               fetcher,
               exporter: e,
               gameListFetcher,

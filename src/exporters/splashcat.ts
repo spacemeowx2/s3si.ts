@@ -163,7 +163,7 @@ export class SplashcatExporter implements GameExporter {
     } else {
       return {
         status: "skip",
-        reason: "Splashcat does not support Salmon Run",
+        reason: "Splashcat does not support Salmon Run or Side Order",
       };
     }
   }

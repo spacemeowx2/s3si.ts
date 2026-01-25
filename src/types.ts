@@ -17,6 +17,15 @@ export type VarsMap = {
   [Queries.CoopHistoryDetailQuery]: [{
     coopHistoryDetailId: string;
   }];
+  [Queries.SideOrderRecordChallengeQuery]: [];
+  [Queries.SideOrderChallengeDetailQuery]: [{
+    tryResultId: string;
+  }];
+  [Queries.SideOrderChallengeDetailPointContainerPaginationQuery]: [{
+    id: string;
+    cursor: string | null;
+    first: number;
+  }];
   [Queries.myOutfitCommonDataFilteringConditionQuery]: [];
   [Queries.myOutfitCommonDataEquipmentsQuery]: [];
   [Queries.HistoryRecordQuery]: [];
@@ -212,7 +221,11 @@ export type CoopInfo = {
     gradePoint: number;
   };
 };
-export type Game = VsInfo | CoopInfo;
+export type SideOrderInfo = {
+  type: "SideOrderInfo";
+  detail: SideOrderTryResult;
+};
+export type Game = VsInfo | CoopInfo | SideOrderInfo;
 export type VsMode =
   | "REGULAR"
   | "BANKARA"
@@ -356,6 +369,25 @@ export type CoopHistoryDetail = {
   jobBonus: null | number;
 };
 
+type SideOrderTryResultPoints = {
+  edges: unknown[];
+  pageInfo: {
+    endCursor: string | null;
+    hasNextPage: boolean;
+  };
+};
+
+export type SideOrderTryResult = {
+  id: string;
+  points: SideOrderTryResultPoints;
+};
+
+export type SideOrderTryResultPointPage = {
+  node: {
+    points: SideOrderTryResultPoints;
+  };
+};
+
 export type ExportResult = {
   status: "success";
   url?: string;
@@ -475,6 +507,20 @@ export type RespMap = {
   [Queries.CoopHistoryDetailQuery]: {
     coopHistoryDetail: CoopHistoryDetail;
   };
+  [Queries.SideOrderRecordChallengeQuery]: {
+    sideOrderRecord: {
+      tryResults: {
+        nodes: {
+          id: string;
+        }[];
+      };
+    };
+  };
+  [Queries.SideOrderChallengeDetailQuery]: {
+    node: SideOrderTryResult;
+  };
+  [Queries.SideOrderChallengeDetailPointContainerPaginationQuery]:
+    SideOrderTryResultPointPage;
   [Queries.myOutfitCommonDataFilteringConditionQuery]: {
     gearPowers: {
       nodes: {
