@@ -67,8 +67,17 @@ export class FileStateBackend implements StateBackend {
 
   async read(): Promise<DeepReadonly<State>> {
     const data = await Deno.readTextFile(this.path);
-    const json = JSON.parse(data);
-    return json;
+    try {
+      const json = JSON.parse(data);
+      return json;
+    } catch (error) {
+      if (error instanceof SyntaxError) {
+        throw new SyntaxError(
+          `Invalid JSON in config file "${this.path}": ${error.message}`,
+        );
+      }
+      throw error;
+    }
   }
 
   async write(newState: State): Promise<void> {
@@ -113,10 +122,18 @@ export class Profile {
         ...json,
       };
     } catch (e) {
-      this.env.logger.warn(
-        `Failed to read config file, create new config file. (${e})`,
+      if (e instanceof Deno.errors.NotFound) {
+        this.env.logger.warn(
+          `Config file not found, create new config file. (${e})`,
+        );
+        await this.writeState(DEFAULT_STATE);
+        return;
+      }
+
+      this.env.logger.error(
+        `Failed to read config file. Fix it and re-run. (${e})`,
       );
-      await this.writeState(DEFAULT_STATE);
+      throw e;
     }
   }
 }

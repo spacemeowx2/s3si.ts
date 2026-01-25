@@ -15,9 +15,11 @@ export type Prompts = {
 export type Fetcher = {
   get(opts: { url: string; headers?: HeadersInit }): Promise<Response>;
   post(
-    opts: { url: string; body?: BodyInit; headers?: HeadersInit },
+    opts: { url: string; body?: RequestBody; headers?: HeadersInit },
   ): Promise<Response>;
 };
+
+export type RequestBody = BodyInit | Uint8Array;
 
 export type Logger = {
   debug: (...msg: unknown[]) => void;
@@ -68,7 +70,7 @@ export const DEFAULT_ENV: Env = {
         return await fetch(url, {
           method: "POST",
           headers,
-          body,
+          body: body as BodyInit,
         });
       },
     };
