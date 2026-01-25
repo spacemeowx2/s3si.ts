@@ -27,6 +27,10 @@ export enum Queries {
     "f2d55873a9281213ae27edc171e2b19131b3021a2ae263757543cdd3bf015cc8",
   SideOrderRecordChallengeQuery =
     "ce1ed302f8cc7c050751fa73ac2a8ae96d4795b1e8a25d27b9cea574983e837b",
+  SideOrderRecordColorChipQuery =
+    "4da51aad1d800c62b3b637b4aee16285734db5a081b0287ee6347bea611697b6",
+  SideOrderRecordEnemyQuery =
+    "1eed33262150a80c5093892eec1ec098d41b9c67894a865da0fadaef6a2181f0",
   SideOrderChallengeDetailQuery =
     "79c6ed209d1725f701cf76a719e581be5f6cff76128d4f47993f85384c874393",
   SideOrderChallengeDetailPointContainerPaginationQuery =

@@ -18,6 +18,8 @@ export type VarsMap = {
     coopHistoryDetailId: string;
   }];
   [Queries.SideOrderRecordChallengeQuery]: [];
+  [Queries.SideOrderRecordColorChipQuery]: [];
+  [Queries.SideOrderRecordEnemyQuery]: [];
   [Queries.SideOrderChallengeDetailQuery]: [{
     tryResultId: string;
   }];
@@ -388,6 +390,18 @@ export type SideOrderTryResultPointPage = {
   };
 };
 
+type ChipNodeList = {
+  nodes: {
+    chip: {
+      id: string;
+      name: string;
+      maxAccumulateCount: number;
+    };
+    acquireCount: number;
+    highestAccumulateCount: number;
+  }[];
+};
+
 export type ExportResult = {
   status: "success";
   url?: string;
@@ -407,6 +421,8 @@ export type Summary = {
   ConfigureAnalyticsQuery: RespMap[Queries.ConfigureAnalyticsQuery];
   HistoryRecordQuery: RespMap[Queries.HistoryRecordQuery];
   CoopHistoryQuery: RespMap[Queries.CoopHistoryQuery];
+  SideOrderRecordColorChipQuery: RespMap[Queries.SideOrderRecordColorChipQuery];
+  SideOrderRecordEnemyQuery: RespMap[Queries.SideOrderRecordEnemyQuery];
 };
 
 export type GameExporter = {
@@ -514,6 +530,27 @@ export type RespMap = {
           id: string;
         }[];
       };
+    };
+  };
+  [Queries.SideOrderRecordColorChipQuery]: {
+    sideOrderRecord: {
+      droneColorChips: ChipNodeList;
+      luckyColorChips: ChipNodeList;
+      moveColorChips: ChipNodeList;
+      rangeColorChips: ChipNodeList;
+      supportColorChips: ChipNodeList;
+      powerColorChips: ChipNodeList;
+    };
+  };
+  [Queries.SideOrderRecordEnemyQuery]: {
+    sideOrderRecord: {
+      defeatEnemyRecords: {
+        enemy: {
+          id: string;
+          name: string;
+        };
+        defeatCount: number;
+      }[];
     };
   };
   [Queries.SideOrderChallengeDetailQuery]: {
@@ -928,4 +965,6 @@ export enum SummaryEnum {
   ConfigureAnalyticsQuery = Queries.ConfigureAnalyticsQuery,
   HistoryRecordQuery = Queries.HistoryRecordQuery,
   CoopHistoryQuery = Queries.CoopHistoryQuery,
+  SideOrderRecordColorChipQuery = Queries.SideOrderRecordColorChipQuery,
+  SideOrderRecordEnemyQuery = Queries.SideOrderRecordEnemyQuery,
 }

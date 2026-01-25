@@ -296,6 +296,12 @@ export class Splatnet3 {
     );
     const HistoryRecordQuery = await this.request(Queries.HistoryRecordQuery);
     const CoopHistoryQuery = await this.request(Queries.CoopHistoryQuery);
+    const SideOrderRecordEnemyQuery = await this.request(
+      Queries.SideOrderRecordEnemyQuery,
+    );
+    const SideOrderRecordColorChipQuery = await this.request(
+      Queries.SideOrderRecordColorChipQuery,
+    );
     const getFirstBattleId = async () => {
       const latest = await this.request(Queries.LatestBattleHistoriesQuery);
       const id = latest?.latestBattleHistories?.historyGroups?.nodes?.[0]
@@ -315,6 +321,8 @@ export class Splatnet3 {
       ConfigureAnalyticsQuery,
       HistoryRecordQuery,
       CoopHistoryQuery,
+      SideOrderRecordColorChipQuery,
+      SideOrderRecordEnemyQuery,
     };
   }
 }
