@@ -1,4 +1,18 @@
 {
+  "nodeModulesDir": "auto",
+  "imports": {
+    "@std/assert": "jsr:@std/assert",
+    "@std/cli/parse-args": "jsr:@std/cli/parse-args",
+    "@std/encoding/base64": "jsr:@std/encoding/base64",
+    "@std/path": "jsr:@std/path",
+    "@std/uuid": "jsr:@std/uuid",
+    "another_cookiejar": "https://deno.land/x/another_cookiejar@v5.0.4/mod.ts",
+    "msgpack": "https://deno.land/x/msgpack@v1.4/mod.ts",
+    "murmurhash3": "https://deno.land/x/murmurhash@v1.0.0/mod.ts",
+    "progress": "https://deno.land/x/progress@v1.4.5/mod.ts",
+    "semaphore": "https://deno.land/x/semaphore@v1.1.2/mod.ts",
+    "ts_essentials": "https://deno.land/x/ts_essentials@v9.1.2/mod.ts"
+  },
   "tasks": {
     "check": "deno check s3si.ts",
     "fmt": "deno fmt",
@@ -8,27 +22,21 @@
     "gen": "deno run -A ./scripts/update-constant.ts"
   },
   "fmt": {
-    "files": {
-      "exclude": [
-        "export/",
-        "cache/",
-        ".vscode/",
-        ".github/",
-        "profile.json",
-        "gui/"
-      ]
-    }
+    "exclude": [
+      "export/",
+      "cache/",
+      ".vscode/",
+      ".github/",
+      "profile.json"
+    ]
   },
   "lint": {
-    "files": {
-      "exclude": [
-        "export/",
-        "cache/",
-        ".vscode/",
-        ".github/",
-        "profile.json",
-        "gui/"
-      ]
-    }
+    "exclude": [
+      "export/",
+      "cache/",
+      ".vscode/",
+      ".github/",
+      "profile.json"
+    ]
   }
 }

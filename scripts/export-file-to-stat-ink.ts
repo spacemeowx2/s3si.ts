@@ -2,7 +2,7 @@
  * Upload file exporter battles to stat.ink.
  * Make sure you have already logged in.
  */
-import { flags } from "../deps.ts";
+import { parseArgs } from "../deps.ts";
 import { FileCache } from "../src/cache.ts";
 import { DEFAULT_ENV } from "../src/env.ts";
 import { FileExporter } from "../src/exporters/file.ts";
@@ -65,19 +65,14 @@ async function exportType(
   }
 }
 
-const parseArgs = (args: string[]) => {
-  const parsed = flags.parse(args, {
-    string: ["profilePath", "type"],
-    alias: {
-      "help": "h",
-      "profilePath": ["p", "profile-path"],
-    },
-  });
-
-  return parsed;
-};
-
-const opts = parseArgs(Deno.args);
+const opts = parseArgs(Deno.args, {
+  string: ["profilePath", "type"],
+  boolean: ["help"],
+  alias: {
+    "help": "h",
+    "profilePath": ["p", "profile-path"],
+  },
+});
 if (opts.help) {
   console.log(
     `Usage: deno run -A ${Deno.mainModule} [options]

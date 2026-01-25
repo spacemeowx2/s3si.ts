@@ -1,5 +1,0 @@
-{
-  "tasks": {
-    "i18n-backend": "deno run -A ./i18n-backend.ts"
-  }
-}

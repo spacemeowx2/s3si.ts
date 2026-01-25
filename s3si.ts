@@ -1,33 +1,28 @@
 import { App, DEFAULT_OPTS } from "./src/app.ts";
 import { showError } from "./src/utils.ts";
-import { flags } from "./deps.ts";
+import { parseArgs } from "./deps.ts";
 
-const parseArgs = (args: string[]) => {
-  const parsed = flags.parse(args, {
-    string: [
-      "profilePath",
-      "exporter",
-      "skipMode",
-      "listMethod",
-      "nxapiPresenceUrl",
-    ],
-    boolean: ["help", "noProgress", "monitor", "withSummary"],
-    alias: {
-      "help": "h",
-      "profilePath": ["p", "profile-path"],
-      "exporter": ["e"],
-      "noProgress": ["n", "no-progress"],
-      "monitor": ["m"],
-      "skipMode": ["s", "skip-mode"],
-      "withSummary": "with-summary",
-      "listMethod": "list-method",
-      "nxapiPresenceUrl": ["nxapi-presence"],
-    },
-  });
-  return parsed;
-};
-
-const opts = parseArgs(Deno.args);
+const opts = parseArgs(Deno.args, {
+  string: [
+    "profilePath",
+    "exporter",
+    "skipMode",
+    "listMethod",
+    "nxapiPresenceUrl",
+  ],
+  boolean: ["help", "noProgress", "monitor", "withSummary"],
+  alias: {
+    "help": "h",
+    "profilePath": ["p", "profile-path"],
+    "exporter": ["e"],
+    "noProgress": ["n", "no-progress"],
+    "monitor": ["m"],
+    "skipMode": ["s", "skip-mode"],
+    "withSummary": "with-summary",
+    "listMethod": "list-method",
+    "nxapiPresenceUrl": ["nxapi-presence"],
+  },
+});
 if (opts.help) {
   console.log(
     `Usage: deno run -A ${Deno.mainModule} [options]

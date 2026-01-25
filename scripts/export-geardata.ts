@@ -6,8 +6,8 @@
  * And export geardata to `./geardata_${timestamp}.json`.
  */
 
-import Murmurhash3 from "https://deno.land/x/murmurhash@v1.0.0/mod.ts";
-import { base64, flags } from "../deps.ts";
+import Murmurhash3 from "murmurhash3";
+import { base64, parseArgs } from "../deps.ts";
 import { DEFAULT_ENV } from "../src/env.ts";
 import { loginManually } from "../src/iksm.ts";
 import { Splatnet3 } from "../src/splatnet3.ts";
@@ -32,18 +32,14 @@ function encryptKey(uid: string) {
   };
 }
 
-const parseArgs = (args: string[]) => {
-  const parsed = flags.parse(args, {
-    string: ["profilePath"],
-    alias: {
-      "help": "h",
-      "profilePath": ["p", "profile-path"],
-    },
-  });
-  return parsed;
-};
-
-const opts = parseArgs(Deno.args);
+const opts = parseArgs(Deno.args, {
+  string: ["profilePath"],
+  boolean: ["help"],
+  alias: {
+    "help": "h",
+    "profilePath": ["p", "profile-path"],
+  },
+});
 if (opts.help) {
   console.log(
     `Usage: deno run -A ${Deno.mainModule} [options]

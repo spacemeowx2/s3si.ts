@@ -1,7 +1,7 @@
 /**
  * If rankState in profile.json is not defined, it will be initialized.
  */
-import { flags } from "./deps.ts";
+import { parseArgs } from "./deps.ts";
 import { Splatnet3 } from "./src/splatnet3.ts";
 import { gameId, readline } from "./src/utils.ts";
 import { FileStateBackend, Profile } from "./src/state.ts";
@@ -9,18 +9,14 @@ import { BattleListType } from "./src/types.ts";
 import { RANK_PARAMS } from "./src/RankTracker.ts";
 import { DEFAULT_ENV } from "./src/env.ts";
 
-const parseArgs = (args: string[]) => {
-  const parsed = flags.parse(args, {
-    string: ["profilePath"],
-    alias: {
-      "help": "h",
-      "profilePath": ["p", "profile-path"],
-    },
-  });
-  return parsed;
-};
-
-const opts = parseArgs(Deno.args);
+const opts = parseArgs(Deno.args, {
+  string: ["profilePath"],
+  boolean: ["help"],
+  alias: {
+    "help": "h",
+    "profilePath": ["p", "profile-path"],
+  },
+});
 if (opts.help) {
   console.log(
     `Usage: deno run -A ${Deno.mainModule} [options]

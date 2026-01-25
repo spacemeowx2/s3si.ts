@@ -9,7 +9,7 @@ If you have used s3s, please see [here](#migrate-from-s3s).
 
 ## Usage
 
-1. Install [deno](https://deno.land/)
+1. Install [Deno 2](https://docs.deno.com/runtime/)
 
 2. Run
    `deno run -Ar https://raw.githubusercontent.com/spacemeowx2/s3si.ts/main/s3si.ts [options]`
