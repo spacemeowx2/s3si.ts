@@ -10,7 +10,6 @@ import {
   HistoryGroupItem,
   SideOrderInfo,
   SideOrderTryResult,
-  SideOrderTryResultPointPage,
   VsInfo,
   VsMode,
 } from "./types.ts";
