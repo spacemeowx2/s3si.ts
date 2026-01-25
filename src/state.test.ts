@@ -4,8 +4,8 @@ import { DEFAULT_STATE, Profile, State, StateBackend } from "./state.ts";
 function makeNoopEnv() {
   return {
     prompts: {
-      promptLogin: async () => "",
-      prompt: async () => "",
+      promptLogin: () => Promise.resolve(""),
+      prompt: () => Promise.resolve(""),
     },
     logger: {
       debug: () => {},
@@ -14,8 +14,8 @@ function makeNoopEnv() {
       error: () => {},
     },
     newFetcher: () => ({
-      get: async () => new Response(),
-      post: async () => new Response(),
+      get: () => Promise.resolve(new Response()),
+      post: () => Promise.resolve(new Response()),
     }),
   } as const;
 }
@@ -30,13 +30,14 @@ class RecordingStateBackend implements StateBackend {
     },
   ) {}
 
-  async read(): Promise<State> {
+  read(): Promise<State> {
     if (!this.readResult.ok) throw this.readResult.error;
-    return this.readResult.value;
+    return Promise.resolve(this.readResult.value);
   }
 
-  async write(newState: State): Promise<void> {
+  write(newState: State): Promise<void> {
     this.writes.push(newState);
+    return Promise.resolve();
   }
 }
 

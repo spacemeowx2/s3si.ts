@@ -1,3 +1,14 @@
+## 0.5.0
+
+BREAKING: require Deno 2 (migrated std imports to JSR and CLI args parsing to
+`@std/cli/parse-args`)
+
+BREAKING: remove GUI (sources + CI workflow)
+
+fix: don't overwrite `profile.json` when it contains invalid JSON
+
+chore: update Docker base image to Deno 2
+
 ## 0.4.20
 
 fix: update `NSOAPP_VERSION`
