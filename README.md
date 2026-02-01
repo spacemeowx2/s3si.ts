@@ -1,7 +1,6 @@
 # s3si.ts
 
 [![Build status](https://github.com/spacemeowx2/s3si.ts/workflows/Build/badge.svg)](https://github.com/spacemeowx2/s3si.ts/actions/workflows/ci.yaml)
-[![Constant check status](https://github.com/spacemeowx2/s3si.ts/workflows/Constant%20Check/badge.svg)](https://github.com/spacemeowx2/s3si.ts/actions/workflows/constant-check.yaml)
 
 Export your battles from SplatNet to stat.ink and Splashcat.
 
