@@ -17,6 +17,17 @@ export type VarsMap = {
   [Queries.CoopHistoryDetailQuery]: [{
     coopHistoryDetailId: string;
   }];
+  [Queries.SideOrderRecordChallengeQuery]: [];
+  [Queries.SideOrderRecordColorChipQuery]: [];
+  [Queries.SideOrderRecordEnemyQuery]: [];
+  [Queries.SideOrderChallengeDetailQuery]: [{
+    tryResultId: string;
+  }];
+  [Queries.SideOrderChallengeDetailPointContainerPaginationQuery]: [{
+    id: string;
+    cursor: string | null;
+    first: number;
+  }];
   [Queries.myOutfitCommonDataFilteringConditionQuery]: [];
   [Queries.myOutfitCommonDataEquipmentsQuery]: [];
   [Queries.HistoryRecordQuery]: [];
@@ -212,7 +223,11 @@ export type CoopInfo = {
     gradePoint: number;
   };
 };
-export type Game = VsInfo | CoopInfo;
+export type SideOrderInfo = {
+  type: "SideOrderInfo";
+  detail: SideOrderTryResult;
+};
+export type Game = VsInfo | CoopInfo | SideOrderInfo;
 export type VsMode =
   | "REGULAR"
   | "BANKARA"
@@ -356,6 +371,37 @@ export type CoopHistoryDetail = {
   jobBonus: null | number;
 };
 
+type SideOrderTryResultPoints = {
+  edges: unknown[];
+  pageInfo: {
+    endCursor: string | null;
+    hasNextPage: boolean;
+  };
+};
+
+export type SideOrderTryResult = {
+  id: string;
+  points: SideOrderTryResultPoints;
+};
+
+export type SideOrderTryResultPointPage = {
+  node: {
+    points: SideOrderTryResultPoints;
+  };
+};
+
+type ChipNodeList = {
+  nodes: {
+    chip: {
+      id: string;
+      name: string;
+      maxAccumulateCount: number;
+    };
+    acquireCount: number;
+    highestAccumulateCount: number;
+  }[];
+};
+
 export type ExportResult = {
   status: "success";
   url?: string;
@@ -375,6 +421,8 @@ export type Summary = {
   ConfigureAnalyticsQuery: RespMap[Queries.ConfigureAnalyticsQuery];
   HistoryRecordQuery: RespMap[Queries.HistoryRecordQuery];
   CoopHistoryQuery: RespMap[Queries.CoopHistoryQuery];
+  SideOrderRecordColorChipQuery: RespMap[Queries.SideOrderRecordColorChipQuery];
+  SideOrderRecordEnemyQuery: RespMap[Queries.SideOrderRecordEnemyQuery];
 };
 
 export type GameExporter = {
@@ -475,6 +523,41 @@ export type RespMap = {
   [Queries.CoopHistoryDetailQuery]: {
     coopHistoryDetail: CoopHistoryDetail;
   };
+  [Queries.SideOrderRecordChallengeQuery]: {
+    sideOrderRecord: {
+      tryResults: {
+        nodes: {
+          id: string;
+        }[];
+      };
+    };
+  };
+  [Queries.SideOrderRecordColorChipQuery]: {
+    sideOrderRecord: {
+      droneColorChips: ChipNodeList;
+      luckyColorChips: ChipNodeList;
+      moveColorChips: ChipNodeList;
+      rangeColorChips: ChipNodeList;
+      supportColorChips: ChipNodeList;
+      powerColorChips: ChipNodeList;
+    };
+  };
+  [Queries.SideOrderRecordEnemyQuery]: {
+    sideOrderRecord: {
+      defeatEnemyRecords: {
+        enemy: {
+          id: string;
+          name: string;
+        };
+        defeatCount: number;
+      }[];
+    };
+  };
+  [Queries.SideOrderChallengeDetailQuery]: {
+    node: SideOrderTryResult;
+  };
+  [Queries.SideOrderChallengeDetailPointContainerPaginationQuery]:
+    SideOrderTryResultPointPage;
   [Queries.myOutfitCommonDataFilteringConditionQuery]: {
     gearPowers: {
       nodes: {
@@ -882,4 +965,6 @@ export enum SummaryEnum {
   ConfigureAnalyticsQuery = Queries.ConfigureAnalyticsQuery,
   HistoryRecordQuery = Queries.HistoryRecordQuery,
   CoopHistoryQuery = Queries.CoopHistoryQuery,
+  SideOrderRecordColorChipQuery = Queries.SideOrderRecordColorChipQuery,
+  SideOrderRecordEnemyQuery = Queries.SideOrderRecordEnemyQuery,
 }

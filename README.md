@@ -26,8 +26,9 @@ Options:
                                  "auto" is the default setting.
     --no-progress, -n            Disable progress bar
     --monitor, -m                Monitor mode
-    --skip-mode <mode>, -s       Skip mode (default: null)
-                                 ("vs", "coop")
+    --skip-mode <mode>, -s       Skip mode (default: none)
+                                 Multiple modes to skip can be separated by commas
+                                 (e.g. "vs,coop,sideorder")
     --with-summary               Include summary in the output
     --help                       Show this help message and exit
     --nxapi-presence             Extends monitoring mode to use Nintendo Switch presence from nxapi

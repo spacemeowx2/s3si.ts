@@ -139,7 +139,7 @@ if (type.includes("tri-color")) {
       statInkExporter,
       gameFetcher,
       filter: (game) => {
-        if (game.type === "CoopInfo") {
+        if (game.type === "CoopInfo" || game.type === "SideOrderInfo") {
           return false;
         }
         return game.detail.vsRule.rule === "TRI_COLOR";

@@ -261,27 +261,37 @@ export class StatInkExporter implements GameExporter {
     return vsMode.mode === "FEST" && b64Number(vsMode.id) === 8;
   }
   async exportGame(game: Game): Promise<ExportResult> {
-    if (game.type === "VsInfo") {
-      const body = await this.mapBattle(game);
-      const { url } = await this.api.postBattle(body);
+    switch (game.type) {
+      case "VsInfo": {
+        const body = await this.mapBattle(game);
+        const { url } = await this.api.postBattle(body);
 
-      return {
-        status: "success",
-        url,
-      };
-    } else {
-      const body = await this.mapCoop(game);
-      const { url } = await this.api.postCoop(body);
+        return {
+          status: "success",
+          url,
+        };
+      }
+      case "CoopInfo": {
+        const body = await this.mapCoop(game);
+        const { url } = await this.api.postCoop(body);
 
-      return {
-        status: "success",
-        url,
-      };
+        return {
+          status: "success",
+          url,
+        };
+      }
+      case "SideOrderInfo": {
+        return {
+          status: "skip",
+          reason: "stat.ink does not support Side Order",
+        };
+      }
     }
   }
   async notExported(
     { type, list }: { list: string[]; type: Game["type"] },
   ): Promise<string[]> {
+    if (type !== "VsInfo" && type !== "CoopInfo") return [];
     const uuid = await this.api.uuidList(type);
 
     const out: string[] = [];

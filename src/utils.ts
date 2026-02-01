@@ -160,6 +160,7 @@ export function parseHistoryDetailId(id: string) {
   const vsRE =
     /VsHistoryDetail-([a-z0-9-]+):(\w+):(\d{8}T\d{6})_([0-9a-f-]{36})/;
   const coopRE = /CoopHistoryDetail-([a-z0-9-]+):(\d{8}T\d{6})_([0-9a-f-]{36})/;
+  const sideOrderRE = /SideOrderTryResult-([a-z0-9-]+):\w+:(\d+)/;
   if (vsRE.test(plainText)) {
     const [, uid, listType, timestamp, uuid] = plainText.match(vsRE)!;
 
@@ -178,6 +179,14 @@ export function parseHistoryDetailId(id: string) {
       uid,
       timestamp,
       uuid,
+    } as const;
+  } else if (sideOrderRE.test(plainText)) {
+    const [, uid, timestamp] = plainText.match(sideOrderRE)!;
+
+    return {
+      type: "SideOrderTryResult",
+      uid,
+      timestamp: battleIdTimestamp(timestamp),
     } as const;
   } else {
     throw new Error(`Invalid ID: ${plainText}`);
@@ -222,4 +231,13 @@ export const battleTime = (id: string) => {
   );
 
   return new Date(dateStr);
+};
+
+export const battleIdTimestamp = (time: string) => {
+  const date = new Date(parseInt(time) * 1000);
+
+  return date.toISOString().replace(
+    /(?:[:-]|\.\d*|Z$)/g,
+    "",
+  );
 };

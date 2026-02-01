@@ -3,12 +3,27 @@ import {
   ExportResult,
   Game,
   GameExporter,
+  SideOrderInfo,
   Summary,
   VsInfo,
 } from "../types.ts";
 import { path } from "../../deps.ts";
 import { NSOAPP_VERSION, S3SI_VERSION } from "../constant.ts";
 import { parseHistoryDetailId, urlSimplify } from "../utils.ts";
+
+type FileExporterTypeSpecific = {
+  type: "VS";
+  data: VsInfo;
+} | {
+  type: "COOP";
+  data: CoopInfo;
+} | {
+  type: "SIDEORDER";
+  data: SideOrderInfo;
+} | {
+  type: "SUMMARY";
+  data: Summary;
+};
 
 export type FileExporterTypeCommon = {
   nsoVersion: string;
@@ -17,16 +32,7 @@ export type FileExporterTypeCommon = {
 };
 
 export type FileExporterType =
-  & ({
-    type: "VS";
-    data: VsInfo;
-  } | {
-    type: "COOP";
-    data: CoopInfo;
-  } | {
-    type: "SUMMARY";
-    data: Summary;
-  })
+  & FileExporterTypeSpecific
   & FileExporterTypeCommon;
 
 /**
@@ -99,6 +105,15 @@ export class FileExporter implements GameExporter {
           filepath,
           timestamp,
         });
+      } else if (body.type === "SIDEORDER" && type === "SideOrderInfo") {
+        if (filter && !filter(body.data)) {
+          continue;
+        }
+        out.push({
+          id: body.data.detail.id,
+          filepath,
+          timestamp,
+        });
       }
     }
 
@@ -137,6 +152,28 @@ export class FileExporter implements GameExporter {
       url: filepath,
     };
   }
+  private getDataType(info: Game): FileExporterTypeSpecific {
+    switch (info.type) {
+      case "VsInfo": {
+        return {
+          type: "VS" as const,
+          data: info,
+        };
+      }
+      case "CoopInfo": {
+        return {
+          type: "COOP" as const,
+          data: info,
+        };
+      }
+      case "SideOrderInfo": {
+        return {
+          type: "SIDEORDER" as const,
+          data: info,
+        };
+      }
+    }
+  }
   async exportGame(info: Game): Promise<ExportResult> {
     await Deno.mkdir(this.exportPath, { recursive: true });
 
@@ -148,15 +185,7 @@ export class FileExporter implements GameExporter {
       s3siVersion: S3SI_VERSION,
       exportTime: new Date().toISOString(),
     };
-    const dataType = info.type === "VsInfo"
-      ? {
-        type: "VS" as const,
-        data: info,
-      }
-      : {
-        type: "COOP" as const,
-        data: info,
-      };
+    const dataType = this.getDataType(info);
     const body: FileExporterType = {
       ...common,
       ...dataType,
