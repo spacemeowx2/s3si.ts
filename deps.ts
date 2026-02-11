@@ -1,4 +1,8 @@
-export { Cookie, CookieJar, wrapFetch } from "https://deno.land/x/another_cookiejar@v5.0.4/mod.ts";
+export {
+  Cookie,
+  CookieJar,
+  wrapFetch,
+} from "https://deno.land/x/another_cookiejar@v5.0.4/mod.ts";
 export type { CookieOptions } from "https://deno.land/x/another_cookiejar@v5.0.4/mod.ts";
 export * as base64 from "@std/encoding/base64";
 export { parseArgs } from "@std/cli/parse-args";
