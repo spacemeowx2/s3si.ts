@@ -200,7 +200,7 @@ export class Splatnet3 {
   async getAllSideOrderList() {
     const resp = await this.request(Queries.SideOrderRecordChallengeQuery);
 
-    return resp.sideOrderRecord.tryResults.nodes.flatMap((i) => i.id);
+    return resp.sideOrderRecord?.tryResults?.nodes?.flatMap(i => i.id) ?? [];
   }
 
   getBattleDetail(
