@@ -1,1 +1,1 @@
-export { assertEquals, fail } from "@std/assert";
+export { assertEquals, fail } from "jsr:@std/assert";
