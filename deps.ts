@@ -12,3 +12,4 @@ export * as path from "jsr:@std/path";
 export { MultiProgressBar } from "https://deno.land/x/progress@v1.4.5/mod.ts";
 export { Mutex } from "https://deno.land/x/semaphore@v1.1.2/mod.ts";
 export type { DeepReadonly } from "https://deno.land/x/ts_essentials@v9.1.2/mod.ts";
+export { default as Murmurhash3 } from "https://deno.land/x/murmurhash@v1.0.0/mod.ts";

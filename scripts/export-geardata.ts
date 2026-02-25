@@ -6,7 +6,7 @@
  * And export geardata to `./geardata_${timestamp}.json`.
  */
 
-import Murmurhash3 from "https://deno.land/x/murmurhash@v1.0.0/mod.ts";
+import { Murmurhash3 } from "../deps.ts";
 import { base64, parseArgs } from "../deps.ts";
 import { DEFAULT_ENV } from "../src/env.ts";
 import { loginManually } from "../src/iksm.ts";
