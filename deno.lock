@@ -1,17 +1,18 @@
 {
   "version": "5",
   "specifiers": {
-    "jsr:@std/assert@*": "1.0.19",
+    "jsr:@std/assert@*": "1.0.17",
     "jsr:@std/bytes@^1.0.6": "1.0.6",
-    "jsr:@std/cli@*": "1.0.28",
+    "jsr:@std/cli@*": "1.0.26",
     "jsr:@std/crypto@^1.0.5": "1.0.5",
     "jsr:@std/encoding@*": "1.0.10",
     "jsr:@std/internal@^1.0.12": "1.0.12",
+    "jsr:@std/path@*": "1.1.4",
     "jsr:@std/uuid@*": "1.1.0"
   },
   "jsr": {
-    "@std/assert@1.0.19": {
-      "integrity": "eaada96ee120cb980bc47e040f82814d786fe8162ecc53c91d8df60b8755991e",
+    "@std/assert@1.0.17": {
+      "integrity": "df5ebfffe77c03b3fa1401e11c762cc8f603d51021c56c4d15a8c7ab45e90dbe",
       "dependencies": [
         "jsr:@std/internal"
       ]
@@ -19,8 +20,8 @@
     "@std/bytes@1.0.6": {
       "integrity": "f6ac6adbd8ccd99314045f5703e23af0a68d7f7e58364b47d2c7f408aeb5820a"
     },
-    "@std/cli@1.0.28": {
-      "integrity": "74ef9b976db59ca6b23a5283469c9072be6276853807a83ec6c7ce412135c70a"
+    "@std/cli@1.0.26": {
+      "integrity": "53679a2b041406f15c3ff193986852595f3d11ba7b9d4b0c71a42589662e8fb5"
     },
     "@std/crypto@1.0.5": {
       "integrity": "0dcfbb319fe0bba1bd3af904ceb4f948cde1b92979ec1614528380ed308a3b40"
@@ -30,6 +31,12 @@
     },
     "@std/internal@1.0.12": {
       "integrity": "972a634fd5bc34b242024402972cd5143eac68d8dffaca5eaa4dba30ce17b027"
+    },
+    "@std/path@1.1.4": {
+      "integrity": "1d2d43f39efb1b42f0b1882a25486647cb851481862dc7313390b2bb044314b5",
+      "dependencies": [
+        "jsr:@std/internal"
+      ]
     },
     "@std/uuid@1.1.0": {
       "integrity": "6268db2ccf172849c9be80763354ca305d49ef4af41fe995623d44fcc3f7457c",
@@ -230,5 +237,14 @@
     "https://deno.land/x/ts_essentials@v9.1.2/lib/mod.ts": "d7e44a25aa621425ffd118a0210a492c5c354411018e2db648a68614d5901f5b",
     "https://deno.land/x/ts_essentials@v9.1.2/lib/types.ts": "7ee99797a880948c07020e90d569ca3c5d465c378949262110283aa7856f5603",
     "https://deno.land/x/ts_essentials@v9.1.2/mod.ts": "ffae461c16d4a1bf24c2179582ab8d5c81ad0df61e4ae2fba51ef5e5bdf90345"
+  },
+  "workspace": {
+    "dependencies": [
+      "jsr:@std/assert@*",
+      "jsr:@std/cli@*",
+      "jsr:@std/encoding@*",
+      "jsr:@std/path@*",
+      "jsr:@std/uuid@*"
+    ]
   }
 }
