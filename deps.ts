@@ -8,7 +8,7 @@ export * as base64 from "jsr:@std/encoding/base64";
 export { parseArgs } from "jsr:@std/cli/parse-args";
 export * as uuid from "jsr:@std/uuid";
 export * as msgpack from "https://deno.land/x/msgpack@v1.4/mod.ts";
-export * as path from "jsr:@std/path";
+export * as path from "https://deno.land/std@0.213.0/path/mod.ts";
 export { MultiProgressBar } from "https://deno.land/x/progress@v1.4.5/mod.ts";
 export { Mutex } from "https://deno.land/x/semaphore@v1.1.2/mod.ts";
 export type { DeepReadonly } from "https://deno.land/x/ts_essentials@v9.1.2/mod.ts";
