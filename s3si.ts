@@ -10,9 +10,10 @@ const opts = parseArgs(Deno.args, {
     "listMethod",
     "nxapiPresenceUrl",
   ],
-  boolean: ["help", "noProgress", "monitor", "withSummary"],
+  boolean: ["help", "noProgress", "monitor", "withSummary", "loginOnly"],
   alias: {
     "help": "h",
+    "loginOnly": "login-only",
     "profilePath": ["p", "profile-path"],
     "exporter": ["e"],
     "noProgress": ["n", "no-progress"],
@@ -42,6 +43,7 @@ Options:
                                  Multiple modes to skip can be separated by commas
                                  (e.g. "vs,coop,sideorder")
     --with-summary               Include summary in the output
+    --login-only                 Verify SplatNet 3 access, refresh expired tokens, and exit without exporting
     --help                       Show this help message and exit
     --nxapi-presence             Extends monitoring mode to use Nintendo Switch presence from nxapi`,
   );

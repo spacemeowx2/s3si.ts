@@ -8,7 +8,7 @@ import { DEFAULT_ENV } from "../src/env.ts";
 import { FileExporter } from "../src/exporters/file.ts";
 import { StatInkExporter } from "../src/exporters/stat.ink.ts";
 import { GameFetcher } from "../src/GameFetcher.ts";
-import { loginManually } from "../src/iksm.ts";
+import { ensureLogin } from "../src/iksm.ts";
 import { Splatnet3 } from "../src/splatnet3.ts";
 import { FileStateBackend, Profile } from "../src/state.ts";
 import { Game } from "../src/types.ts";
@@ -96,17 +96,7 @@ const gameFetcher = new GameFetcher({
   state: profile.state,
 });
 
-if (!profile.state.loginState?.sessionToken) {
-  const sessionToken = await loginManually(env);
-
-  await profile.writeState({
-    ...profile.state,
-    loginState: {
-      ...profile.state.loginState,
-      sessionToken,
-    },
-  });
-}
+await ensureLogin(profile, env);
 
 const splatnet = new Splatnet3({ profile, env });
 

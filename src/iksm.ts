@@ -1,4 +1,5 @@
-import { retry, urlBase64Encode } from "./utils.ts";
+import { base64 } from "../deps.ts";
+import { urlBase64Encode } from "./utils.ts";
 import {
   DEFAULT_APP_USER_AGENT,
   NSOAPP_VERSION,
@@ -7,6 +8,78 @@ import {
 } from "./constant.ts";
 import { APIError } from "./APIError.ts";
 import { Env, Fetcher } from "./env.ts";
+import type { Profile } from "./state.ts";
+
+export const EXTERNAL_TOKEN_HELP =
+  "Refresh SplatNet 3 tokens with nxapi util update-s3si-token or splatnet3-token-util (STU). " +
+  "Set tokenFile in your profile to the generated JSON file. See README.md#authentication.";
+
+function requireNxapiClient(clientId?: string): string {
+  if (!clientId || !/^[A-Za-z0-9_-]+$/.test(clientId)) {
+    throw new Error(
+      "Set nxapiClientId in your profile to your registered nxapi-auth public Client ID. " +
+        "Register at https://nxapi-auth.fancy.org.uk/oauth/clients. See README.md#authentication.",
+    );
+  }
+  return clientId;
+}
+
+export async function ensureNxapiConsent(profile: Profile, env: Env) {
+  requireNxapiClient(profile.state.nxapiClientId);
+  if (profile.state.nxapiConsent === true) return;
+  const answer = await env.prompts.prompt(
+    "Login uses the third-party nxapi service (https://github.com/samuelthomas2774/nxapi-znca-api). " +
+      "Your Nintendo Account ID, ID token, Coral token and Coral API request/response data " +
+      "will be sent to nxapi-znca-api.fancy.org.uk for signing and encryption/decryption. " +
+      "Your Nintendo password and session token stay outside nxapi. Allow this? [y/N]",
+  );
+  if (!/^(y|yes)$/i.test(answer.trim())) {
+    throw new Error("nxapi authentication cancelled. No login data was sent.");
+  }
+  await profile.writeState({ ...profile.state, nxapiConsent: true });
+}
+
+// Do not attach response bodies to errors: authentication responses can contain tokens.
+async function authJSON(response: Response, stage: string) {
+  if (!response.ok) {
+    await response.body?.cancel();
+    throw new Error(`${stage} failed (HTTP ${response.status}).`);
+  }
+  try {
+    const data = await response.json();
+    if (!data || typeof data !== "object" || Array.isArray(data)) {
+      throw new Error();
+    }
+    return data;
+  } catch {
+    throw new Error(`${stage} returned invalid JSON.`);
+  }
+}
+
+function tokenString(value: unknown, name: string): string {
+  if (
+    typeof value !== "string" || !value || value === "null" || /\s/.test(value)
+  ) {
+    throw new Error(`Authentication response is missing a valid ${name}.`);
+  }
+  return value;
+}
+
+export async function ensureLogin(profile: Profile, env: Env) {
+  const state = profile.state;
+  const tokens = state.loginState;
+  if (
+    state.tokenFile || (tokens?.gToken && tokens?.bulletToken) ||
+    (tokens?.sessionToken && tokens.sessionToken !== "null")
+  ) return;
+
+  await ensureNxapiConsent(profile, env);
+  const sessionToken = await loginManually(env);
+  await profile.writeState({
+    ...profile.state,
+    loginState: { ...tokens, sessionToken },
+  });
+}
 
 export async function loginSteps(
   env: Env,
@@ -67,6 +140,7 @@ export async function loginSteps(
 
     const res = await fetch.get(
       {
+        signal: AbortSignal.timeout(30_000),
         url,
         headers: {
           "Host": "accounts.nintendo.com",
@@ -89,6 +163,14 @@ export async function loginSteps(
   } else {
     const { login, authCodeVerifier } = step2;
     const loginURL = new URL(login);
+    if (
+      loginURL.protocol !== "npf71b963c1b7b6d119:" ||
+      loginURL.hostname !== "auth"
+    ) {
+      throw new Error(
+        "Expected the Nintendo Select this account callback URL.",
+      );
+    }
     const params = new URLSearchParams(loginURL.hash.substring(1));
     const sessionTokenCode = params.get("session_token_code");
     if (!sessionTokenCode) {
@@ -128,11 +210,17 @@ export async function loginManually(
 }
 
 export async function getGToken(
-  { fApi, sessionToken, env }: { fApi: string; sessionToken: string; env: Env },
+  { nxapiClientId, sessionToken, env }: {
+    nxapiClientId?: string;
+    sessionToken: string;
+    env: Env;
+  },
 ) {
+  const clientId = requireNxapiClient(nxapiClientId);
   const fetch = env.newFetcher();
   const idResp = await fetch.post(
     {
+      signal: AbortSignal.timeout(30_000),
       url: "https://accounts.nintendo.com/connect/1.0.0/api/token",
       headers: {
         "Host": "accounts.nintendo.com",
@@ -151,18 +239,16 @@ export async function getGToken(
       }),
     },
   );
-  const idRespJson = await idResp.json();
-  const { access_token: accessToken, id_token: idToken } = idRespJson;
-  if (!accessToken || !idToken) {
-    throw new APIError({
-      response: idResp,
-      json: idRespJson,
-      message: "No access_token or id_token found",
-    });
-  }
+  const idRespJson = await authJSON(idResp, "Nintendo Account token exchange");
+  const accessToken = tokenString(
+    idRespJson.access_token,
+    "Nintendo access token",
+  );
+  const idToken = tokenString(idRespJson.id_token, "Nintendo ID token");
 
   const uiResp = await fetch.get(
     {
+      signal: AbortSignal.timeout(30_000),
       url: "https://api.accounts.nintendo.com/2.0.0/users/me",
       headers: {
         "User-Agent": "NASDKAPI; Android",
@@ -175,108 +261,153 @@ export async function getGToken(
       },
     },
   );
-  const uiRespJson = await uiResp.json();
-  const { nickname, birthday, language, country, id: userId } = uiRespJson;
+  const uiRespJson = await authJSON(uiResp, "Nintendo Account user lookup");
+  const { nickname } = uiRespJson;
+  const language = tokenString(uiRespJson.language, "language");
+  const country = tokenString(uiRespJson.country, "country");
+  const userId = tokenString(uiRespJson.id, "Nintendo Account ID");
 
-  const getIdToken2 = async (idToken: string) => {
-    const { f, request_id: requestId, timestamp } = await callImink({
-      fApi,
-      step: 1,
-      idToken,
-      userId,
-      env,
-    });
-    const resp = await fetch.post(
-      {
-        url: "https://api-lp1.znc.srv.nintendo.net/v3/Account/Login",
-        headers: {
-          "X-Platform": "Android",
-          "X-ProductVersion": NSOAPP_VERSION,
-          "Content-Type": "application/json; charset=utf-8",
-          "Connection": "Keep-Alive",
-          "Accept-Encoding": "gzip",
-          "User-Agent": `com.nintendo.znca/${NSOAPP_VERSION}(Android/14)`,
-        },
-        body: JSON.stringify({
-          parameter: {
-            "f": f,
-            "language": language,
-            "naBirthday": birthday,
-            "naCountry": country,
-            "naIdToken": idToken,
-            "requestId": requestId,
-            "timestamp": timestamp,
-          },
+  // A service token belongs to one Coral user; keep it only for this login attempt.
+  let serviceToken: string | undefined;
+  async function nxapiRequest(
+    path: string,
+    body: unknown,
+    retry = true,
+  ): Promise<Response> {
+    if (!serviceToken) {
+      const auth = await fetch.post({
+        signal: AbortSignal.timeout(30_000),
+        url: "https://nxapi-auth.fancy.org.uk/api/oauth/token",
+        headers: { "Accept": "application/json", "User-Agent": USERAGENT },
+        body: new URLSearchParams({
+          grant_type: "client_credentials",
+          client_id: clientId,
+          scope: "ca:gf ca:er ca:dr",
         }),
-      },
-    );
-    const respJson = await resp.json();
-
-    const idToken2: string | undefined = respJson?.result
-      ?.webApiServerCredential
-      ?.accessToken;
-    const coralUserId: string | undefined = respJson?.result?.user?.id
-      ?.toString();
-
-    if (!idToken2 || !coralUserId) {
-      throw new APIError({
-        response: resp,
-        json: respJson,
-        message:
-          `No idToken2 or coralUserId found. Please try again later. (${idToken2?.length}, ${coralUserId?.length})`,
       });
+      const data = await authJSON(auth, "nxapi client authentication");
+      serviceToken = tokenString(data.access_token, "nxapi access token");
     }
-
-    return [idToken2, coralUserId] as const;
-  };
-  const getGToken = async (idToken: string, coralUserId: string) => {
-    const { f, request_id: requestId, timestamp } = await callImink({
-      step: 2,
-      idToken,
-      fApi,
-      userId,
-      coralUserId,
-      env,
+    const response = await fetch.post({
+      signal: AbortSignal.timeout(30_000),
+      url: `https://nxapi-znca-api.fancy.org.uk/api/znca/${path}`,
+      headers: {
+        "Authorization": `Bearer ${serviceToken}`,
+        "Content-Type": "application/json",
+        "Accept": path === "decrypt-response"
+          ? "text/plain"
+          : "application/json",
+        "User-Agent": USERAGENT,
+        "X-znca-Platform": "Android",
+        "X-znca-Version": NSOAPP_VERSION,
+        // Must change with protocol support, never copy a remote config value blindly.
+        "X-znca-Client-Version": "d8fAZDPzwimzQ7c6",
+      },
+      body: JSON.stringify(body),
     });
-    const resp = await fetch.post(
-      {
-        url: "https://api-lp1.znc.srv.nintendo.net/v2/Game/GetWebServiceToken",
-        headers: {
-          "X-Platform": "Android",
-          "X-ProductVersion": NSOAPP_VERSION,
-          "Authorization": `Bearer ${idToken}`,
-          "Content-Type": "application/json; charset=utf-8",
-          "Accept-Encoding": "gzip",
-          "User-Agent": `com.nintendo.znca/${NSOAPP_VERSION}(Android/14)`,
-        },
-        body: JSON.stringify({
-          parameter: {
-            "f": f,
-            "id": 4834290508791808,
-            "registrationToken": idToken,
-            "requestId": requestId,
-            "timestamp": timestamp,
-          },
-        }),
-      },
-    );
-    const respJson = await resp.json();
-
-    const webServiceToken = respJson?.result?.accessToken;
-
-    if (!webServiceToken) {
-      throw new APIError({
-        response: resp,
-        json: respJson,
-        message: "No webServiceToken found",
-      });
+    if (response.ok) return response;
+    const error = await response.json().catch(() => null);
+    if (response.status === 401 && error?.error === "invalid_token" && retry) {
+      serviceToken = undefined;
+      return nxapiRequest(path, body, false);
     }
+    const advice = response.status === 429
+      ? " Rate limited; wait before retrying."
+      : response.status >= 500
+      ? " Check https://nxapi-status.fancy.org.uk/ and retry later."
+      : [400, 406].includes(response.status)
+      ? " Check client registration and supported app version."
+      : "";
+    throw new Error(`nxapi ${path} failed (HTTP ${response.status}).${advice}`);
+  }
 
-    return webServiceToken as string;
-  };
+  async function coralRequest(
+    path: string,
+    token: string,
+    hashMethod: "1" | "2",
+    parameter: Record<string, unknown>,
+    coralUserId?: string,
+  ) {
+    const url = `https://api-lp1.znc.srv.nintendo.net/v4/${path}`;
+    const encrypted = await authJSON(
+      await nxapiRequest("f", {
+        token,
+        hash_method: hashMethod,
+        na_id: userId,
+        coral_user_id: coralUserId,
+        encrypt_token_request: { url, parameter },
+      }),
+      "nxapi request encryption",
+    );
+    const encoded = tokenString(
+      encrypted.encrypted_token_request,
+      "encrypted request",
+    );
+    let body: Uint8Array;
+    try {
+      body = base64.decodeBase64(encoded);
+    } catch {
+      throw new Error("nxapi returned invalid encrypted request data.");
+    }
+    if (!body.length) {
+      throw new Error("nxapi returned an empty encrypted request.");
+    }
+    const headers: Record<string, string> = {
+      "X-Platform": "Android",
+      "X-ProductVersion": NSOAPP_VERSION,
+      "Content-Type": "application/octet-stream",
+      "Accept": "application/octet-stream,application/json",
+      "User-Agent": `com.nintendo.znca/${NSOAPP_VERSION}(Android/12)`,
+    };
+    if (hashMethod === "2") headers.Authorization = `Bearer ${token}`;
+    const response = await fetch.post({
+      url,
+      headers,
+      body,
+      signal: AbortSignal.timeout(30_000),
+    });
+    if (response.status !== 200) {
+      await response.body?.cancel();
+      throw new Error(`Nintendo ${path} failed (HTTP ${response.status}).`);
+    }
+    const data = await authJSON(
+      await nxapiRequest("decrypt-response", {
+        data: base64.encodeBase64(await response.arrayBuffer()),
+      }),
+      `Nintendo ${path} response`,
+    );
+    if (data.status !== 0 || !data.result) {
+      throw new Error(`Nintendo ${path} rejected authentication.`);
+    }
+    return data.result;
+  }
 
-  const [idToken2, coralUserId] = await retry(() => getIdToken2(idToken));
-  const webServiceToken = await retry(() => getGToken(idToken2, coralUserId));
+  const account = await coralRequest("Account/Login", idToken, "1", {
+    naIdToken: idToken,
+    language,
+    timestamp: 0,
+    requestId: "",
+    f: "",
+  });
+  const coralToken = tokenString(
+    account.webApiServerCredential?.accessToken,
+    "Coral access token",
+  );
+  const coralUserId = account.user?.id;
+  if (!Number.isSafeInteger(coralUserId) || coralUserId <= 0) {
+    throw new Error("Nintendo returned an invalid Coral user ID.");
+  }
+  const game = await coralRequest("Game/GetWebServiceToken", coralToken, "2", {
+    id: 4834290508791808,
+    registrationToken: "",
+    f: "",
+    requestId: "",
+    timestamp: 0,
+  }, String(coralUserId));
+  const webServiceToken = tokenString(
+    game.accessToken,
+    "SplatNet 3 game token",
+  );
 
   return {
     webServiceToken,
@@ -309,6 +440,7 @@ export async function getBulletToken(
     }],
   });
   const resp = await post({
+    signal: AbortSignal.timeout(30_000),
     url: "https://api.lp1.av5ja.srv.nintendo.net/api/bullet_tokens",
     headers: {
       "Content-Type": "application/json",
@@ -349,16 +481,8 @@ export async function getBulletToken(
     });
   }
 
-  const respJson = await resp.json();
-  const { bulletToken } = respJson;
-
-  if (typeof bulletToken !== "string") {
-    throw new APIError({
-      response: resp,
-      json: respJson,
-      message: "No bulletToken found",
-    });
-  }
+  const respJson = await authJSON(resp, "SplatNet 3 bullet token exchange");
+  const bulletToken = tokenString(respJson.bulletToken, "bullet token");
 
   return bulletToken;
 }
@@ -378,6 +502,7 @@ async function getSessionToken({
 }): Promise<string | undefined> {
   const resp = await fetch.post(
     {
+      signal: AbortSignal.timeout(30_000),
       url: "https://accounts.nintendo.com/connect/1.0.0/api/session_token",
       headers: {
         "User-Agent": `OnlineLounge/${NSOAPP_VERSION} NASDKAPI Android`,
@@ -395,49 +520,6 @@ async function getSessionToken({
       }),
     },
   );
-  const json = await resp.json();
-  if (json.error) {
-    throw new APIError({
-      response: resp,
-      json,
-      message: "Error getting session token",
-    });
-  }
-  return json["session_token"];
-}
-
-type IminkResponse = {
-  f: string;
-  request_id: string;
-  timestamp: number;
-};
-async function callImink(
-  params: {
-    fApi: string;
-    step: number;
-    idToken: string;
-    userId: string;
-    coralUserId?: string;
-    env: Env;
-  },
-): Promise<IminkResponse> {
-  const { fApi, step, idToken, userId, coralUserId, env } = params;
-  const { post } = env.newFetcher();
-  const resp = await post({
-    url: fApi,
-    headers: {
-      "User-Agent": USERAGENT,
-      "Content-Type": "application/json",
-      "X-znca-Platform": "Android",
-      "X-znca-Version": NSOAPP_VERSION,
-    },
-    body: JSON.stringify({
-      "token": idToken,
-      "hash_method": step,
-      "na_id": userId,
-      "coral_user_id": coralUserId,
-    }),
-  });
-
-  return await resp.json();
+  const json = await authJSON(resp, "Nintendo session token exchange");
+  return tokenString(json.session_token, "session token");
 }

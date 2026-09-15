@@ -14,7 +14,13 @@ import {
   VarsMap,
 } from "./types.ts";
 import { DEFAULT_ENV, Env } from "./env.ts";
-import { getBulletToken, getGToken } from "./iksm.ts";
+import {
+  ensureNxapiConsent,
+  EXTERNAL_TOKEN_HELP,
+  getBulletToken,
+  getGToken,
+} from "./iksm.ts";
+import { readExternalTokens } from "./tokens.ts";
 import { battleTime, parseHistoryDetailId } from "./utils.ts";
 
 export class Splatnet3 {
@@ -30,6 +36,12 @@ export class Splatnet3 {
     query: Q,
     ...rest: VarsMap[Q]
   ): Promise<RespMap[Q]> {
+    if (
+      !this.profile.state.loginState?.gToken ||
+      !this.profile.state.loginState?.bulletToken
+    ) {
+      await this.fetchToken();
+    }
     const doRequest = async () => {
       const state = this.profile.state;
       const variables = rest?.[0] ?? {};
@@ -57,7 +69,7 @@ export class Splatnet3 {
           "Referer":
             `https://api.lp1.av5ja.srv.nintendo.net/?lang=${state.userLang}&na_country=${state.userCountry}&na_lang=${state.userLang}`,
           "Accept-Encoding": "gzip, deflate",
-          "Cookie": `_gtoken: ${state.loginState?.gToken}`,
+          "Cookie": `_gtoken=${state.loginState?.gToken}`,
         },
         body: JSON.stringify(body),
       });
@@ -84,7 +96,17 @@ export class Splatnet3 {
     } catch (e) {
       if (isTokenExpired(e)) {
         await this.fetchToken();
-        return await doRequest();
+        try {
+          return await doRequest();
+        } catch (retryError) {
+          if (isTokenExpired(retryError) && this.profile.state.tokenFile) {
+            throw new Error(
+              "The external SplatNet 3 tokens are expired or invalid. " +
+                EXTERNAL_TOKEN_HELP,
+            );
+          }
+          throw retryError;
+        }
       }
       throw e;
     }
@@ -92,14 +114,26 @@ export class Splatnet3 {
 
   async fetchToken() {
     const state = this.profile.state;
+    if (state.tokenFile) {
+      const tokens = await readExternalTokens(state.tokenFile);
+      await this.profile.writeState({
+        ...state,
+        loginState: { ...state.loginState, ...tokens.loginState },
+        userLang: state.userLang ?? tokens.userLang,
+        userCountry: tokens.userCountry ?? state.userCountry,
+      });
+      return;
+    }
     const sessionToken = state.loginState?.sessionToken;
 
-    if (!sessionToken) {
-      throw new Error("Session token is not set.");
+    if (!sessionToken || sessionToken === "null") {
+      throw new Error(EXTERNAL_TOKEN_HELP);
     }
 
+    await ensureNxapiConsent(this.profile, this.env);
+
     const { webServiceToken, userCountry, userLang } = await getGToken({
-      fApi: state.fGen,
+      nxapiClientId: state.nxapiClientId,
       sessionToken,
       env: this.env,
     });
@@ -113,7 +147,7 @@ export class Splatnet3 {
     });
 
     await this.profile.writeState({
-      ...state,
+      ...this.profile.state,
       loginState: {
         ...state.loginState,
         gToken: webServiceToken,
@@ -154,8 +188,10 @@ export class Splatnet3 {
   async checkToken() {
     const state = this.profile.state;
     if (
-      !state.loginState?.sessionToken || !state.loginState?.bulletToken ||
-      !state.loginState?.gToken
+      !state.tokenFile &&
+      (!state.loginState?.sessionToken ||
+        state.loginState.sessionToken === "null") &&
+      (!state.loginState?.bulletToken || !state.loginState?.gToken)
     ) {
       return false;
     }

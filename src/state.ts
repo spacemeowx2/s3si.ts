@@ -17,7 +17,10 @@ export type RankState = {
 };
 export type State = {
   loginState?: LoginState;
-  fGen: string;
+  nxapiClientId?: string;
+  nxapiConsent?: boolean;
+  // A nxapi s3si.ts profile or STU/s3s config containing current tokens.
+  tokenFile?: string;
   appUserAgent?: string;
   userLang?: string;
   userCountry?: string;
@@ -34,8 +37,8 @@ export type State = {
 };
 
 export const DEFAULT_STATE: State = {
+  nxapiClientId: "erdX8zpYJYNSP02ZJisdQQ",
   cacheDir: "./cache",
-  fGen: "https://api.imink.app/f",
   fileExportPath: "./export",
   monitorInterval: 500,
 };
@@ -83,7 +86,7 @@ export class FileStateBackend implements StateBackend {
   async write(newState: State): Promise<void> {
     const data = JSON.stringify(newState, undefined, 2);
     const swapPath = `${this.path}.swap`;
-    await Deno.writeTextFile(swapPath, data);
+    await Deno.writeTextFile(swapPath, data, { mode: 0o600 });
     await Deno.rename(swapPath, this.path);
   }
 }

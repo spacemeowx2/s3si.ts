@@ -8,8 +8,6 @@ const ROOT_DIR = path.resolve(
   "..",
 );
 const CONSTANT_PATH = path.join(ROOT_DIR, "./src/constant.ts");
-const STORE_URL =
-  "https://apps.apple.com/us/app/nintendo-switch-online/id1234806557";
 const SPLATNET3_URL = "https://api.lp1.av5ja.srv.nintendo.net";
 
 function replaceConst(content: string, name: string, value: string): string {
@@ -128,26 +126,15 @@ async function getWebViewVer(js: string): Promise<string> {
   return ver;
 }
 
-async function getNSOVer(): Promise<string> {
-  const main = await (await fetch(STORE_URL)).text();
-  const ver = />Version (.*?)</.exec(main)?.[1];
-
-  if (!ver) {
-    throw new Error("No version found");
-  }
-
-  return ver.trim();
-}
-
 let content = await Deno.readTextFile(CONSTANT_PATH);
 const oldValues = {
   WEB_VIEW_VERSION: getConst(content, "WEB_VIEW_VERSION"),
-  NSOAPP_VERSION: getConst(content, "NSOAPP_VERSION"),
 };
 const newValues: Record<string, string | undefined> = {};
 
 newValues.WEB_VIEW_VERSION = await printError(getWebViewVer(mainJSBody));
-newValues.NSOAPP_VERSION = await printError(getNSOVer());
+// NSOAPP_VERSION is pinned with the encryption protocol in iksm.ts.
+// Do not update it from the App Store independently.
 
 for (const [key, value] of Object.entries(newValues)) {
   if (value) {

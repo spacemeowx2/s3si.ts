@@ -1,4 +1,4 @@
-import { loginManually } from "./iksm.ts";
+import { ensureLogin } from "./iksm.ts";
 import { MultiProgressBar, Mutex } from "../deps.ts";
 import { FileStateBackend, Profile, StateBackend } from "./state.ts";
 import { Splatnet3 } from "./splatnet3.ts";
@@ -25,6 +25,7 @@ export type Opts = {
   stateBackend?: StateBackend;
   env: Env;
   nxapiPresenceUrl?: string;
+  loginOnly?: boolean;
 };
 
 export const DEFAULT_OPTS: Opts = {
@@ -540,16 +541,15 @@ export class App {
   async run() {
     await this.profile.readState();
 
-    if (!this.profile.state.loginState?.sessionToken) {
-      const sessionToken = await loginManually(this.env);
+    await ensureLogin(this.profile, this.env);
 
-      await this.profile.writeState({
-        ...this.profile.state,
-        loginState: {
-          ...this.profile.state.loginState,
-          sessionToken,
-        },
-      });
+    if (this.opts.loginOnly) {
+      const splatnet = new Splatnet3({ profile: this.profile, env: this.env });
+      await splatnet.getLatestBattleHistoriesQuery();
+      this.env.logger.log(
+        "Login verified: SplatNet 3 access succeeded. Nothing exported.",
+      );
+      return;
     }
 
     if (this.opts.nxapiPresenceUrl) {

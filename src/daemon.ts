@@ -88,7 +88,7 @@ class S3SIServiceImplement implements S3SIService, Service {
       return {
         error: {
           code: 101,
-          message: "SessionToken is invalid",
+          message: "SplatNet 3 tokens are invalid or could not be refreshed",
         },
       };
     }

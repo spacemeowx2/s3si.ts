@@ -14,7 +14,9 @@ export type RankState = {
 };
 export type State = {
   loginState?: LoginState;
-  fGen: string;
+  nxapiClientId?: string;
+  nxapiConsent?: boolean;
+  tokenFile?: string;
   appUserAgent?: string;
   userLang?: string;
   userCountry?: string;

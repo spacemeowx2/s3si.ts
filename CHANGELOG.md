@@ -1,3 +1,30 @@
+## 0.6.0
+
+BREAKING: replace `getGToken`'s `fApi` argument with `nxapiClientId`; remove
+`State.fGen` and support for custom legacy f endpoints. Use the encrypted
+Nintendo Switch app 3.5.0 protocol with nxapi client authentication.
+
+BREAKING: native authentication requires explicit nxapi data-transfer consent.
+Library integrations must implement the confirmation prompt or collect consent
+in their own UI. JSON-RPC callers must pass the accepted `nxapiConsent` in
+state. Custom Fetchers must support binary request and response bodies.
+
+BREAKING: token exchange/encryption errors no longer expose raw authentication
+response bodies through `APIError.json`; handle plain `Error` as well.
+`checkToken()` can now refresh missing tokens when a session token or external
+token file is available, including persisting credentials and requesting
+consent.
+
+feat: include the project's public nxapi Client ID, add `--login-only`, and
+support nxapi/STU token files as an optional alternative to native login.
+
+fix: use the correct SplatNet `_gtoken` cookie syntax, update the web-view
+version, bound failed service-token retries, and keep refreshed profile files
+private.
+
+See [library migration](README.md#library-migration-05x-to-060) for API changes
+and integration requirements. Existing export JSON fields are unchanged.
+
 ## 0.5.0
 
 BREAKING: require Deno 2 (migrated std imports to JSR and CLI args parsing to

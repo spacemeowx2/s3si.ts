@@ -9,7 +9,7 @@
 import { Murmurhash3 } from "../deps.ts";
 import { base64, parseArgs } from "../deps.ts";
 import { DEFAULT_ENV } from "../src/env.ts";
-import { loginManually } from "../src/iksm.ts";
+import { ensureLogin } from "../src/iksm.ts";
 import { Splatnet3 } from "../src/splatnet3.ts";
 import {
   FileStateBackend,
@@ -58,17 +58,7 @@ const stateBackend = opts.profilePath
 const profile = new Profile({ stateBackend, env });
 await profile.readState();
 
-if (!profile.state.loginState?.sessionToken) {
-  const sessionToken = await loginManually(env);
-
-  await profile.writeState({
-    ...profile.state,
-    loginState: {
-      ...profile.state.loginState,
-      sessionToken,
-    },
-  });
-}
+await ensureLogin(profile, env);
 
 const splatnet = new Splatnet3({ profile, env });
 

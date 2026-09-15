@@ -13,9 +13,16 @@ export type Prompts = {
 };
 
 export type Fetcher = {
-  get(opts: { url: string; headers?: HeadersInit }): Promise<Response>;
+  get(
+    opts: { url: string; headers?: HeadersInit; signal?: AbortSignal },
+  ): Promise<Response>;
   post(
-    opts: { url: string; body?: RequestBody; headers?: HeadersInit },
+    opts: {
+      url: string;
+      body?: RequestBody;
+      headers?: HeadersInit;
+      signal?: AbortSignal;
+    },
   ): Promise<Response>;
 };
 
@@ -60,16 +67,18 @@ export const DEFAULT_ENV: Env = {
     const fetch = wrapFetch({ cookieJar });
 
     return {
-      async get({ url, headers }) {
+      async get({ url, headers, signal }) {
         return await fetch(url, {
           method: "GET",
           headers,
+          signal,
         });
       },
-      async post({ url, body, headers }) {
+      async post({ url, body, headers, signal }) {
         return await fetch(url, {
           method: "POST",
           headers,
+          signal,
           body: body as BodyInit,
         });
       },
